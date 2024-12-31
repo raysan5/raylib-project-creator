@@ -13,7 +13,7 @@ BEGIN
       VALUE "FileDescription", "raylib_project_creator | Create raylib build projects"
       VALUE "FileVersion", "1.0"
       VALUE "InternalName", "raylib_project_creator"
-      VALUE "LegalCopyright", "(c) 2024 raylib technologies (@raylibtech)"
+      VALUE "LegalCopyright", "(c) 2025 raylib technologies (@raylibtech)"
       //VALUE "OriginalFilename", "raylib_project_creator.exe"
       VALUE "raylib_project_creator", "raylib_project_creator"
       VALUE "ProductVersion", "1.0"

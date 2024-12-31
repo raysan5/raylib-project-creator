@@ -39,4 +39,4 @@ This project sources are licensed under an unmodified zlib/libpng license, which
 
 $(Additional Licenses)
 
-*Copyright (c) 2024 ProjectDev ($(User Twitter/GitHub Name))*
+*Copyright (c) 2025 ProjectDev ($(User Twitter/GitHub Name))*

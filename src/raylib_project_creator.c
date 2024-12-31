@@ -32,7 +32,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2024 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2024-2025 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -883,7 +883,7 @@ static void ShowCommandLineInfo(void)
     printf("// raylib project creator v1.0                                                  //\n");
     printf("// powered by raylib v%s and raygui v%s                               //\n", RAYLIB_VERSION, RAYGUI_VERSION);
     printf("//                                                                              //\n");
-    printf("// Copyright (c) 2024 Ramon Santamaria (@raysan5)                               //\n");
+    printf("// Copyright (c) 2025 Ramon Santamaria (@raysan5)                               //\n");
     printf("//                                                                              //\n");
     printf("//////////////////////////////////////////////////////////////////////////////////\n\n");
 
