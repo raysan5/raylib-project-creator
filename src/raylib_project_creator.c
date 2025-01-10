@@ -18,6 +18,10 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
+*       1.1  (30-Sep-2024)  ADDED: Support raylib path as property on VS2022 projects
+*                           ADDED: Support for HighDPI/4K monitors, scaling UI automatically
+*                           REVIEWED: Issue with browser files filter (*.c;*.h) not working properly
+*                           REVIEWED: Issue while building Basic Sample
 *       1.0  (26-Sep-2024)  First release
 *
 *   DEPENDENCIES:
