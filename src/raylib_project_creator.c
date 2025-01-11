@@ -948,7 +948,7 @@ static void ProcessCommandLine(int argc, char *argv[])
             {
                 // Split provided arg by ',' to get multiple source input files
                 int fileCount = 0;
-                const char **files = TextSplit(argv[i + 1], ',', &fileCount);
+                char **files = TextSplit(argv[i + 1], ',', &fileCount);
 
                 for (int j = 0; j < fileCount; j++)
                 {
