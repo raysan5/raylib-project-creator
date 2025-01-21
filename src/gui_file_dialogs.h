@@ -132,7 +132,7 @@ int GuiFileDialog(int dialogType, const char *title, char *fileName, const char 
 
     char *tempFileName = NULL;
     int filterCount = 0;
-    char **filterSplit = TextSplit(filters, ';', &filterCount);
+    const char **filterSplit = (const char **)TextSplit(filters, ';', &filterCount);
     
     switch (dialogType)
     {
