@@ -1055,8 +1055,8 @@ static void SetupProject(ProjectConfig *config)
     // Get template directory
     // TODO: Use embedded template into executable?
     char templatePath[256] = { 0 };
-    //strcpy(templatePath, TextFormat("%s/template", GetApplicationDirectory()));
-    strcpy(templatePath, "./template"); // NOTE: Template directory should be in same directory as application, usually working directory
+    strcpy(templatePath, TextFormat("%s/template", GetApplicationDirectory()));
+    //strcpy(templatePath, "./template"); // NOTE: Template directory should be in same directory as application, usually working directory
 
     // Remove spaces from directories/files names
     char outProjectName[256] = { 0 };
