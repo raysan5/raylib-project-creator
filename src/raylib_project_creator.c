@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raylib projects creator
+*   rpc v2.0 - A simple and easy-to-use raylib projects creator
 *
 *   FEATURES:
 *       - Generate complete build systems: Makefile, VSCode, VS2022
@@ -18,6 +18,7 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
+*       2.0 (xx-Sep-2025)  ADDED: Load and save project configuration
 *       1.1  (30-Sep-2024)  ADDED: Support raylib path as property on VS2022 projects
 *                           ADDED: Support for HighDPI/4K monitors, scaling UI automatically
 *                           REVIEWED: Issue with browser files filter (*.c;*.h) not working properly
@@ -55,6 +56,14 @@
 *
 **********************************************************************************************/
 
+#define TOOL_NAME               "raylib-project-creator"
+#define TOOL_SHORT_NAME         "rpc"
+#define TOOL_VERSION            "2.0"
+#define TOOL_DESCRIPTION        "A simple and easy-to-use raylib project creator"
+#define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use\nraylib project creator"
+#define TOOL_RELEASE_DATE       "Sep.2025"
+#define TOOL_LOGO_COLOR         0x000000ff
+
 #include "raylib.h"
 
 #if defined(PLATFORM_WEB)
@@ -65,27 +74,43 @@
 #define RAYGUI_IMPLEMENTATION
 #include "external/raygui.h"
 
-#undef RAYGUI_IMPLEMENTATION        // Avoid including raygui implementation again
+#undef RAYGUI_IMPLEMENTATION                // Avoid including raygui implementation again
+
+#define GUI_MAIN_TOOLBAR_IMPLEMENTATION
+#include "gui_main_toolbar.h"               // GUI: Main toolbar
+
+#define GUI_WINDOW_HELP_IMPLEMENTATION
+#include "gui_window_help.h"                // GUI: Help Window
+
+#define GUI_WINDOW_ABOUT_IMPLEMENTATION
+#include "gui_window_about.h"               // GUI: About Window
 
 #define GUI_FILE_DIALOGS_IMPLEMENTATION
-#include "gui_file_dialogs.h"       // GUI: File Dialogs
+#include "gui_file_dialogs.h"               // GUI: File Dialogs
 
-#include "style_amber.h"            // raygui style: amber
+// raygui embedded styles
+// NOTE: Included in the same order as selector
+#define MAX_GUI_STYLES_AVAILABLE   4
+#include "styles/style_dark.h"              // raygui style: dark
+#include "styles/style_amber.h"             // raygui style: amber
+#include "styles/style_terminal.h"          // raygui style: terminal
+#include "styles/style_genesis.h"           // raygui style: genesis
 
 // miniz: Single C source file zlib-replacement library
 // https://github.com/richgel999/miniz
-#include "external/miniz.h"         // ZIP packaging functions definition
-#include "external/miniz.c"         // ZIP packaging implementation
+#include "external/miniz.h"                 // ZIP packaging functions definition
+#include "external/miniz.c"                 // ZIP packaging implementation
 
-// C standard library
-#include <stdlib.h>                 // Required for: NULL, calloc(), free()
-#include <string.h>                 // Required for: memcpy()
+// Standard C libraries
+#include <stdio.h>                          // Required for: fopen(), fclose(), fread()...
+#include <stdlib.h>                         // Required for: NULL, calloc(), free()
+#include <string.h>                         // Required for: memcpy()
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
 #if (!defined(_DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
-bool __stdcall FreeConsole(void);       // Close console from code (kernel32.lib)
+bool __stdcall FreeConsole(void);           // Close console from code (kernel32.lib)
 #endif
 
 // Simple log system to avoid printf() calls if required
@@ -115,7 +140,9 @@ typedef struct ProjectConfig {
         char developerWeb[64];      // Project developer webpage
         int srcFileCount;           // Project source files count
         char srcFilePaths[64][256]; // Project source files path(s) -> MAX_SOURCE_FILES=64
-        char resourcePath[256];     // Project resources directory path
+        int resFileCount;
+        char resFilePaths[64][256];
+        char resBasePath[256];      // Project resources base directory path (including all resources)
         char includePath[256];      // Project additional include path
         char libPath[256];          // Project additional library path
         char buildPath[256];        // Project build path (for VS2022 defaults to 'build' directory)
@@ -225,6 +252,11 @@ int main(int argc, char *argv[])
             (strcmp(argv[1], "-h") != 0) &&
             (strcmp(argv[1], "--help") != 0))       // One argument (file dropped over executable?)
         {
+            if (IsFileExtension(argv[1], ".rpc"))
+            {
+                // TODO: Load .rpc config file
+            
+            }
             if (IsFileExtension(argv[1], ".c"))
             {
                 ProjectConfig *config = (ProjectConfig *)RL_CALLOC(1, sizeof(ProjectConfig));
@@ -272,12 +304,10 @@ int main(int argc, char *argv[])
 
     // GUI usage mode - Initialization
     //--------------------------------------------------------------------------------------
-    // Initialization
-    //---------------------------------------------------------------------------------------
-    int screenWidth = 800;
-    int screenHeight = 536;
+    const int screenWidth = 800;
+    const int screenHeight = 600;
 
-    InitWindow(screenWidth, screenHeight, "raylib project creator");
+    InitWindow(screenWidth, screenHeight, TextFormat("%s v%s", TOOL_NAME, TOOL_VERSION));
     SetExitKey(0);
 
     RenderTexture2D screenTarget = LoadRenderTexture(screenWidth, screenHeight);
@@ -320,8 +350,8 @@ int main(int argc, char *argv[])
 
     // GUI: Main Layout
     //-----------------------------------------------------------------------------------
-    Vector2 anchorProject = { 8, 64 };
-    Vector2 anchorBuilding = { 8, 258 };
+    Vector2 anchorProject = { 8, 104 };
+    Vector2 anchorBuilding = { 8, 298 };
 
     bool projectNameEditMode = false;
     strcpy(config->project.name, "cool_project");
@@ -339,16 +369,57 @@ int main(int argc, char *argv[])
     bool buildingCompilerPathEditMode = false;
     bool buildingOutputPathEditMode = false;
 
-    GuiLoadStyleAmber();    // Load UI style
+    GuiLoadStyleGenesis();    // Load UI style
 
     GuiEnableTooltip();     // Enable tooltips by default
-    //----------------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------------
+
+    // GUI: Main toolbar panel (file and visualization)
+    //-----------------------------------------------------------------------------------
+    GuiMainToolbarState mainToolbarState = InitGuiMainToolbar();
+    //-----------------------------------------------------------------------------------
+
+    // GUI: Help Window
+    //-----------------------------------------------------------------------------------
+    GuiWindowHelpState windowHelpState = InitGuiWindowHelp();
+    //-----------------------------------------------------------------------------------
+
+    // GUI: About Window
+    //-----------------------------------------------------------------------------------
+    GuiWindowAboutState windowAboutState = InitGuiWindowAbout();
+    //-----------------------------------------------------------------------------------
+
+    // GUI: Issue Report Window
+    //-----------------------------------------------------------------------------------
+    bool showIssueReportWindow = false;
+    //-----------------------------------------------------------------------------------
+
+    // GUI: Export Window
+    //-----------------------------------------------------------------------------------
+    bool showExportWindow = false;
+    int exportFormatActive = 0;         // ComboBox file type selection (.ico, .png)
+    //-----------------------------------------------------------------------------------
 
     // GUI: Exit Window
     //-----------------------------------------------------------------------------------
     bool closeWindow = false;
     bool showExitWindow = false;
     //-----------------------------------------------------------------------------------
+    
+    // GUI: Custom file dialogs
+    //-----------------------------------------------------------------------------------
+    bool showLoadFileDialog = false;
+    bool showExportFileDialog = false;
+    //bool showExportImageDialog = false;
+
+    bool showIconPoemWindow = false;
+    //-----------------------------------------------------------------------------------
+
+    // Check if an icon input file has been provided on command line
+    if (inFileName[0] != '\0')
+    {
+        // TODO: Check .rpc input file
+    }
 
     infoTitle = "WELCOME! LET'S CREATE A PROJECT!";
     infoMessage = "Provide some source code files (.c) to generate project!";// \nOr choose a default project type!";
@@ -357,7 +428,7 @@ int main(int argc, char *argv[])
 
     LOG("INIT: Ready to show project generation info...\n");
 
-    SetTargetFPS(60);
+    SetTargetFPS(60);       // Set our game frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -384,7 +455,7 @@ int main(int argc, char *argv[])
                 }
             }
 
-            if (IsFileExtension(droppedFiles.paths[0], ".rgs"))
+            if ((droppedFiles.count == 1) && IsFileExtension(droppedFiles.paths[0], ".rgs"))
             {
                 // Reset to default internal style
                 // NOTE: Required to unload any previously loaded font texture
@@ -398,20 +469,40 @@ int main(int argc, char *argv[])
 
         // Keyboard shortcuts
         //------------------------------------------------------------------------------------
+        // New style file, previous in/out files registeres are reseted
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_N)) || mainToolbarState.btnNewFilePressed)
+        {
+            // TODO: Create new project
+        }
+
+        // Show dialog: load input project config file (.rpc)
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) showLoadFileDialog = true;
+        
         // Show dialog: export project
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S))
         {
-            strcpy(outFileName, TextToLower("config->project.name"));
+            strcpy(outFileName, TextToLower(config->project.name));
             showExportProjectProgress = true;
         }
 
         // Show dialog: load source files
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) showLoadSourceFilesDialog = true;
 
+        // Toggle window: help
+        if (IsKeyPressed(KEY_F1)) windowHelpState.windowActive = !windowHelpState.windowActive;
+
+        // Toggle window: about
+        if (IsKeyPressed(KEY_F2)) windowAboutState.windowActive = !windowAboutState.windowActive;
+
+        // Toggle window: issue report
+        if (IsKeyPressed(KEY_F3)) showIssueReportWindow = !showIssueReportWindow;
         // Show closing window on ESC
         if (IsKeyPressed(KEY_ESCAPE))
         {
-            if (0) { }
+            if (windowHelpState.windowActive) windowHelpState.windowActive = false;
+            else if (windowAboutState.windowActive) windowAboutState.windowActive = false;
+            else if (showIssueReportWindow) showIssueReportWindow = false;
+            else if (showExportWindow) showExportWindow = false;
         #if defined(PLATFORM_DESKTOP)
             else if (showInfoMessagePanel) showInfoMessagePanel = false;
             else showExitWindow = !showExitWindow;
@@ -424,6 +515,42 @@ int main(int argc, char *argv[])
             else if (showExportProjectProgress) showExportProjectProgress = false;
         #endif
         }
+        //----------------------------------------------------------------------------------
+
+        // Main toolbar logic
+        //----------------------------------------------------------------------------------
+        // File options logic
+        if (mainToolbarState.btnLoadFilePressed) showLoadFileDialog = true;
+        else if (mainToolbarState.btnSaveFilePressed)
+        {
+            memset(outFileName, 0, 512);
+            strcpy(outFileName, TextFormat("%s.rpc", config->project.name));
+            showExportFileDialog = true;
+        }
+
+        // Visual options logic
+        if (mainToolbarState.visualStyleActive != mainToolbarState.prevVisualStyleActive)
+        {
+            // Reset to default internal style
+            // NOTE: Required to unload any previously loaded font texture
+            GuiLoadStyleDefault();
+
+            switch (mainToolbarState.visualStyleActive)
+            {
+                case 0: GuiLoadStyleGenesis(); break;
+                case 1: GuiLoadStyleDark(); break;
+                case 2: GuiLoadStyleAmber(); break;
+                case 3: GuiLoadStyleTerminal(); break;
+                default: break;
+            }
+
+            mainToolbarState.prevVisualStyleActive = mainToolbarState.visualStyleActive;
+        }
+
+        // Help options logic
+        if (mainToolbarState.btnHelpPressed) windowHelpState.windowActive = true;
+        if (mainToolbarState.btnAboutPressed) windowAboutState.windowActive = true;
+        if (mainToolbarState.btnIssuePressed) showIssueReportWindow = true;
         //----------------------------------------------------------------------------------
 
         // Basic program flow logic
@@ -457,6 +584,9 @@ int main(int argc, char *argv[])
 #endif
 
         if (showExitWindow ||
+            windowHelpState.windowActive ||
+            windowAboutState.windowActive ||
+            showIssueReportWindow ||
             showInfoMessagePanel ||
             showLoadSourceFilesDialog ||
             showLoadResourcePathDialog ||
@@ -478,9 +608,9 @@ int main(int argc, char *argv[])
             // GUI: Main Window
             //----------------------------------------------------------------------------------
             int prevProjectType = config->project.type;
-            GuiLabel((Rectangle){ 16, 12, 104, 32 }, "PROJECT TYPE:");
+            GuiLabel((Rectangle){ 16, 52, 104, 32 }, "PROJECT TYPE:");
             //GuiSetTooltip("Choose from a default project template or custom source files");
-            GuiToggleGroup((Rectangle){ 120, 12, 223, 32 }, "Basic Sample;Screen Manager;Custom files", &config->project.type);
+            GuiToggleGroup((Rectangle){ 120, 52, 223, 32 }, "Basic Sample;Screen Manager;Custom files", &config->project.type);
             GuiSetTooltip(NULL);
 
             if (config->project.type != prevProjectType)
@@ -527,7 +657,7 @@ int main(int argc, char *argv[])
             GuiSetStyle(TEXTBOX, TEXT_READONLY, 0);
             if (GuiButton((Rectangle){ anchorProject.x + 656, anchorProject.y + 128, 120, 24 }, "Browse")) showLoadSourceFilesDialog = true;
             //GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 160, 104, 24 }, "RESOURCE PATH:");
-            //if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 160, 536, 24 }, config->project.resourcePath, 128, projectResourcePathEditMode)) projectResourcePathEditMode = !projectResourcePathEditMode;
+            //if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 160, 536, 24 }, config->project.resBasePath, 128, projectResourcePathEditMode)) projectResourcePathEditMode = !projectResourcePathEditMode;
 #if defined(PLATFORM_WEB)
             //GuiDisable();
 #endif
@@ -581,24 +711,29 @@ int main(int argc, char *argv[])
             }
             GuiEnable();
 
-            if (!lockBackground && CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 0, GetScreenHeight() - 32, screenWidth, 32 })) SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (!lockBackground && CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 0, GetScreenHeight() - 64, screenWidth, 32 })) SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
 
-            if (GuiButton((Rectangle){ 0, screenHeight - 32, screenWidth, 32 },
+            if (GuiButton((Rectangle){ 0, screenHeight - 64, screenWidth, 32 },
                 "Did you find this tool useful? Please, consider a donation! Thanks! <3"))
             {
                 OpenURL("https://github.com/sponsors/raysan5");
             }
             //----------------------------------------------------------------------------------
 
+            // GUI: Main toolbar panel
+            //----------------------------------------------------------------------------------
+            GuiMainToolbar(&mainToolbarState);
+            //----------------------------------------------------------------------------------
+
             // GUI: Status bar
             //----------------------------------------------------------------------------------
-            //int textPadding = GuiGetStyle(STATUSBAR, TEXT_PADDING);
-            //GuiSetStyle(STATUSBAR, TEXT_PADDING, 0);
-            //GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-            //GuiStatusBar((Rectangle){ 0, screenHeight - 24, screenWidth, 24 }, "PROJECT INFO");
-            //GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-            //GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
+            int textPadding = GuiGetStyle(STATUSBAR, TEXT_PADDING);
+            GuiSetStyle(STATUSBAR, TEXT_PADDING, 0);
+            GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+            GuiStatusBar((Rectangle){ 0, screenHeight - 24, screenWidth, 24 }, "PROJECT INFO");
+            GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+            GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
             //----------------------------------------------------------------------------------
 
             // NOTE: If some overlap window is open and main window is locked, we draw a background rectangle
@@ -614,8 +749,9 @@ int main(int argc, char *argv[])
                 Vector2 textSize = MeasureTextEx(GuiGetFont(), infoMessage, GuiGetFont().baseSize*2, 3);
                 GuiPanel((Rectangle){ -10, screenHeight/2 - 180, screenWidth + 20, 290 }, NULL);
 
+                int textSpacing = GuiGetStyle(DEFAULT, TEXT_SPACING);
                 GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize*3);
-                GuiSetStyle(DEFAULT, TEXT_SPACING, 3);
+                GuiSetStyle(DEFAULT, TEXT_SPACING, 0);
                 GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
                 GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, GuiGetStyle(DEFAULT, TEXT_COLOR_FOCUSED));
                 GuiLabel((Rectangle){ -10, screenHeight/2 - 140, screenWidth + 20, 30 }, infoTitle);
@@ -634,9 +770,83 @@ int main(int argc, char *argv[])
 
                 GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
                 GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize);
-                GuiSetStyle(DEFAULT, TEXT_SPACING, 1);
+                GuiSetStyle(DEFAULT, TEXT_SPACING, textSpacing);
             }
             //----------------------------------------------------------------------------------------
+            
+                        // GUI: Help Window
+            //----------------------------------------------------------------------------------------
+            windowHelpState.windowBounds.x = (float)screenWidth/2 - windowHelpState.windowBounds.width/2;
+            windowHelpState.windowBounds.y = (float)screenHeight/2 - windowHelpState.windowBounds.height/2;
+            GuiWindowHelp(&windowHelpState);
+            //----------------------------------------------------------------------------------------
+
+            // GUI: About Window
+            //----------------------------------------------------------------------------------------
+            windowAboutState.windowBounds.x = (float)screenWidth/2 - windowAboutState.windowBounds.width/2;
+            windowAboutState.windowBounds.y = (float)screenHeight/2 - windowAboutState.windowBounds.height/2;
+            GuiWindowAbout(&windowAboutState);
+            //----------------------------------------------------------------------------------------
+
+            // GUI: Issue Report Window
+            //----------------------------------------------------------------------------------------
+            if (showIssueReportWindow)
+            {
+                Rectangle messageBox = { (float)screenWidth/2 - 300/2, (float)screenHeight/2 - 190/2 - 20, 300, 190 };
+                int result = GuiMessageBox(messageBox, "#220#Report Issue",
+                    "Do you want to report any issue or\nfeature request for this program?\n\ngithub.com/raysan5/raylib-project-creator", "#186#Report on GitHub");
+
+                if (result == 1)    // Report issue pressed
+                {
+                    OpenURL("https://github.com/raysan5/raylib-project-creator/issues");
+                    showIssueReportWindow = false;
+                }
+                else if (result == 0) showIssueReportWindow = false;
+            }
+            //----------------------------------------------------------------------------------------
+
+            // GUI: Export Window
+            //----------------------------------------------------------------------------------------
+            if (showExportWindow)
+            {
+                Rectangle messageBox = { (float)screenWidth/2 - 248/2, (float)screenHeight/2 - 200/2, 248, 112 };
+                int result = GuiMessageBox(messageBox, "#7#Export Icon File", " ", "#7#Export Icon");
+
+                //GuiLabel((Rectangle){ messageBox.x + 12, messageBox.y + 12 + 24, 106, 24 }, "Icon Format:");
+
+                // NOTE: If current platform is macOS, we support .icns file export
+                //GuiComboBox((Rectangle){ messageBox.x + 12 + 88, messageBox.y + 12 + 24, 136, 24 }, (mainToolbarState.platformActive == 1)? "Icon (.ico);Images (.png);Icns (.icns)" : "Icon (.ico);Images (.png)", &exportFormatActive);
+
+                // WARNING: exportTextChunkChecked is used as a global variable required by SaveICO() and SaveICNS() functions
+                //GuiCheckBox((Rectangle){ messageBox.x + 20, messageBox.y + 48 + 24, 16, 16 }, "Export text poem with icon", &exportTextChunkChecked);
+
+                if (result == 1)    // Export button pressed
+                {
+                    showExportWindow = false;
+                    showExportFileDialog = true;
+                }
+                else if (result == 0) showExportWindow = false;
+            }
+            //----------------------------------------------------------------------------------
+
+            // GUI: Load File Dialog (and loading logic)
+            //----------------------------------------------------------------------------------------
+            if (showLoadFileDialog)
+            {
+#if defined(CUSTOM_MODAL_DIALOGS)
+                int result = GuiFileDialog(DIALOG_MESSAGE, "Load project file", inFileName, "Ok", "Just drag and drop your file!");
+#else
+                int result = GuiFileDialog(DIALOG_OPEN_FILE, "Load project file...", inFileName, "*.rpc", "raylib project creator Files");
+#endif
+                if (result == 1)
+                {
+                    // Load project file
+                }
+
+                if (result >= 0) showLoadFileDialog = false;
+            }
+            //----------------------------------------------------------------------------------------
+
 
             // GUI: Exit Window
             //----------------------------------------------------------------------------------------
@@ -702,7 +912,7 @@ int main(int argc, char *argv[])
 #endif
                 if (result == 1)
                 {
-                    if (DirectoryExists(inFileName)) strcpy(config->project.resourcePath, inFileName);
+                    if (DirectoryExists(inFileName)) strcpy(config->project.resBasePath, inFileName);
                     else
                     {
                         infoMessage = "Provided resource path does not exist!";
@@ -788,6 +998,7 @@ int main(int argc, char *argv[])
             {
                 GuiPanel((Rectangle){ -10, screenHeight/2 - 100, screenWidth + 20, 200 }, NULL);
 
+                int textSpacing = GuiGetStyle(DEFAULT, TEXT_SPACING);
                 GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize*3);
                 GuiSetStyle(DEFAULT, TEXT_SPACING, 3);
                 GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
@@ -808,7 +1019,7 @@ int main(int argc, char *argv[])
 
                 GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
                 GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize);
-                GuiSetStyle(DEFAULT, TEXT_SPACING, 1);
+                GuiSetStyle(DEFAULT, TEXT_SPACING, textSpacing);
 
                 if (!showExportProjectProgress)
                 {
@@ -884,10 +1095,10 @@ static void ShowCommandLineInfo(void)
 {
     printf("\n//////////////////////////////////////////////////////////////////////////////////\n");
     printf("//                                                                              //\n");
-    printf("// raylib project creator v1.0                                                  //\n");
+    printf("// %s v%s - %s     //\n", TOOL_NAME, TOOL_VERSION, TOOL_DESCRIPTION);
     printf("// powered by raylib v%s and raygui v%s                               //\n", RAYLIB_VERSION, RAYGUI_VERSION);
     printf("//                                                                              //\n");
-    printf("// Copyright (c) 2025 Ramon Santamaria (@raysan5)                               //\n");
+    printf("// Copyright (c) 2024-2025 Ramon Santamaria (@raysan5)                          //\n");
     printf("//                                                                              //\n");
     printf("//////////////////////////////////////////////////////////////////////////////////\n\n");
 
