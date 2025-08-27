@@ -146,14 +146,14 @@ typedef struct ProjectConfig {
         char includePath[256];      // Project additional include path
         char libPath[256];          // Project additional library path
         char buildPath[256];        // Project build path (for VS2022 defaults to 'build' directory)
-    } project;
+    } Project;
     struct {
         int flags;                  // Build systems required: Script, Makefile, VSCode, VS2022
         char raylibSrcPath[256];    // raylib source path (validated)
         char compilerPath[256];     // GCC compiler path (w64devkit)
         char emsdkPath[256];        // Emscripten SDK path (WebAssembly)
         char outputPath[256];       // Output path
-    } building;
+    } Building;
 } ProjectConfig;
 
 // Packed file entry
@@ -261,17 +261,17 @@ int main(int argc, char *argv[])
             {
                 ProjectConfig *config = (ProjectConfig *)RL_CALLOC(1, sizeof(ProjectConfig));
 
-                config->project.type = 2;  // Custom files
-                strcpy(config->project.name, GetFileNameWithoutExt(argv[1]));
-                strcpy(config->project.product, GetFileNameWithoutExt(argv[1]));
-                strcpy(config->project.description, "My cool project");
-                strcpy(config->project.developer, "raylibtech");
-                strcpy(config->project.developerWeb, "www.raylibtech.com");
-                strcpy(config->project.srcFilePaths[0], argv[1]);
-                config->project.srcFileCount = 1;
-                strcpy(config->building.compilerPath, "C:\\raylib\\w64devkit\\bin");
-                strcpy(config->building.raylibSrcPath, "C:\\raylib\\raylib\\src");
-                strcpy(config->building.outputPath, GetDirectoryPath(argv[1]));
+                config->Project.type = 2;  // Custom files
+                strcpy(config->Project.name, GetFileNameWithoutExt(argv[1]));
+                strcpy(config->Project.product, GetFileNameWithoutExt(argv[1]));
+                strcpy(config->Project.description, "My cool project");
+                strcpy(config->Project.developer, "raylibtech");
+                strcpy(config->Project.developerWeb, "www.raylibtech.com");
+                strcpy(config->Project.srcFilePaths[0], argv[1]);
+                config->Project.srcFileCount = 1;
+                strcpy(config->Building.compilerPath, "C:\\raylib\\w64devkit\\bin");
+                strcpy(config->Building.raylibSrcPath, "C:\\raylib\\raylib\\src");
+                strcpy(config->Building.outputPath, GetDirectoryPath(argv[1]));
 
                 SetupProject(config);
 
@@ -286,8 +286,8 @@ int main(int argc, char *argv[])
             /*
             for (int i = 1; i < argc; i++)
             {
-                strcpy(config->project.srcFilePaths[config->project.srcFileCount], argv[i]);
-                config->project.srcFileCount++;
+                strcpy(config->Project.srcFilePaths[config->Project.srcFileCount], argv[i]);
+                config->Project.srcFileCount++;
             }
             */
             ProcessCommandLine(argc, argv);
@@ -332,17 +332,17 @@ int main(int argc, char *argv[])
 
     // Initialize project config default
     ProjectConfig *config = (ProjectConfig *)RL_CALLOC(1, sizeof(ProjectConfig));
-    config->project.type = 2;  // Custom files
-    strcpy(config->project.name, "cool_project");
-    strcpy(config->project.product, "Cool Project");
-    strcpy(config->project.description, "my new cool project");
-    strcpy(config->project.developer, "raylib technologies");
-    strcpy(config->project.developerWeb, "www.raylibtech.com");
-    //strcpy(config->project.srcFilePaths[0], argv[1]);
-    //config->project.srcFileCount = 1;
-    strcpy(config->building.compilerPath, "C:\\raylib\\w64devkit\\bin");
-    strcpy(config->building.raylibSrcPath, "C:\\raylib\\raylib\\src");
-    strcpy(config->building.outputPath, ".");
+    config->Project.type = 2;  // Custom files
+    strcpy(config->Project.name, "cool_project");
+    strcpy(config->Project.product, "Cool Project");
+    strcpy(config->Project.description, "my new cool project");
+    strcpy(config->Project.developer, "raylib technologies");
+    strcpy(config->Project.developerWeb, "www.raylibtech.com");
+    //strcpy(config->Project.srcFilePaths[0], argv[1]);
+    //config->Project.srcFileCount = 1;
+    strcpy(config->Building.compilerPath, "C:\\raylib\\w64devkit\\bin");
+    strcpy(config->Building.raylibSrcPath, "C:\\raylib\\raylib\\src");
+    strcpy(config->Building.outputPath, ".");
 
     // Source file names (without path) are used for display on source textbox
     srcFileNameList = (char **)RL_CALLOC(256, sizeof(char *)); // Max number of input source files supported
@@ -354,15 +354,15 @@ int main(int argc, char *argv[])
     Vector2 anchorBuilding = { 8, 298 };
 
     bool projectNameEditMode = false;
-    strcpy(config->project.name, "cool_project");
+    strcpy(config->Project.name, "cool_project");
     bool productNameEditMode = false;
-    strcpy(config->project.product, "Cool Project");
+    strcpy(config->Project.product, "Cool Project");
     bool projectDeveloperEditMode = false;
-    strcpy(config->project.developer, "raylibtech");
+    strcpy(config->Project.developer, "raylibtech");
     bool projectDeveloperWebEditMode = false;
-    strcpy(config->project.developerWeb, "www.raylibtech.com");
+    strcpy(config->Project.developerWeb, "www.raylibtech.com");
     bool projectDescriptionEditMode = false;
-    strcpy(config->project.description, "my cool new project");
+    strcpy(config->Project.description, "my cool new project");
     bool projectSourceFilePathEditMode = false;
     bool projectResourcePathEditMode = false;
     bool buildingRaylibPathEditMode = false;
@@ -418,7 +418,7 @@ int main(int argc, char *argv[])
     // Check if an icon input file has been provided on command line
     if (inFileName[0] != '\0')
     {
-        // TODO: Check .rpc input file
+        // TODO: Load .rpc input file
     }
 
     infoTitle = "WELCOME! LET'S CREATE A PROJECT!";
@@ -449,9 +449,9 @@ int main(int argc, char *argv[])
                 if (IsFileExtension(droppedFiles.paths[i], ".c;.h"))
                 {
                     // Add files to source list
-                    strcpy(config->project.srcFilePaths[config->project.srcFileCount], droppedFiles.paths[i]);
-                    strcpy(srcFileNameList[config->project.srcFileCount], GetFileName(droppedFiles.paths[i]));
-                    config->project.srcFileCount++;
+                    strcpy(config->Project.srcFilePaths[config->Project.srcFileCount], droppedFiles.paths[i]);
+                    strcpy(srcFileNameList[config->Project.srcFileCount], GetFileName(droppedFiles.paths[i]));
+                    config->Project.srcFileCount++;
                 }
             }
 
@@ -481,7 +481,7 @@ int main(int argc, char *argv[])
         // Show dialog: export project
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S))
         {
-            strcpy(outFileName, TextToLower(config->project.name));
+            strcpy(outFileName, TextToLower(config->Project.name));
             showExportProjectProgress = true;
         }
 
@@ -524,7 +524,7 @@ int main(int argc, char *argv[])
         else if (mainToolbarState.btnSaveFilePressed)
         {
             memset(outFileName, 0, 512);
-            strcpy(outFileName, TextFormat("%s.rpc", config->project.name));
+            strcpy(outFileName, TextFormat("%s.rpc", config->Project.name));
             showExportFileDialog = true;
         }
 
@@ -607,57 +607,57 @@ int main(int argc, char *argv[])
 
             // GUI: Main Window
             //----------------------------------------------------------------------------------
-            int prevProjectType = config->project.type;
+            int prevProjectType = config->Project.type;
             GuiLabel((Rectangle){ 16, 52, 104, 32 }, "PROJECT TYPE:");
             //GuiSetTooltip("Choose from a default project template or custom source files");
-            GuiToggleGroup((Rectangle){ 120, 52, 223, 32 }, "Basic Sample;Screen Manager;Custom files", &config->project.type);
+            GuiToggleGroup((Rectangle){ 120, 52, 223, 32 }, "Basic Sample;Screen Manager;Custom files", &config->Project.type);
             GuiSetTooltip(NULL);
 
-            if (config->project.type != prevProjectType)
+            if (config->Project.type != prevProjectType)
             {
-                if (config->project.type == 0)
+                if (config->Project.type == 0)
                 {
-                    strcpy(srcFileNameList[0], TextFormat("%s.c", TextToLower(config->project.name)));
-                    config->project.srcFileCount = 1;
+                    strcpy(srcFileNameList[0], TextFormat("%s.c", TextToLower(config->Project.name)));
+                    config->Project.srcFileCount = 1;
                 }
-                else if (config->project.type == 1)
+                else if (config->Project.type == 1)
                 {
-                    strcpy(srcFileNameList[0], TextFormat("%s.c", TextToLower(config->project.name)));
+                    strcpy(srcFileNameList[0], TextFormat("%s.c", TextToLower(config->Project.name)));
                     strcpy(srcFileNameList[1], "screens.h");
                     strcpy(srcFileNameList[2], "screen_logo.c");
                     strcpy(srcFileNameList[3], "screen_title.c");
                     strcpy(srcFileNameList[4], "screen_options.c");
                     strcpy(srcFileNameList[5], "screen_gameplay.c");
                     strcpy(srcFileNameList[6], "screen_ending.c");
-                    config->project.srcFileCount = 7;
+                    config->Project.srcFileCount = 7;
                 }
-                else if (config->project.type == 2)
+                else if (config->Project.type == 2)
                 {
-                    config->project.srcFileCount = 0;
+                    config->Project.srcFileCount = 0;
                 }
             }
 
             GuiGroupBox((Rectangle){ anchorProject.x + 0, anchorProject.y + 0, 784, 172 }, "PROJECT SETTINGS");
             GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 24, 104, 24 }, "PROJECT NAME:");
             //GuiSetTooltip("Define project name, note that every project\nblablablaballsadlksad");
-            if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 24, 280, 24 }, config->project.name, 128, projectNameEditMode)) projectNameEditMode = !projectNameEditMode;
+            if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 24, 280, 24 }, config->Project.name, 128, projectNameEditMode)) projectNameEditMode = !projectNameEditMode;
             GuiLabel((Rectangle){ anchorProject.x + 408, anchorProject.y + 24, 80, 24 }, "PRODUCT NAME:");
-            if (GuiTextBox((Rectangle){ anchorProject.x + 496, anchorProject.y + 24, 280, 24 }, config->project.product, 128, productNameEditMode)) productNameEditMode = !productNameEditMode;
+            if (GuiTextBox((Rectangle){ anchorProject.x + 496, anchorProject.y + 24, 280, 24 }, config->Project.product, 128, productNameEditMode)) productNameEditMode = !productNameEditMode;
             GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 56, 104, 24 }, "DESCRIPTION:");
-            if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 56, 664, 24 }, config->project.description, 128, projectDescriptionEditMode)) projectDescriptionEditMode = !projectDescriptionEditMode;
+            if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 56, 664, 24 }, config->Project.description, 128, projectDescriptionEditMode)) projectDescriptionEditMode = !projectDescriptionEditMode;
             GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 88, 104, 24 }, "DEVELOPER:");
-            if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 88, 280, 24 }, config->project.developer, 128, projectDeveloperEditMode)) projectDeveloperEditMode = !projectDeveloperEditMode;
+            if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 88, 280, 24 }, config->Project.developer, 128, projectDeveloperEditMode)) projectDeveloperEditMode = !projectDeveloperEditMode;
             GuiLabel((Rectangle){ anchorProject.x + 408, anchorProject.y + 88, 80, 24 }, "DEV. WEBPAGE:");
-            if (GuiTextBox((Rectangle){ anchorProject.x + 496, anchorProject.y + 88, 280, 24 }, config->project.developerWeb, 128, projectDeveloperWebEditMode)) projectDeveloperWebEditMode = !projectDeveloperWebEditMode;
+            if (GuiTextBox((Rectangle){ anchorProject.x + 496, anchorProject.y + 88, 280, 24 }, config->Project.developerWeb, 128, projectDeveloperWebEditMode)) projectDeveloperWebEditMode = !projectDeveloperWebEditMode;
 
-            if (config->project.type != 2) GuiDisable();
+            if (config->Project.type != 2) GuiDisable();
             GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 128, 104, 24 }, "SOURCE FILES:");
             GuiSetStyle(TEXTBOX, TEXT_READONLY, 1);
-            GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 128, 536, 24 }, TextJoin(srcFileNameList, config->project.srcFileCount, ";"), 256, projectSourceFilePathEditMode);//) projectSourceFilePathEditMode = !projectSourceFilePathEditMode;
+            GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 128, 536, 24 }, TextJoin(srcFileNameList, config->Project.srcFileCount, ";"), 256, projectSourceFilePathEditMode);//) projectSourceFilePathEditMode = !projectSourceFilePathEditMode;
             GuiSetStyle(TEXTBOX, TEXT_READONLY, 0);
             if (GuiButton((Rectangle){ anchorProject.x + 656, anchorProject.y + 128, 120, 24 }, "Browse")) showLoadSourceFilesDialog = true;
             //GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 160, 104, 24 }, "RESOURCE PATH:");
-            //if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 160, 536, 24 }, config->project.resBasePath, 128, projectResourcePathEditMode)) projectResourcePathEditMode = !projectResourcePathEditMode;
+            //if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 160, 536, 24 }, config->Project.resBasePath, 128, projectResourcePathEditMode)) projectResourcePathEditMode = !projectResourcePathEditMode;
 #if defined(PLATFORM_WEB)
             //GuiDisable();
 #endif
@@ -666,7 +666,7 @@ int main(int argc, char *argv[])
 
             GuiGroupBox((Rectangle){ anchorBuilding.x + 0, anchorBuilding.y + 0, 784, 136 }, "BUILD SETTINGS");
             GuiLabel((Rectangle){ anchorBuilding.x + 8, anchorBuilding.y + 16, 104, 24 }, "raylib SRC PATH:");
-            if (GuiTextBox((Rectangle){ anchorBuilding.x + 112, anchorBuilding.y + 16, 536, 24 }, config->building.raylibSrcPath, 128, buildingRaylibPathEditMode)) buildingRaylibPathEditMode = !buildingRaylibPathEditMode;
+            if (GuiTextBox((Rectangle){ anchorBuilding.x + 112, anchorBuilding.y + 16, 536, 24 }, config->Building.raylibSrcPath, 128, buildingRaylibPathEditMode)) buildingRaylibPathEditMode = !buildingRaylibPathEditMode;
 #if defined(PLATFORM_WEB)
             GuiDisable();
 #endif
@@ -677,7 +677,7 @@ int main(int argc, char *argv[])
             GuiDisable();
 #endif
             GuiLabel((Rectangle){ anchorBuilding.x + 8, anchorBuilding.y + 48, 104, 24 }, "COMPILER PATH:");
-            if (GuiTextBox((Rectangle){ anchorBuilding.x + 112, anchorBuilding.y + 48, 536, 24 }, config->building.compilerPath, 128, buildingCompilerPathEditMode)) buildingCompilerPathEditMode = !buildingCompilerPathEditMode;
+            if (GuiTextBox((Rectangle){ anchorBuilding.x + 112, anchorBuilding.y + 48, 536, 24 }, config->Building.compilerPath, 128, buildingCompilerPathEditMode)) buildingCompilerPathEditMode = !buildingCompilerPathEditMode;
             GuiEnable();
 
 #if defined(PLATFORM_WEB)
@@ -699,11 +699,11 @@ int main(int argc, char *argv[])
             GuiDisable();
 #endif
             GuiLabel((Rectangle){ anchorBuilding.x + 8, anchorBuilding.y + 152, 104, 24 }, "OUTPUT PATH:");
-            if (GuiTextBox((Rectangle){ anchorBuilding.x + 112, anchorBuilding.y + 152, 536, 24 }, config->building.outputPath, 128, buildingOutputPathEditMode)) buildingOutputPathEditMode = !buildingOutputPathEditMode;
+            if (GuiTextBox((Rectangle){ anchorBuilding.x + 112, anchorBuilding.y + 152, 536, 24 }, config->Building.outputPath, 128, buildingOutputPathEditMode)) buildingOutputPathEditMode = !buildingOutputPathEditMode;
             if (GuiButton((Rectangle){ anchorBuilding.x + 656, anchorBuilding.y + 152, 120, 24 }, "Browse")) showLoadOutputPathDialog = true;
             GuiEnable();
 
-            if (config->project.srcFileCount == 0) GuiDisable();
+            if (config->Project.srcFileCount == 0) GuiDisable();
             if (GuiButton((Rectangle){ 8, 450, 784, 40 }, "GENERATE PROJECT STRUCTURE"))
             {
                 SetupProject(config);
@@ -885,14 +885,14 @@ int main(int argc, char *argv[])
 
                     for (int i = 0; i < multiFileCount; i++)
                     {
-                        if (IsFileExtension(multiFileList[i], ".c;.h") && (config->project.srcFileCount < 256))
+                        if (IsFileExtension(multiFileList[i], ".c;.h") && (config->Project.srcFileCount < 256))
                         {
                             // Add files to source list
-                            strcpy(config->project.srcFilePaths[config->project.srcFileCount], multiFileList[i]);
-                            strcpy(srcFileNameList[config->project.srcFileCount], GetFileName(multiFileList[i]));
-                            config->project.srcFileCount++;
+                            strcpy(config->Project.srcFilePaths[config->Project.srcFileCount], multiFileList[i]);
+                            strcpy(srcFileNameList[config->Project.srcFileCount], GetFileName(multiFileList[i]));
+                            config->Project.srcFileCount++;
 
-                            if (config->project.srcFileCount >= 256) break;
+                            if (config->Project.srcFileCount >= 256) break;
                         }
                     }
                 }
@@ -912,7 +912,7 @@ int main(int argc, char *argv[])
 #endif
                 if (result == 1)
                 {
-                    if (DirectoryExists(inFileName)) strcpy(config->project.resBasePath, inFileName);
+                    if (DirectoryExists(inFileName)) strcpy(config->Project.resBasePath, inFileName);
                     else
                     {
                         infoMessage = "Provided resource path does not exist!";
@@ -936,12 +936,12 @@ int main(int argc, char *argv[])
                 if (result == 1)
                 {
                     // Check raylib path
-                    if (FileExists(TextFormat("%s/raylib.h", inFileName))) strcpy(config->building.raylibSrcPath, inFileName);
+                    if (FileExists(TextFormat("%s/raylib.h", inFileName))) strcpy(config->Building.raylibSrcPath, inFileName);
                     else
                     {
                         infoMessage = "Provided raylib source path does not included raylib.h!";
                         showInfoMessagePanel = true;
-                        strcpy(config->building.raylibSrcPath, inFileName);
+                        strcpy(config->Building.raylibSrcPath, inFileName);
                     }
                 }
 
@@ -961,12 +961,12 @@ int main(int argc, char *argv[])
                 if (result == 1)
                 {
                     // Check compiler path
-                    if (FileExists(TextFormat("%s/gcc.exe", inFileName))) strcpy(config->building.compilerPath, inFileName);
+                    if (FileExists(TextFormat("%s/gcc.exe", inFileName))) strcpy(config->Building.compilerPath, inFileName);
                     else
                     {
                         infoMessage = "Provided compiler path does not included gcc.exe!";
                         showInfoMessagePanel = true;
-                        strcpy(config->building.compilerPath, inFileName);
+                        strcpy(config->Building.compilerPath, inFileName);
                     }
                 }
 
@@ -985,7 +985,7 @@ int main(int argc, char *argv[])
 #endif
                 if (result == 1)
                 {
-                    strcpy(config->building.outputPath, inFileName);
+                    strcpy(config->Building.outputPath, inFileName);
                 }
 
                 if (result >= 0) showLoadOutputPathDialog = false;
@@ -1024,7 +1024,7 @@ int main(int argc, char *argv[])
                 if (!showExportProjectProgress)
                 {
                 #if defined(PLATFORM_WEB)
-                    strcpy(outFileName, TextFormat("%s/%s", config->building.outputPath, TextToLower(config->project.name)));
+                    strcpy(outFileName, TextFormat("%s/%s", config->Building.outputPath, TextToLower(config->Project.name)));
 
                     // Package all created files (in browser MEMFS) into a .zip to be exported
                     mz_zip_archive zip = { 0 };
@@ -1148,7 +1148,7 @@ static void ProcessCommandLine(int argc, char *argv[])
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
-                strcpy(config->project.name, argv[i + 1]);
+                strcpy(config->Project.name, argv[i + 1]);
             }
             else LOG("WARNING: Name parameter provided not valid\n");
         }
@@ -1165,8 +1165,8 @@ static void ProcessCommandLine(int argc, char *argv[])
                 {
                     if (IsFileExtension(files[i], ".h;.c"))
                     {
-                        strcpy(config->project.srcFilePaths[config->project.srcFileCount], files[i]);
-                        config->project.srcFileCount++;
+                        strcpy(config->Project.srcFilePaths[config->Project.srcFileCount], files[i]);
+                        config->Project.srcFileCount++;
                     }
                     else LOG("WARNING: [%s] File not recognized as source file (Use: .c,.h)\n", files[i]);
                 }
@@ -1177,7 +1177,7 @@ static void ProcessCommandLine(int argc, char *argv[])
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
-                strcpy(config->project.product, argv[i + 1]);
+                strcpy(config->Project.product, argv[i + 1]);
             }
             else LOG("WARNING: Product name parameters provided not valid\n");
         }
@@ -1185,7 +1185,7 @@ static void ProcessCommandLine(int argc, char *argv[])
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
-                strcpy(config->project.description, argv[i + 1]);
+                strcpy(config->Project.description, argv[i + 1]);
             }
             else LOG("WARNING: Description parameters provided not valid\n");
         }
@@ -1193,7 +1193,7 @@ static void ProcessCommandLine(int argc, char *argv[])
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
-                strcpy(config->project.developer, argv[i + 1]);
+                strcpy(config->Project.developer, argv[i + 1]);
             }
             else LOG("WARNING: Developer parameters provided not valid\n");
         }
@@ -1201,7 +1201,7 @@ static void ProcessCommandLine(int argc, char *argv[])
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
-                strcpy(config->project.developerWeb, argv[i + 1]);
+                strcpy(config->Project.developerWeb, argv[i + 1]);
             }
             else LOG("WARNING: Developer web parameters provided not valid\n");
         }
@@ -1209,7 +1209,7 @@ static void ProcessCommandLine(int argc, char *argv[])
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
-                strcpy(config->building.raylibSrcPath, argv[i + 1]);
+                strcpy(config->Building.raylibSrcPath, argv[i + 1]);
             }
             else LOG("WARNING: raylib source path parameters provided not valid\n");
         }
@@ -1217,7 +1217,7 @@ static void ProcessCommandLine(int argc, char *argv[])
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
-                strcpy(config->building.compilerPath, argv[i + 1]);
+                strcpy(config->Building.compilerPath, argv[i + 1]);
             }
             else LOG("WARNING: Compiler path parameters provided not valid\n");
         }
@@ -1225,7 +1225,7 @@ static void ProcessCommandLine(int argc, char *argv[])
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
-                strcpy(config->building.outputPath, argv[i + 1]);
+                strcpy(config->Building.outputPath, argv[i + 1]);
             }
             else LOG("WARNING: Output path provided not valid\n");
         }
@@ -1271,70 +1271,70 @@ static void SetupProject(ProjectConfig *config)
 
     // Remove spaces from directories/files names
     char outProjectName[256] = { 0 };
-    TextCopy(outProjectName, TextToLower(config->project.name));//TextRemoveSpaces(TextToLower(config->project.name)));
+    TextCopy(outProjectName, TextToLower(config->Project.name));//TextRemoveSpaces(TextToLower(config->Project.name)));
 
-    LOG("INFO: Output path: %s\n", TextFormat("%s/%s", config->building.outputPath, outProjectName));
+    LOG("INFO: Output path: %s\n", TextFormat("%s/%s", config->Building.outputPath, outProjectName));
 
     // Copy project source file(s) provided
     //--------------------------------------------------------------------------
     // Create required output directories
-    MakeDirectory(TextFormat("%s/%s/src/external", config->building.outputPath, outProjectName));
-    if (config->project.type == 0)  // Use base sample (one source file)
+    MakeDirectory(TextFormat("%s/%s/src/external", config->Building.outputPath, outProjectName));
+    if (config->Project.type == 0)  // Use base sample (one source file)
     {
         fileText = LoadFileText(TextFormat("%s/src/project_name.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/%s.c", config->building.outputPath, outProjectName, TextToLower(config->project.name)), fileText);
+        SaveFileText(TextFormat("%s/%s/src/%s.c", config->Building.outputPath, outProjectName, TextToLower(config->Project.name)), fileText);
         UnloadFileText(fileText);
-        LOG("INFO: Copied src/%s.c successfully\n", TextToLower(config->project.name));
+        LOG("INFO: Copied src/%s.c successfully\n", TextToLower(config->Project.name));
     }
-    else if (config->project.type == 1) // Use advance sample (screen manager, multiple source files)
+    else if (config->Project.type == 1) // Use advance sample (screen manager, multiple source files)
     {
         fileText = LoadFileText(TextFormat("%s/src/raylib_advanced.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/%s.c", config->building.outputPath, outProjectName, TextToLower(config->project.name)), fileText);
+        SaveFileText(TextFormat("%s/%s/src/%s.c", config->Building.outputPath, outProjectName, TextToLower(config->Project.name)), fileText);
         UnloadFileText(fileText);
 
         fileText = LoadFileText(TextFormat("%s/src/screens.h", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screens.h", config->building.outputPath, outProjectName), fileText);
+        SaveFileText(TextFormat("%s/%s/src/screens.h", config->Building.outputPath, outProjectName), fileText);
         UnloadFileText(fileText);
         fileText = LoadFileText(TextFormat("%s/src/screen_logo.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screen_logo.c", config->building.outputPath, outProjectName), fileText);
+        SaveFileText(TextFormat("%s/%s/src/screen_logo.c", config->Building.outputPath, outProjectName), fileText);
         UnloadFileText(fileText);
         fileText = LoadFileText(TextFormat("%s/src/screen_title.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screen_title.c", config->building.outputPath, outProjectName), fileText);
+        SaveFileText(TextFormat("%s/%s/src/screen_title.c", config->Building.outputPath, outProjectName), fileText);
         UnloadFileText(fileText);
         fileText = LoadFileText(TextFormat("%s/src/screen_options.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screen_options.c", config->building.outputPath, outProjectName), fileText);
+        SaveFileText(TextFormat("%s/%s/src/screen_options.c", config->Building.outputPath, outProjectName), fileText);
         UnloadFileText(fileText);
         fileText = LoadFileText(TextFormat("%s/src/screen_gameplay.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screen_gameplay.c", config->building.outputPath, outProjectName), fileText);
+        SaveFileText(TextFormat("%s/%s/src/screen_gameplay.c", config->Building.outputPath, outProjectName), fileText);
         UnloadFileText(fileText);
         fileText = LoadFileText(TextFormat("%s/src/screen_ending.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screen_ending.c", config->building.outputPath, outProjectName), fileText);
+        SaveFileText(TextFormat("%s/%s/src/screen_ending.c", config->Building.outputPath, outProjectName), fileText);
         UnloadFileText(fileText);
 
-        LOG("INFO: Copied advance project with src/%s.c successfully\n", TextToLower(config->project.name));
+        LOG("INFO: Copied advance project with src/%s.c successfully\n", TextToLower(config->Project.name));
     }
-    else if (config->project.type == 2) // Use provided source files
+    else if (config->Project.type == 2) // Use provided source files
     {
-        for (int i = 0; i < config->project.srcFileCount; i++)
+        for (int i = 0; i < config->Project.srcFileCount; i++)
         {
-            fileText = LoadFileText(config->project.srcFilePaths[i]);
-            SaveFileText(TextFormat("%s/%s/src/%s", config->building.outputPath, outProjectName, GetFileName(config->project.srcFilePaths[i])), fileText);
+            fileText = LoadFileText(config->Project.srcFilePaths[i]);
+            SaveFileText(TextFormat("%s/%s/src/%s", config->Building.outputPath, outProjectName, GetFileName(config->Project.srcFilePaths[i])), fileText);
             UnloadFileText(fileText);
-            LOG("INFO: Copied src/%s successfully\n", GetFileName(config->project.srcFilePaths[i]));
+            LOG("INFO: Copied src/%s successfully\n", GetFileName(config->Project.srcFilePaths[i]));
         }
     }
     //--------------------------------------------------------------------------
 
     // Project build system: Script
     //-------------------------------------------------------------------------------------
-    MakeDirectory(TextFormat("%s/%s/projects/scripts", config->building.outputPath, outProjectName));
+    MakeDirectory(TextFormat("%s/%s/projects/scripts", config->Building.outputPath, outProjectName));
     // Update src/build.bat (Windows only)
     // TODO: Use CMD/Shell calls directly, current script uses Makefile
     fileText = LoadFileText(TextFormat("%s/projects/scripts/build.bat", templatePath));
-    fileTextUpdated[0] = TextReplace(fileText, "project_name", TextToLower(config->project.name));
-    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "ProjectDescription", config->project.description);
-    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "C:\\raylib\\w64devkit\\bin", config->building.compilerPath);
-    SaveFileText(TextFormat("%s/%s/projects/scripts/build.bat", config->building.outputPath, outProjectName), fileTextUpdated[2]);
+    fileTextUpdated[0] = TextReplace(fileText, "project_name", TextToLower(config->Project.name));
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "ProjectDescription", config->Project.description);
+    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "C:\\raylib\\w64devkit\\bin", config->Building.compilerPath);
+    SaveFileText(TextFormat("%s/%s/projects/scripts/build.bat", config->Building.outputPath, outProjectName), fileTextUpdated[2]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
 
@@ -1344,27 +1344,26 @@ static void SetupProject(ProjectConfig *config)
     // Project build system: Makefile
     //-------------------------------------------------------------------------------------
     // Update src/Makefile
-    // TODO: Update emscripten path for Web building
     fileText = LoadFileText(TextFormat("%s/src/Makefile", templatePath));
-    if (config->project.type == 0) // Using basic template (one file)
+    if (config->Project.type == 0) // Using basic template (one file)
     {
-        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", TextToLower(config->project.name)));
+        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", TextToLower(config->Project.name)));
     }
-    else if (config->project.type == 1) // Using advance template (multiple files)
+    else if (config->Project.type == 1) // Using advance template (multiple files)
     {
-        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c screen_logo.c screen_title.c screen_options.c screen_gameplay.c screen_ending.c", TextToLower(config->project.name)));
+        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c screen_logo.c screen_title.c screen_options.c screen_gameplay.c screen_ending.c", TextToLower(config->Project.name)));
     }
-    else if (config->project.type == 2) // Using custom provided source files
+    else if (config->Project.type == 2) // Using custom provided source files
     {
         char **srcFileNames = (char **)RL_CALLOC(256, sizeof(char *)); // Max number of input source files supported
         for (int i = 0; i < 256; i++) srcFileNames[i] = (char *)RL_CALLOC(256, sizeof(char));
 
         int codeFileCount = 0;
-        for (int j = 0; j < config->project.srcFileCount; j++)
+        for (int j = 0; j < config->Project.srcFileCount; j++)
         {
-            if (IsFileExtension(config->project.srcFilePaths[j], ".c"))
+            if (IsFileExtension(config->Project.srcFilePaths[j], ".c"))
             {
-                strcpy(srcFileNames[codeFileCount], GetFileName(config->project.srcFilePaths[j]));
+                strcpy(srcFileNames[codeFileCount], GetFileName(config->Project.srcFilePaths[j]));
                 codeFileCount++;
             }
         }
@@ -1374,10 +1373,10 @@ static void SetupProject(ProjectConfig *config)
         for (int i = 0; i < 256; i++) RL_FREE(srcFileNames[i]);
         RL_FREE(srcFileNames);
     }
-    fileTextUpdated[1] = TextReplace(fileText, "project_name", TextToLower(config->project.name));
-    fileTextUpdated[2] = TextReplace(fileTextUpdated[0], "C:\\raylib\\w64devkit\\bin", config->building.compilerPath);
-    fileTextUpdated[3] = TextReplace(fileTextUpdated[1], "C:/raylib/raylib/src", config->building.raylibSrcPath);
-    SaveFileText(TextFormat("%s/%s/src/Makefile", config->building.outputPath, outProjectName), fileTextUpdated[3]);
+    fileTextUpdated[1] = TextReplace(fileText, "project_name", TextToLower(config->Project.name));
+    fileTextUpdated[2] = TextReplace(fileTextUpdated[0], "C:\\raylib\\w64devkit\\bin", config->Building.compilerPath);
+    fileTextUpdated[3] = TextReplace(fileTextUpdated[1], "C:/raylib/raylib/src", config->Building.raylibSrcPath);
+    SaveFileText(TextFormat("%s/%s/src/Makefile", config->Building.outputPath, outProjectName), fileTextUpdated[3]);
 
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
@@ -1388,30 +1387,30 @@ static void SetupProject(ProjectConfig *config)
     // Project build system: VS2022
     //-------------------------------------------------------------------------------------
     // Create required output directories
-    MakeDirectory(TextFormat("%s/%s/projects/VS2022/raylib", config->building.outputPath, outProjectName));
-    MakeDirectory(TextFormat("%s/%s/projects/VS2022/%s", config->building.outputPath, outProjectName, outProjectName));
+    MakeDirectory(TextFormat("%s/%s/projects/VS2022/raylib", config->Building.outputPath, outProjectName));
+    MakeDirectory(TextFormat("%s/%s/projects/VS2022/%s", config->Building.outputPath, outProjectName, outProjectName));
     // Copy projects/VS2022/raylib/raylib.vcxproj
     fileText = LoadFileText(TextFormat("%s/projects/VS2022/raylib/raylib.vcxproj", templatePath));
-    fileTextUpdated[0] = TextReplace(fileText, "C:\\raylib\\raylib\\src", config->building.raylibSrcPath);
-    SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/raylib.vcxproj", config->building.outputPath, outProjectName, outProjectName), fileTextUpdated[0]);
+    fileTextUpdated[0] = TextReplace(fileText, "C:\\raylib\\raylib\\src", config->Building.raylibSrcPath);
+    SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/raylib.vcxproj", config->Building.outputPath, outProjectName, outProjectName), fileTextUpdated[0]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
 
     // Copy projects/VS2022/raylib/Directory.Build.props
     //fileText = LoadFileText(TextFormat("%s/projects/VS2022/raylib/Directory.Build.props", templatePath));
-    //SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/Directory.Build.props", config->building.outputPath, outProjectName, outProjectName), fileText);
+    //SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/Directory.Build.props", config->Building.outputPath, outProjectName, outProjectName), fileText);
     //UnloadFileText(fileText);
 
     // Update projects/VS2022/project_name/config->project_name.vcproj
     fileText = LoadFileText(TextFormat("%s/projects/VS2022/project_name/project_name.vcxproj", templatePath));
-    if (config->project.type == 0) // Using basic template (one file)
+    if (config->Project.type == 0) // Using basic template (one file)
     {
-        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", TextToLower(config->project.name)));
+        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", TextToLower(config->Project.name)));
         fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", "project_name"); // WARNING: Only used to force a second buffer usage!
     }
-    else if (config->project.type == 1) // Using advance template (multiple files)
+    else if (config->Project.type == 1) // Using advance template (multiple files)
     {
-        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", TextToLower(config->project.name)));
+        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", TextToLower(config->Project.name)));
         fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "<!--Additional Compile Items-->",
         "<ClCompile Include=\"..\\..\\..\\src\\screen_logo.c\" />\n    \
          <ClCompile Include=\"..\\..\\..\\src\\screen_title.c\" />\n    \
@@ -1419,17 +1418,17 @@ static void SetupProject(ProjectConfig *config)
          <ClCompile Include=\"..\\..\\..\\src\\screen_gameplay.c\" />\n    \
          <ClCompile Include=\"..\\..\\..\\src\\screen_ending.c\" />\n");
     }
-    else if (config->project.type == 2) // Using custom provided source files
+    else if (config->Project.type == 2) // Using custom provided source files
     {
         char **srcFileNames = (char **)RL_CALLOC(256, sizeof(char *)); // Max number of input source files supported
         for (int i = 0; i < 256; i++) srcFileNames[i] = (char *)RL_CALLOC(256, sizeof(char));
 
         int codeFileCount = 0;
-        for (int j = 0; j < config->project.srcFileCount; j++)
+        for (int j = 0; j < config->Project.srcFileCount; j++)
         {
-            if (IsFileExtension(config->project.srcFilePaths[j], ".c"))
+            if (IsFileExtension(config->Project.srcFilePaths[j], ".c"))
             {
-                strcpy(srcFileNames[codeFileCount], GetFileName(config->project.srcFilePaths[j]));
+                strcpy(srcFileNames[codeFileCount], GetFileName(config->Project.srcFilePaths[j]));
                 codeFileCount++;
             }
         }
@@ -1448,15 +1447,15 @@ static void SetupProject(ProjectConfig *config)
         RL_FREE(srcFileNames);
     }
     fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "project_name", outProjectName);
-    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "C:\\raylib\\raylib\\src", config->building.raylibSrcPath);
-    SaveFileText(TextFormat("%s/%s/projects/VS2022/%s/%s.vcxproj", config->building.outputPath, outProjectName, outProjectName, outProjectName), fileTextUpdated[3]);
+    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "C:\\raylib\\raylib\\src", config->Building.raylibSrcPath);
+    SaveFileText(TextFormat("%s/%s/projects/VS2022/%s/%s.vcxproj", config->Building.outputPath, outProjectName, outProjectName, outProjectName), fileTextUpdated[3]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
 
     // Update projects/VS2022/project_name.sln
     fileText = LoadFileText(TextFormat("%s/projects/VS2022/project_name.sln", templatePath));
     fileTextUpdated[0] = TextReplace(fileText, "project_name", outProjectName);
-    SaveFileText(TextFormat("%s/%s/projects/VS2022/%s.sln", config->building.outputPath, outProjectName, outProjectName), fileTextUpdated[0]);
+    SaveFileText(TextFormat("%s/%s/projects/VS2022/%s.sln", config->Building.outputPath, outProjectName, outProjectName), fileTextUpdated[0]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
 
@@ -1466,20 +1465,20 @@ static void SetupProject(ProjectConfig *config)
     // Project build system: VSCode
     //-------------------------------------------------------------------------------------
     // Create required output directories
-    MakeDirectory(TextFormat("%s/%s/projects/VSCode/.vscode", config->building.outputPath, outProjectName));
+    MakeDirectory(TextFormat("%s/%s/projects/VSCode/.vscode", config->Building.outputPath, outProjectName));
     // Update projects/VSCode/.vscode/launch.json
     fileText = LoadFileText(TextFormat("%s/projects/VSCode/.vscode/launch.json", templatePath));
-    fileTextUpdated[0] = TextReplace(fileText, "project_name", TextToLower(config->project.name));
-    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "C:/raylib/w64devkit/bin", config->building.compilerPath);
-    SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/launch.json", config->building.outputPath, outProjectName), fileTextUpdated[1]);
+    fileTextUpdated[0] = TextReplace(fileText, "project_name", TextToLower(config->Project.name));
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "C:/raylib/w64devkit/bin", config->Building.compilerPath);
+    SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/launch.json", config->Building.outputPath, outProjectName), fileTextUpdated[1]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
 
     // Update projects/VSCode/.vscode/c_cpp_properties.json
     fileText = LoadFileText(TextFormat("%s/projects/VSCode/.vscode/c_cpp_properties.json", templatePath));
-    fileTextUpdated[0] = TextReplace(fileText, "C:/raylib/raylib/src", config->building.raylibSrcPath);
-    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "C:/raylib/w64devkit/bin", config->building.compilerPath);
-    SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/c_cpp_properties.json", config->building.outputPath, outProjectName), fileTextUpdated[1]);
+    fileTextUpdated[0] = TextReplace(fileText, "C:/raylib/raylib/src", config->Building.raylibSrcPath);
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "C:/raylib/w64devkit/bin", config->Building.compilerPath);
+    SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/c_cpp_properties.json", config->Building.outputPath, outProjectName), fileTextUpdated[1]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
 
@@ -1487,25 +1486,25 @@ static void SetupProject(ProjectConfig *config)
     fileText = LoadFileText(TextFormat("%s/projects/VSCode/.vscode/tasks.json", templatePath));
 
     // Update source code files
-    if (config->project.type == 0) // Using basic template (one file)
+    if (config->Project.type == 0) // Using basic template (one file)
     {
-        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", TextToLower(config->project.name)));
+        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", TextToLower(config->Project.name)));
     }
-    else if (config->project.type == 1) // Using advance template (multiple files)
+    else if (config->Project.type == 1) // Using advance template (multiple files)
     {
-        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c screen_logo.c screen_title.c screen_options.c screen_gameplay.c screen_ending.c", TextToLower(config->project.name)));
+        fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c screen_logo.c screen_title.c screen_options.c screen_gameplay.c screen_ending.c", TextToLower(config->Project.name)));
     }
-    else if (config->project.type == 2) // Using custom provided source files
+    else if (config->Project.type == 2) // Using custom provided source files
     {
         char **srcFileNames = (char **)RL_CALLOC(256, sizeof(char *)); // Max number of input source files supported
         for (int i = 0; i < 256; i++) srcFileNames[i] = (char *)RL_CALLOC(256, sizeof(char));
 
         int codeFileCount = 0;
-        for (int j = 0; j < config->project.srcFileCount; j++)
+        for (int j = 0; j < config->Project.srcFileCount; j++)
         {
-            if (IsFileExtension(config->project.srcFilePaths[j], ".c"))
+            if (IsFileExtension(config->Project.srcFilePaths[j], ".c"))
             {
-                strcpy(srcFileNames[codeFileCount], GetFileName(config->project.srcFilePaths[j]));
+                strcpy(srcFileNames[codeFileCount], GetFileName(config->Project.srcFilePaths[j]));
                 codeFileCount++;
             }
         }
@@ -1516,27 +1515,27 @@ static void SetupProject(ProjectConfig *config)
         RL_FREE(srcFileNames);
     }
 
-    fileTextUpdated[1] = TextReplace(fileText, "project_name", TextToLower(config->project.name));
-    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "C:/raylib/raylib/src", config->building.raylibSrcPath);
-    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "C:/raylib/w64devkit/bin", config->building.compilerPath);
+    fileTextUpdated[1] = TextReplace(fileText, "project_name", TextToLower(config->Project.name));
+    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "C:/raylib/raylib/src", config->Building.raylibSrcPath);
+    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "C:/raylib/w64devkit/bin", config->Building.compilerPath);
 
-    SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/tasks.json", config->building.outputPath, outProjectName), fileTextUpdated[3]);
+    SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/tasks.json", config->Building.outputPath, outProjectName), fileTextUpdated[3]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
 
     // Copy projects/VSCode/.vscode/settings.json
     fileText = LoadFileText(TextFormat("%s/projects/VSCode/.vscode/settings.json", templatePath));
-    SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/settings.json", config->building.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/settings.json", config->Building.outputPath, outProjectName, outProjectName), fileText);
     UnloadFileText(fileText);
 
     // Copy projects/VSCode/main.code-workspace
     fileText = LoadFileText(TextFormat("%s/projects/VSCode/main.code-workspace", templatePath));
-    SaveFileText(TextFormat("%s/%s/projects/VSCode/main.code-workspace", config->building.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/projects/VSCode/main.code-workspace", config->Building.outputPath, outProjectName, outProjectName), fileText);
     UnloadFileText(fileText);
 
     // Copy projects/VSCode/README.md
     fileText = LoadFileText(TextFormat("%s/projects/VSCode/README.md", templatePath));
-    SaveFileText(TextFormat("%s/%s/projects/VSCode/README.md", config->building.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/projects/VSCode/README.md", config->Building.outputPath, outProjectName, outProjectName), fileText);
     UnloadFileText(fileText);
 
     LOG("INFO: Updated build system successfully: VSCode (projects/VSCode)\n");
@@ -1548,19 +1547,19 @@ static void SetupProject(ProjectConfig *config)
     // WARNING: Expects the PROJECT_NAME to be the repository-name (as generated by default)
     //-------------------------------------------------------------------------------------
     // Create required output directories
-    MakeDirectory(TextFormat("%s/%s/.github/workflows", config->building.outputPath, outProjectName));
+    MakeDirectory(TextFormat("%s/%s/.github/workflows", config->Building.outputPath, outProjectName));
     // Copy GitHub workflows: linux.yml, webassembly.yml, windows.yml
     fileText = LoadFileText(TextFormat("%s/.github/workflows/windows.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/windows.yml", config->building.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/.github/workflows/windows.yml", config->Building.outputPath, outProjectName, outProjectName), fileText);
     UnloadFileText(fileText);
     fileText = LoadFileText(TextFormat("%s/.github/workflows/linux.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/linux.yml", config->building.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/.github/workflows/linux.yml", config->Building.outputPath, outProjectName, outProjectName), fileText);
     UnloadFileText(fileText);
     fileText = LoadFileText(TextFormat("%s/.github/workflows/macos.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/macos.yml", config->building.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/.github/workflows/macos.yml", config->Building.outputPath, outProjectName, outProjectName), fileText);
     UnloadFileText(fileText);
     fileText = LoadFileText(TextFormat("%s/.github/workflows/webassembly.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/webassembly.yml", config->building.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/.github/workflows/webassembly.yml", config->Building.outputPath, outProjectName, outProjectName), fileText);
     UnloadFileText(fileText);
 
     LOG("INFO: Updated build system successfully: GitHub Actions CI/CD workflows (.github)\n");
@@ -1575,11 +1574,11 @@ static void SetupProject(ProjectConfig *config)
     //-------------------------------------------------------------------------------------
     // Update src/project_name.rc
     fileText = LoadFileText(TextFormat("%s/src/project_name.rc", templatePath));
-    fileTextUpdated[0] = TextReplace(fileText, "ProductName", config->project.product);
-    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", TextToLower(config->project.name));
-    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->project.description);
-    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDev", config->project.developer);
-    SaveFileText(TextFormat("%s/%s/src/%s.rc", config->building.outputPath, outProjectName, outProjectName), fileTextUpdated[3]);
+    fileTextUpdated[0] = TextReplace(fileText, "ProductName", config->Project.product);
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", TextToLower(config->Project.name));
+    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->Project.description);
+    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDev", config->Project.developer);
+    SaveFileText(TextFormat("%s/%s/src/%s.rc", config->Building.outputPath, outProjectName, outProjectName), fileTextUpdated[3]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
     LOG("INFO: Updated src/%s.rc successfully\n", outProjectName);
@@ -1587,40 +1586,40 @@ static void SetupProject(ProjectConfig *config)
     // Copy src/project_name.ico to src/project_name.ico
     int fileDataSize = 0;
     unsigned char *fileData = LoadFileData(TextFormat("%s/src/project_name.ico", templatePath), &fileDataSize);
-    SaveFileData(TextFormat("%s/%s/src/%s.ico", config->building.outputPath, outProjectName, outProjectName), fileData, fileDataSize);
+    SaveFileData(TextFormat("%s/%s/src/%s.ico", config->Building.outputPath, outProjectName, outProjectName), fileData, fileDataSize);
     UnloadFileData(fileData);
-    LOG("INFO: Copied src/%s.ico successfully\n", TextToLower(config->project.name));
+    LOG("INFO: Copied src/%s.ico successfully\n", TextToLower(config->Project.name));
 
     // Copy src/project_name.icns to src/project_name.icns
     fileDataSize = 0;
     fileData = LoadFileData(TextFormat("%s/src/project_name.icns", templatePath), &fileDataSize);
-    SaveFileData(TextFormat("%s/%s/src/%s.icns", config->building.outputPath, outProjectName, outProjectName), fileData, fileDataSize);
+    SaveFileData(TextFormat("%s/%s/src/%s.icns", config->Building.outputPath, outProjectName, outProjectName), fileData, fileDataSize);
     UnloadFileData(fileData);
-    LOG("INFO: Copied src/%s.icns successfully\n", TextToLower(config->project.name));
+    LOG("INFO: Copied src/%s.icns successfully\n", TextToLower(config->Project.name));
 
     // Update src/Info.plist
     fileText = LoadFileText(TextFormat("%s/src/Info.plist", templatePath));
-    fileTextUpdated[0] = TextReplace(fileText, "ProductName", config->project.product);
-    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", TextToLower(config->project.name));
-    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->project.description);
-    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDev", config->project.developer);
-    fileTextUpdated[4] = TextReplace(fileTextUpdated[3], "project_dev", TextToLower(config->project.developer));
-    fileTextUpdated[5] = TextReplace(fileTextUpdated[4], "developer_web", TextToLower(config->project.developerWeb));
-    SaveFileText(TextFormat("%s/%s/src/Info.plist", config->building.outputPath, outProjectName), fileTextUpdated[5]);
+    fileTextUpdated[0] = TextReplace(fileText, "ProductName", config->Project.product);
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", TextToLower(config->Project.name));
+    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->Project.description);
+    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDev", config->Project.developer);
+    fileTextUpdated[4] = TextReplace(fileTextUpdated[3], "project_dev", TextToLower(config->Project.developer));
+    fileTextUpdated[5] = TextReplace(fileTextUpdated[4], "developer_web", TextToLower(config->Project.developerWeb));
+    SaveFileText(TextFormat("%s/%s/src/Info.plist", config->Building.outputPath, outProjectName), fileTextUpdated[5]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
     LOG("INFO: Updated src/Info.plist successfully\n");
 
     // Update src/minshell.html
-    // TODO: Review Webpage, links, OpenGraph/X card, keywords...
+    // Review Webpage, links, OpenGraph/X card, keywords...
     fileText = LoadFileText(TextFormat("%s/src/minshell.html", templatePath));
-    fileTextUpdated[0] = TextReplace(fileText, "ProductName", config->project.product);
-    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", TextToLower(config->project.name));
-    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->project.description);
-    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDev", config->project.developer);
-    fileTextUpdated[4] = TextReplace(fileTextUpdated[3], "project_dev", TextToLower(config->project.developer));
-    fileTextUpdated[5] = TextReplace(fileTextUpdated[4], "developer_web", TextToLower(config->project.developerWeb));
-    SaveFileText(TextFormat("%s/%s/src/minshell.html", config->building.outputPath, outProjectName), fileTextUpdated[5]);
+    fileTextUpdated[0] = TextReplace(fileText, "ProductName", config->Project.product);
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", TextToLower(config->Project.name));
+    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->Project.description);
+    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDev", config->Project.developer);
+    fileTextUpdated[4] = TextReplace(fileTextUpdated[3], "project_dev", TextToLower(config->Project.developer));
+    fileTextUpdated[5] = TextReplace(fileTextUpdated[4], "developer_web", TextToLower(config->Project.developerWeb));
+    SaveFileText(TextFormat("%s/%s/src/minshell.html", config->Building.outputPath, outProjectName), fileTextUpdated[5]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
     LOG("INFO: Updated src/minshell.html successfully\n");
@@ -1630,32 +1629,32 @@ static void SetupProject(ProjectConfig *config)
 
     // Update README.md
     fileText = LoadFileText(TextFormat("%s/README.md", templatePath));
-    fileTextUpdated[0] = TextReplace(fileText, "ProductName", config->project.product);
-    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", TextToLower(config->project.name));
-    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->project.description);
-    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDev", config->project.developer);
-    SaveFileText(TextFormat("%s/%s/README.md", config->building.outputPath, outProjectName), fileTextUpdated[3]);
+    fileTextUpdated[0] = TextReplace(fileText, "ProductName", config->Project.product);
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", TextToLower(config->Project.name));
+    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->Project.description);
+    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDev", config->Project.developer);
+    SaveFileText(TextFormat("%s/%s/README.md", config->Building.outputPath, outProjectName), fileTextUpdated[3]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
     LOG("INFO: Updated README.md successfully\n");
 
     // Update LICENSE, including ProjectDev
     fileText = LoadFileText(TextFormat("%s/LICENSE", templatePath));
-    fileTextUpdated[0] = TextReplace(fileText, "ProjectDev", config->project.developer);
-    SaveFileText(TextFormat("%s/%s/LICENSE", config->building.outputPath, outProjectName, outProjectName), fileTextUpdated[0]);
+    fileTextUpdated[0] = TextReplace(fileText, "ProjectDev", config->Project.developer);
+    SaveFileText(TextFormat("%s/%s/LICENSE", config->Building.outputPath, outProjectName, outProjectName), fileTextUpdated[0]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
     LOG("INFO: Updated LICENSE successfully\n");
 
     // Copy from template files that do not require customization: CONVENTIONS.md, .gitignore
     fileText = LoadFileText(TextFormat("%s/CONVENTIONS.md", templatePath));
-    SaveFileText(TextFormat("%s/%s/CONVENTIONS.md", config->building.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/CONVENTIONS.md", config->Building.outputPath, outProjectName, outProjectName), fileText);
     UnloadFileText(fileText);
     fileText = LoadFileText(TextFormat("%s/.gitignore", templatePath));
-    SaveFileText(TextFormat("%s/%s/.gitignore", config->building.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/.gitignore", config->Building.outputPath, outProjectName, outProjectName), fileText);
     UnloadFileText(fileText);
 
-    LOG("INFO: GitHub %s project generated successfully!\n", config->project.name);
+    LOG("INFO: GitHub %s project generated successfully!\n", config->Project.name);
 }
 
 // Packing of directory files into a binary blob
