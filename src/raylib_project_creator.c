@@ -1087,7 +1087,7 @@ int main(int argc, char *argv[])
 }
 
 //--------------------------------------------------------------------------------------------
-// Module functions definition
+// Module Functions Definition
 //--------------------------------------------------------------------------------------------
 #if defined(PLATFORM_DESKTOP)
 // Show command line usage info

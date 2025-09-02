@@ -426,7 +426,7 @@ typedef struct {
 const unsigned char png_signature[8] = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a }; // PNG Signature
 
 //----------------------------------------------------------------------------------
-// Module specific Functions Declaration
+// Module Internal Functions Declaration
 //----------------------------------------------------------------------------------
 static unsigned int swap_endian(unsigned int value);                // Swap integer from big<->little endian
 static unsigned int compute_crc32(unsigned char *buffer, int size); // Compute CRC32
@@ -1804,7 +1804,7 @@ char *rpng_chunk_split_image_data_from_memory(char *buffer, int split_size, int 
 }
 
 //----------------------------------------------------------------------------------
-// Module specific Functions Definition
+// Module Internal Functions Definition
 //----------------------------------------------------------------------------------
 
 // Swap integer from big<->little endian

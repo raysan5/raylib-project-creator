@@ -250,7 +250,7 @@ RINIAPI int rini_set_config_value_description(rini_config *config, const char *k
 // ...
 
 //----------------------------------------------------------------------------------
-// Module internal functions declaration
+// Module Internal Functions Declaration
 //----------------------------------------------------------------------------------
 static int rini_read_config_key(const char *buffer, char *key); // Get key from a buffer line containing key-value-(description)
 static int rini_read_config_value_text(const char *buffer, char *text, char *desc); // Get value text (and description) from a buffer line
@@ -258,7 +258,7 @@ static int rini_read_config_value_text(const char *buffer, char *text, char *des
 static int rini_text_to_int(const char *text); // Convert text to int value (if possible), same as atoi()
 
 //----------------------------------------------------------------------------------
-// Module functions declaration
+// Module Functions Declaration
 //----------------------------------------------------------------------------------
 // Load config from file (.ini)
 rini_config rini_load_config(const char *file_name)
@@ -610,7 +610,7 @@ int rini_set_config_value_description(rini_config *config, const char *key, cons
 }
 
 //----------------------------------------------------------------------------------
-// Module internal functions declaration
+// Module Internal Functions Declaration
 //----------------------------------------------------------------------------------
 // Get string id from a buffer line containing id-value pair
 static int rini_read_config_key(const char *buffer, char *key)

@@ -1479,7 +1479,7 @@ static void DrawRectangleGradientV(int posX, int posY, int width, int height, Co
 #endif      // RAYGUI_STANDALONE
 
 //----------------------------------------------------------------------------------
-// Module specific Functions Declaration
+// Module Internal Functions Declaration
 //----------------------------------------------------------------------------------
 static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize);    // Load style from memory (binary only)
 
@@ -4443,7 +4443,7 @@ void GuiSetIconScale(int scale)
 #endif      // !RAYGUI_NO_ICONS
 
 //----------------------------------------------------------------------------------
-// Module specific Functions Definition
+// Module Internal Functions Definition
 //----------------------------------------------------------------------------------
 
 // Load style from memory
