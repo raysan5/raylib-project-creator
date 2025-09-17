@@ -1,5 +1,4 @@
 GLFW_ICON ICON "project_name.ico"
-
 1 VERSIONINFO
 FILEVERSION     1,0,0,0
 PRODUCTVERSION  1,0,0,0
@@ -10,12 +9,12 @@ BEGIN
     BLOCK "040904E4"	// English US
     BEGIN
       VALUE "CompanyName", "ProjectDev"
-      VALUE "FileDescription", "ProductName | ProjectDescription"
+      VALUE "FileDescription", "CommercialName | ProjectDescription"
       VALUE "FileVersion", "1.0"
       VALUE "InternalName", "project_name"
       VALUE "LegalCopyright", "(c) 2025 ProjectDev"
       //VALUE "OriginalFilename", "project_name.exe"
-      VALUE "ProductName", "ProductName"
+      VALUE "ProductName", "CommercialName"
       VALUE "ProductVersion", "1.0"
     END
   END

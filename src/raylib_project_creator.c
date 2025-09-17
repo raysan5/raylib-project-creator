@@ -1047,7 +1047,7 @@ int main(int argc, char *argv[])
                 if (!showExportProjectProgress)
                 {
                 #if defined(PLATFORM_WEB)
-                    strcpy(outFileName, TextFormat("%s/%s", config->Building.outputPath, TextToLower(config->Project.name)));
+                    strcpy(outFileName, TextFormat("%s/%s", config->Project.outputPath, TextToLower(config->Project.name)));
 
                     // Package all created files (in browser MEMFS) into a .zip to be exported
                     mz_zip_archive zip = { 0 };
@@ -1424,7 +1424,7 @@ static void SetupProject(ProjectConfig *config)
 
     // Copy projects/VS2022/raylib/Directory.Build.props
     //fileText = LoadFileText(TextFormat("%s/projects/VS2022/raylib/Directory.Build.props", templatePath));
-    //SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/Directory.Build.props", config->Building.outputPath, outProjectName, outProjectName), fileText);
+    //SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/Directory.Build.props", config->Project.outputPath, outProjectName, outProjectName), fileText);
     //UnloadFileText(fileText);
 
     // Update projects/VS2022/project_name/config->project_name.vcproj
@@ -1600,7 +1600,7 @@ static void SetupProject(ProjectConfig *config)
     //-------------------------------------------------------------------------------------
     // Update src/project_name.rc
     fileText = LoadFileText(TextFormat("%s/src/project_name.rc", templatePath));
-    fileTextUpdated[0] = TextReplace(fileText, "ProductName", config->Project.productName);
+    fileTextUpdated[0] = TextReplace(fileText, "CommercialName", config->Project.productName);
     fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", TextToLower(config->Project.name));
     fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->Project.description);
     fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDev", config->Project.developer);
