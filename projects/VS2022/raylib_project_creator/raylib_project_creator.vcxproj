@@ -40,7 +40,7 @@
     <RootNamespace>raylib_project_creator</RootNamespace>
     <ProjectName>raylib_project_creator</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <RaylibSrcPath>C:\raylib\raylib\src</RaylibSrcPath>
+    <RaylibSrcPath>$(ProjectDir)..\..\..\..\raylib\src</RaylibSrcPath>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
