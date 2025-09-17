@@ -1,5 +1,4 @@
 GLFW_ICON ICON "raylib_project_creator.ico"
-
 1 VERSIONINFO
 FILEVERSION     1,0,0,0
 PRODUCTVERSION  1,0,0,0
@@ -10,12 +9,12 @@ BEGIN
     BLOCK "040904E4"	// English US
     BEGIN
 	  VALUE "CompanyName", "raylibtech"
-      VALUE "FileDescription", "raylib_project_creator | Create raylib build projects"
+      VALUE "FileDescription", "raylib project creator | A simple and easy-to-use raylib build projects generator"
       VALUE "FileVersion", "1.0"
       VALUE "InternalName", "raylib_project_creator"
       VALUE "LegalCopyright", "(c) 2025 raylib technologies (@raylibtech)"
-      //VALUE "OriginalFilename", "raylib_project_creator.exe"
-      VALUE "raylib_project_creator", "raylib_project_creator"
+      VALUE "OriginalFilename", "raylib_project_creator.exe"
+      VALUE "ProductName", "raylib project creator"
       VALUE "ProductVersion", "1.0"
     END
   END
