@@ -101,6 +101,8 @@
 #include "external/miniz.h"                 // ZIP packaging functions definition
 #include "external/miniz.c"                 // ZIP packaging implementation
 
+//#include "template.zip.h"                   // Project template to embed into executable (zipped)
+
 // Standard C libraries
 #include <stdio.h>                          // Required for: fopen(), fclose(), fread()...
 #include <stdlib.h>                         // Required for: NULL, calloc(), free()
@@ -224,6 +226,14 @@ static bool screenSizeDouble = false; // Scale screen x2 (useful for HighDPI/4K 
 //------------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
+    // Template.zip export as code
+    //--------------------------------------------------------------------------------
+    //int templateZipDataSize = 0;
+    //unsigned char *templateZipData = LoadFileData("template.zip", &templateZipDataSize);
+    //ExportDataAsCode(templateZipData, templateZipDataSize, "template.zip.h");
+    //UnloadFileData(templateZipData);
+    //--------------------------------------------------------------------------------
+
 #if defined(BUILD_TEMPLATE_INTO_EXE)
     // Attach template data into generated executable on first run
     int exeFileDataSize = 0;
