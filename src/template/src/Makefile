@@ -38,7 +38,6 @@ PROJECT_SOURCE_FILES  ?= project_name.c
 RAYLIB_SRC_PATH       ?= C:/raylib/raylib/src
 RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_SRC_PATH)
 RAYLIB_LIB_PATH       ?= $(RAYLIB_SRC_PATH)
-
 # Library type used for raylib: STATIC (.a) or SHARED (.so/.dll)
 RAYLIB_LIBTYPE        ?= STATIC
 
@@ -55,7 +54,7 @@ BUILD_WEB_HEAP_SIZE   ?= 128MB
 BUILD_WEB_STACK_SIZE  ?= 1MB
 BUILD_WEB_ASYNCIFY_STACK_SIZE ?= 1048576
 BUILD_WEB_RESOURCES   ?= FALSE
-BUILD_WEB_RESOURCES_PATH  ?= resources
+BUILD_WEB_RESOURCES_PATH ?= resources
 
 # Determine PLATFORM_OS in case PLATFORM_DESKTOP selected
 ifeq ($(PLATFORM),PLATFORM_DESKTOP)
@@ -93,16 +92,14 @@ ifeq ($(PLATFORM),PLATFORM_DRM)
     endif
 endif
 
-ifeq ($(PLATFORM_OS),WINDOWS)
-    ifeq ($(PLATFORM),PLATFORM_WEB)
-        # Emscripten required variables
-        EMSDK_PATH         ?= C:/raylib/emsdk
-        EMSCRIPTEN_PATH    ?= $(EMSDK_PATH)/upstream/emscripten
-        CLANG_PATH          = $(EMSDK_PATH)/upstream/bin
-        PYTHON_PATH         = $(EMSDK_PATH)/python/3.9.2-nuget_64bit
-        NODE_PATH           = $(EMSDK_PATH)/node/20.18.0_64bit/bin
-        export PATH         = $(EMSDK_PATH);$(EMSCRIPTEN_PATH);$(CLANG_PATH);$(NODE_PATH);$(PYTHON_PATH):$$(PATH)
-    endif
+ifeq ($(PLATFORM),PLATFORM_WEB)
+    # Emscripten required variables
+    EMSDK_PATH         ?= C:/raylib/emsdk
+    EMSCRIPTEN_PATH    ?= $(EMSDK_PATH)/upstream/emscripten
+    CLANG_PATH          = $(EMSDK_PATH)/upstream/bin
+    PYTHON_PATH         = $(EMSDK_PATH)/python/3.9.2-nuget_64bit
+    NODE_PATH           = $(EMSDK_PATH)/node/20.18.0_64bit/bin
+    export PATH         = $(EMSDK_PATH);$(EMSCRIPTEN_PATH);$(CLANG_PATH);$(NODE_PATH);$(PYTHON_PATH):$$(PATH)
 endif
 
 # Define default C compiler: CC
@@ -155,8 +152,14 @@ endif
 #  -Wno-missing-braces  ignore invalid warning (GCC bug 53119)
 #  -Wno-unused-value    ignore unused return values of some functions (i.e. fread())
 #  -D_DEFAULT_SOURCE    use with -std=c99 on Linux and PLATFORM_WEB, required for timespec
-CFLAGS = -std=c99 -Wall -Wno-missing-braces -Wno-unused-value -Wno-pointer-sign -D_DEFAULT_SOURCE $(PROJECT_CUSTOM_FLAGS)
+CFLAGS = -Wall -D_DEFAULT_SOURCE -Wno-missing-braces -Wno-unused-value -Wno-pointer-sign $(PROJECT_CUSTOM_FLAGS)
 #CFLAGS += -Wextra -Wmissing-prototypes -Wstrict-prototypes
+
+ifeq ($(PLATFORM),PLATFORM_WEB)
+    CFLAGS += -std=gnu99
+else
+    CFLAGS += -std=c99
+endif
 
 ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -D_DEBUG
@@ -236,7 +239,7 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
     # --source-map-base          # allow debugging in browser with source map
     # --shell-file shell.html    # define a custom shell .html and output extension
     LDFLAGS += -sUSE_GLFW=3 -sTOTAL_MEMORY=$(BUILD_WEB_HEAP_SIZE) -sSTACK_SIZE=$(BUILD_WEB_STACK_SIZE) -sFORCE_FILESYSTEM=1 -sMINIFY_HTML=0
-    
+
     # Build using asyncify
     ifeq ($(BUILD_WEB_ASYNCIFY),TRUE)
         LDFLAGS += -sASYNCIFY -sASYNCIFY_STACK_SIZE=$(BUILD_WEB_ASYNCIFY_STACK_SIZE)
@@ -303,7 +306,7 @@ ifeq ($(PLATFORM),PLATFORM_DESKTOP)
 endif
 ifeq ($(PLATFORM),PLATFORM_WEB)
     # Libraries for web (HTML5) compiling
-    LDLIBS = $(RAYLIB_LIB_PATH)/libraylib.a
+    LDLIBS = $(RAYLIB_LIB_PATH)/libraylib.web.a
 endif
 ifeq ($(PLATFORM),PLATFORM_DRM)
     # Libraries for DRM compiling
