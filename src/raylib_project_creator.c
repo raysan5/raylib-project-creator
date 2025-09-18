@@ -135,7 +135,8 @@ bool __stdcall FreeConsole(void);           // Close console from code (kernel32
 typedef struct ProjectConfig {
     struct {
         int type;                   // Project type to generate: Basic, Advanced, Custom
-        char name[64];              // Project name (internal)
+        char name[64];              // Project name
+        char internalName[64];      // Project internal name (used for GitHub, if not provided using name)
         char productName[64];       // Project product name
         char version[16];           // Project version
         char description[256];      // Project description
@@ -519,6 +520,7 @@ int main(int argc, char *argv[])
 
         // Toggle window: issue report
         if (IsKeyPressed(KEY_F3)) showIssueReportWindow = !showIssueReportWindow;
+
         // Show closing window on ESC
         if (IsKeyPressed(KEY_ESCAPE))
         {
@@ -1307,35 +1309,28 @@ static void SetupProject(ProjectConfig *config)
     MakeDirectory(TextFormat("%s/%s/src/external", config->Project.outputPath, outProjectName));
     if (config->Project.type == 0)  // Use base sample (one source file)
     {
-        fileText = LoadFileText(TextFormat("%s/src/project_name.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/%s.c", config->Project.outputPath, outProjectName, TextToLower(config->Project.name)), fileText);
-        UnloadFileText(fileText);
+        FileCopy(TextFormat("%s/src/project_name.c", templatePath),
+            TextFormat("%s/%s/src/%s.c", config->Project.outputPath, outProjectName, TextToLower(config->Project.name)));
+
         LOG("INFO: Copied src/%s.c successfully\n", TextToLower(config->Project.name));
     }
     else if (config->Project.type == 1) // Use advance sample (screen manager, multiple source files)
     {
-        fileText = LoadFileText(TextFormat("%s/src/raylib_advanced.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/%s.c", config->Project.outputPath, outProjectName, TextToLower(config->Project.name)), fileText);
-        UnloadFileText(fileText);
+        FileCopy(TextFormat("%s/src/raylib_advanced.c", templatePath),
+            TextFormat("%s/%s/src/%s.c", config->Project.outputPath, outProjectName, TextToLower(config->Project.name)));
 
-        fileText = LoadFileText(TextFormat("%s/src/screens.h", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screens.h", config->Project.outputPath, outProjectName), fileText);
-        UnloadFileText(fileText);
-        fileText = LoadFileText(TextFormat("%s/src/screen_logo.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screen_logo.c", config->Project.outputPath, outProjectName), fileText);
-        UnloadFileText(fileText);
-        fileText = LoadFileText(TextFormat("%s/src/screen_title.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screen_title.c", config->Project.outputPath, outProjectName), fileText);
-        UnloadFileText(fileText);
-        fileText = LoadFileText(TextFormat("%s/src/screen_options.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screen_options.c", config->Project.outputPath, outProjectName), fileText);
-        UnloadFileText(fileText);
-        fileText = LoadFileText(TextFormat("%s/src/screen_gameplay.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screen_gameplay.c", config->Project.outputPath, outProjectName), fileText);
-        UnloadFileText(fileText);
-        fileText = LoadFileText(TextFormat("%s/src/screen_ending.c", templatePath));
-        SaveFileText(TextFormat("%s/%s/src/screen_ending.c", config->Project.outputPath, outProjectName), fileText);
-        UnloadFileText(fileText);
+        FileCopy(TextFormat("%s/src/screens.h", templatePath),
+            TextFormat("%s/%s/src/screens.h", config->Project.outputPath, outProjectName));
+        FileCopy(TextFormat("%s/src/screen_logo.c", templatePath),
+            TextFormat("%s/%s/src/screen_logo.c", config->Project.outputPath, outProjectName));
+        FileCopy(TextFormat("%s/src/screen_title.c", templatePath),
+            TextFormat("%s/%s/src/screen_title.c", config->Project.outputPath, outProjectName));
+        FileCopy(TextFormat("%s/src/screen_options.c", templatePath),
+            TextFormat("%s/%s/src/screen_options.c", config->Project.outputPath, outProjectName));
+        FileCopy(TextFormat("%s/src/screen_gameplay.c", templatePath),
+            TextFormat("%s/%s/src/screen_gameplay.c", config->Project.outputPath, outProjectName));
+        FileCopy(TextFormat("%s/src/screen_ending.c", templatePath),
+            TextFormat("%s/%s/src/screen_ending.c", config->Project.outputPath, outProjectName));
 
         LOG("INFO: Copied advance project with src/%s.c successfully\n", TextToLower(config->Project.name));
     }
@@ -1343,9 +1338,9 @@ static void SetupProject(ProjectConfig *config)
     {
         for (int i = 0; i < config->Project.srcFileCount; i++)
         {
-            fileText = LoadFileText(config->Project.srcFilePaths[i]);
-            SaveFileText(TextFormat("%s/%s/src/%s", config->Project.outputPath, outProjectName, GetFileName(config->Project.srcFilePaths[i])), fileText);
-            UnloadFileText(fileText);
+            FileCopy(config->Project.srcFilePaths[i],
+                TextFormat("%s/%s/src/%s", config->Project.outputPath, outProjectName, GetFileName(config->Project.srcFilePaths[i])));
+
             LOG("INFO: Copied src/%s successfully\n", GetFileName(config->Project.srcFilePaths[i]));
         }
     }
@@ -1550,19 +1545,16 @@ static void SetupProject(ProjectConfig *config)
     UnloadFileText(fileText);
 
     // Copy projects/VSCode/.vscode/settings.json
-    fileText = LoadFileText(TextFormat("%s/projects/VSCode/.vscode/settings.json", templatePath));
-    SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/settings.json", config->Project.outputPath, outProjectName, outProjectName), fileText);
-    UnloadFileText(fileText);
+    FileCopy(TextFormat("%s/projects/VSCode/.vscode/settings.json", templatePath),
+        TextFormat("%s/%s/projects/VSCode/.vscode/settings.json", config->Project.outputPath, outProjectName));
 
     // Copy projects/VSCode/main.code-workspace
-    fileText = LoadFileText(TextFormat("%s/projects/VSCode/main.code-workspace", templatePath));
-    SaveFileText(TextFormat("%s/%s/projects/VSCode/main.code-workspace", config->Project.outputPath, outProjectName, outProjectName), fileText);
-    UnloadFileText(fileText);
+    FileCopy(TextFormat("%s/projects/VSCode/main.code-workspace", templatePath),
+        TextFormat("%s/%s/projects/VSCode/main.code-workspace", config->Project.outputPath, outProjectName));
 
     // Copy projects/VSCode/README.md
-    fileText = LoadFileText(TextFormat("%s/projects/VSCode/README.md", templatePath));
-    SaveFileText(TextFormat("%s/%s/projects/VSCode/README.md", config->Project.outputPath, outProjectName, outProjectName), fileText);
-    UnloadFileText(fileText);
+    FileCopy(TextFormat("%s/projects/VSCode/README.md", templatePath),
+        TextFormat("%s/%s/projects/VSCode/README.md", config->Project.outputPath, outProjectName));
 
     LOG("INFO: Updated build system successfully: VSCode (projects/VSCode)\n");
     //-------------------------------------------------------------------------------------
@@ -1576,16 +1568,16 @@ static void SetupProject(ProjectConfig *config)
     MakeDirectory(TextFormat("%s/%s/.github/workflows", config->Project.outputPath, outProjectName));
     // Copy GitHub workflows: linux.yml, webassembly.yml, windows.yml
     fileText = LoadFileText(TextFormat("%s/.github/workflows/windows.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/windows.yml", config->Project.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/.github/workflows/windows.yml", config->Project.outputPath, outProjectName), fileText);
     UnloadFileText(fileText);
     fileText = LoadFileText(TextFormat("%s/.github/workflows/linux.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/linux.yml", config->Project.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/.github/workflows/linux.yml", config->Project.outputPath, outProjectName), fileText);
     UnloadFileText(fileText);
     fileText = LoadFileText(TextFormat("%s/.github/workflows/macos.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/macos.yml", config->Project.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/.github/workflows/macos.yml", config->Project.outputPath, outProjectName), fileText);
     UnloadFileText(fileText);
     fileText = LoadFileText(TextFormat("%s/.github/workflows/webassembly.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/webassembly.yml", config->Project.outputPath, outProjectName, outProjectName), fileText);
+    SaveFileText(TextFormat("%s/%s/.github/workflows/webassembly.yml", config->Project.outputPath, outProjectName), fileText);
     UnloadFileText(fileText);
 
     LOG("INFO: Updated build system successfully: GitHub Actions CI/CD workflows (.github)\n");
@@ -1610,17 +1602,13 @@ static void SetupProject(ProjectConfig *config)
     LOG("INFO: Updated src/%s.rc successfully\n", outProjectName);
 
     // Copy src/project_name.ico to src/project_name.ico
-    int fileDataSize = 0;
-    unsigned char *fileData = LoadFileData(TextFormat("%s/src/project_name.ico", templatePath), &fileDataSize);
-    SaveFileData(TextFormat("%s/%s/src/%s.ico", config->Project.outputPath, outProjectName, outProjectName), fileData, fileDataSize);
-    UnloadFileData(fileData);
+    FileCopy(TextFormat("%s/src/project_name.ico", templatePath),
+        TextFormat("%s/%s/src/%s.ico", config->Project.outputPath, outProjectName, outProjectName));
     LOG("INFO: Copied src/%s.ico successfully\n", TextToLower(config->Project.name));
 
     // Copy src/project_name.icns to src/project_name.icns
-    fileDataSize = 0;
-    fileData = LoadFileData(TextFormat("%s/src/project_name.icns", templatePath), &fileDataSize);
-    SaveFileData(TextFormat("%s/%s/src/%s.icns", config->Project.outputPath, outProjectName, outProjectName), fileData, fileDataSize);
-    UnloadFileData(fileData);
+    FileCopy(TextFormat("%s/src/project_name.icns", templatePath),
+        TextFormat("%s/%s/src/%s.icns", config->Project.outputPath, outProjectName, outProjectName));
     LOG("INFO: Copied src/%s.icns successfully\n", TextToLower(config->Project.name));
 
     // Update src/Info.plist
@@ -1667,18 +1655,16 @@ static void SetupProject(ProjectConfig *config)
     // Update LICENSE, including ProjectDev
     fileText = LoadFileText(TextFormat("%s/LICENSE", templatePath));
     fileTextUpdated[0] = TextReplace(fileText, "ProjectDev", config->Project.developer);
-    SaveFileText(TextFormat("%s/%s/LICENSE", config->Project.outputPath, outProjectName, outProjectName), fileTextUpdated[0]);
+    SaveFileText(TextFormat("%s/%s/LICENSE", config->Project.outputPath, outProjectName), fileTextUpdated[0]);
     for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
     LOG("INFO: Updated LICENSE successfully\n");
 
     // Copy from template files that do not require customization: CONVENTIONS.md, .gitignore
-    fileText = LoadFileText(TextFormat("%s/CONVENTIONS.md", templatePath));
-    SaveFileText(TextFormat("%s/%s/CONVENTIONS.md", config->Project.outputPath, outProjectName, outProjectName), fileText);
-    UnloadFileText(fileText);
-    fileText = LoadFileText(TextFormat("%s/.gitignore", templatePath));
-    SaveFileText(TextFormat("%s/%s/.gitignore", config->Project.outputPath, outProjectName, outProjectName), fileText);
-    UnloadFileText(fileText);
+    FileCopy(TextFormat("%s/CONVENTIONS.md", templatePath),
+        TextFormat("%s/%s/CONVENTIONS.md", config->Project.outputPath, outProjectName));
+    FileCopy(TextFormat("%s/.gitignore", templatePath),
+        TextFormat("%s/%s/.gitignore", config->Project.outputPath, outProjectName));
 
     LOG("INFO: GitHub %s project generated successfully!\n", config->Project.name);
 }
