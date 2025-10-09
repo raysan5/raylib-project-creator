@@ -18,7 +18,7 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       2.0 (xx-Sep-2025)  ADDED: Load and save project configuration
+*       2.0  (xx-Sep-2025)  ADDED: Load and save project configuration
 *       1.1  (30-Sep-2024)  ADDED: Support raylib path as property on VS2022 projects
 *                           ADDED: Support for HighDPI/4K monitors, scaling UI automatically
 *                           REVIEWED: Issue with browser files filter (*.c;*.h) not working properly
@@ -26,9 +26,9 @@
 *       1.0  (26-Sep-2024)  First release
 *
 *   DEPENDENCIES:
-*       raylib 5.5-dev          - Windowing/input management and drawing
+*       raylib 5.6-dev          - Windowing/input management and drawing
 *       raygui 4.5-dev          - Immediate-mode GUI controls with custom styling and icons
-*       tinyfiledialogs 3.19.1  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
+*       tinyfiledialogs 3.20.0  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *       miniz 2.2.0             - Save .zip package file (required for multiple images export)
 *
 *   COMPILATION (Windows - MinGW):
@@ -56,7 +56,7 @@
 *
 **********************************************************************************************/
 
-#define TOOL_NAME               "raylib-project-creator"
+#define TOOL_NAME               "raylib project creator"
 #define TOOL_SHORT_NAME         "rpc"
 #define TOOL_VERSION            "2.0"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raylib project creator"
@@ -103,6 +103,12 @@
 
 //#include "template.zip.h"                   // Project template to embed into executable (zipped)
 
+#define RPNG_IMPLEMENTATION
+#include "external/rpng.h"                  // PNG chunks management
+
+#define RINI_IMPLEMENTATION
+#include "external/rini.h"                  // Config file values reader/writer
+
 // Standard C libraries
 #include <stdio.h>                          // Required for: fopen(), fclose(), fread()...
 #include <stdlib.h>                         // Required for: NULL, calloc(), free()
@@ -112,7 +118,7 @@
 // Defines and Macros
 //----------------------------------------------------------------------------------
 #if (!defined(_DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
-bool __stdcall FreeConsole(void);           // Close console from code (kernel32.lib)
+bool __stdcall FreeConsole(void);   // Close console from code (kernel32.lib)
 #endif
 
 // Simple log system to avoid printf() calls if required
@@ -327,10 +333,11 @@ int main(int argc, char *argv[])
 
     // GUI usage mode - Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 800;
-    const int screenHeight = 600;
+    const int screenWidth = 1280;
+    const int screenHeight = 720;
 
     InitWindow(screenWidth, screenHeight, TextFormat("%s v%s", TOOL_NAME, TOOL_VERSION));
+    SetWindowMinSize(1280, 720);
     SetExitKey(0);
 
     RenderTexture2D screenTarget = LoadRenderTexture(screenWidth, screenHeight);
@@ -374,8 +381,8 @@ int main(int argc, char *argv[])
 
     // GUI: Main Layout
     //-----------------------------------------------------------------------------------
-    Vector2 anchorProject = { 8, 104 };
-    Vector2 anchorBuilding = { 8, 298 };
+    Vector2 anchorProject = { 12, 104 };
+    Vector2 anchorBuilding = { 12, 298 };
 
     bool projectNameEditMode = false;
     strcpy(config->Project.name, "cool_project");
@@ -662,7 +669,7 @@ int main(int argc, char *argv[])
                 }
             }
 
-            GuiGroupBox((Rectangle){ anchorProject.x + 0, anchorProject.y + 0, 784, 172 }, "PROJECT SETTINGS");
+            GuiGroupBox((Rectangle){ anchorProject.x + 0, anchorProject.y + 0, GetScreenWidth() - 24, 172 }, "PROJECT SETTINGS");
             GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 24, 104, 24 }, "PROJECT NAME:");
             //GuiSetTooltip("Define project name, note that every project\nblablablaballsadlksad");
             if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 24, 280, 24 }, config->Project.name, 128, projectNameEditMode)) projectNameEditMode = !projectNameEditMode;

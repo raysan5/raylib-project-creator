@@ -38,7 +38,7 @@
     <ProjectGuid>{0981CA98-E4A5-4DF1-987F-A41D09131EFC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>raylib_project_creator</RootNamespace>
-    <ProjectName>raylib_project_creator</ProjectName>
+    <ProjectName>rpc</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <RaylibSrcPath>$(ProjectDir)..\..\..\..\raylib\src</RaylibSrcPath>
   </PropertyGroup>
@@ -358,11 +358,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\external\tinyfiledialogs.c" />
-    <ClCompile Include="..\..\..\src\raylib_project_creator.c" />
+    <ClCompile Include="..\..\..\src\rpc.c" />
     <!--<ClCompile Include="..\..\..\src\extra_module.c" />-->
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\..\src\raylib_project_creator.rc" />
+    <ResourceCompile Include="..\..\..\src\rpc.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
