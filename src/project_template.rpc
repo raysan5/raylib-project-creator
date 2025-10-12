@@ -4,84 +4,126 @@
 # This definition file contains all required info to descrive a project
 # and allow building it for multiple platforms
 #
+# This file follow certain conventions to be able to display the information in 
+# an easy-configurable UI manner when loaded through [raylib project builder]
+# CONVENTIONS:
+#   - ID containing [_FLAG_]: Value is considered a boolean, it displays with a [GuiCheckBox]
+#   - ID do not contain "": Value is considered as an integer, it displays as [GuiValueBox]
+#   - ID ends with _FILE or _FILES: Value is considered as a text file path, it displays as [GuiTextBox] with a [BROWSE-File] button
+#   - ID ends with _PATH: Value is considered as a text directory path, it displays as [GuiTextBox] with a [BROWSE-Dir] button
+#
+# NOTE: The comments/description for each entry is used as tooltip when editing the entry on [rpb]
+#
 
 # Project settings
 #------------------------------------------------------------------------------------
-PROJECT_NAME                        raylib-project-creator              # Project name used...
-PROJECT_INTERNAL_NAME               raylib_project_creator              # Project name used internally, for .sln
-PROJECT_COMMERCIAL_NAME             "raylib project creator"            # Project commercial name
-PROJECT_VERSION                     "5.5"                               # Project version
-PROJECT_DESCRIPTION                 "A simple and easy-to-use raylib projects creator"      # Product description
-PROJECT_PUBLISHER_NAME              "raylib technologies"               # Project published name
-PROJECT_DEVELOPER_NAME              "Ramon Santamaria"                  # Project developer name
-PROJECT_DEVELOPER_URL               "https://www.raylibtech.com"        # Project developer webpage url
-PROJECT_DEVELOPER_EMAIL             "ray@raylibtech.com"                # Project developer email
-PROJECT_ICON_FILE                   "path/to/file/icon.ico"             # Project icon file
-PROJECT_LOGO_FILE                   "path/to/file/logo.png"             # Project logo image, useful for imagery generation
-PROJECT_SPLASH_IMAGE                "path/to/file/splash.png"           # Project splash image, useful for imagery generation
-PROJECT_EULA_FILE                   "path/to/file/EULA.txt"             # Project End-User-License-Agreement
+PROJECT_COMMERCIAL_NAME                 "raylib project builder"            # Project commercial name (web, docs)
+PROJECT_REPO_NAME                       "raylib-project-builder"            # Project repository name, used for VCS
+PROJECT_INTERNAL_NAME                   "raylib_project_builder"            # Project intenal name, used for VS2022 and binaries
+PROJECT_SHORT_NAME                      "rpc"                               # Project short name
+PROJECT_VERSION                         "1.0"                               # Project version
+PROJECT_DESCRIPTION                     "A simple and easy-to-use raylib projects builder"      # Project description
+PROJECT_PUBLISHER_NAME                  "raylib technologies"               # Project publisher name
+PROJECT_DEVELOPER_NAME                  "Ramon Santamaria"                  # Project developer name
+PROJECT_DEVELOPER_URL                   "https://www.raylibtech.com"        # Project developer webpage url
+PROJECT_DEVELOPER_EMAIL                 "ray@raylibtech.com"                # Project developer email
+PROJECT_ICON_FILE                       "path/to/file/icon.ico"             # Project icon file
+PROJECT_LOGO_FILE                       "path/to/file/logo.png"             # Project logo image, useful for imagery generation
+PROJECT_SPLASH_FILE                     "path/to/file/splash.png"           # Project splash image, useful for imagery generation
+PROJECT_EULA_FILE                       "path/to/file/EULA.txt"             # Project End-User-License-Agreement
 
-PROJECT_SOURCE_DIR                  "path/to/sources/directory"         # Project sources directory, including all required code files (C/C++)
-PROJECT_SOURCE_FILES                "path/to/file/rpc.c" \              # Project source code files, can be split in multiple lines, using '\'
-                                    "path/to/file/source01.c" \
-                                    "path/to/file/source02.c"
+PROJECT_SOURCE_PATH                     "path/to/sources/directory"         # Project sources directory, including all required code files (C/C++)
+PROJECT_SOURCE_FILES                    "path/to/file/rpb.c"                # Project source code files, can be split in multiple lines, using '\'
+#                                    "path/to/file/source01.c" \
+#                                    "path/to/file/source02.c"
 
-PROJECT_RESOURCES_DIR               "path/to/resources/directory"       # Project resources directory, including all required resources
-PROJECT_RESOURCE_FILES              "resources/images/player.png" \     # Project resource files, can be split in multiple lines
-                                    "reources/audio/music.mp3"
-PROJECT_RESOURCES_OUTPUT_PATH       "destination/path/for/resources"    # Project resources destination path
+PROJECT_RESOURCES_PATH                  "path/to/resources/directory"       # Project resources directory, including all required resources
+PROJECT_RESOURCE_FILES                  "resources/images/player.png"       # Project resource files, can be split in multiple lines
+#                                       "reources/audio/music.mp3"
+PROJECT_RESOURCES_OUTPUT_PATH           "destination/path/for/resources"    # Project resources destination path
 
-PROJECT_OUTPUT_PATH                 "destination/project/path"          # Project structure generation output path
+PROJECT_FLAG_VALIDATE_RESOURCES         1                                   # Flag: request resources validation on building -> generate report
+
+PROJECT_GEN_OUTPUT_PATH                 "destination/project/path"          # Project structure generation output path
 
 # TODO: Consider Localization/I18N config options
 #------------------------------------------------------------------------------------
 
-# Build settings
+# raylib settings
 #------------------------------------------------------------------------------------
+RAYLIB_SRC_PATH                         "path/to/raylib/src"                # Path to raylib source code, to be build for target platform
+RAYLIB_OPENGL_VERSION                   "3.3"                               # OpenGL version to be used by raylib, WARNING: Platform dependant!
+# TODO: Add raylib config.h properties, organize by modules
+#------------------------------------------------------------------------------------
+
+# Build settings
 # General settings (common to all platforms)
-BUILD_RAYLIB_SRC_PATH               "path/to/raylib/src"                # Path to raylib source code, to be build for target platform
-BUILD_RAYLIB_OPENGL_VERSION         "1.1"                               # OpenGL version to be used by raylib, WARNING: Platform dependant!
+#------------------------------------------------------------------------------------
+BUILD_OUTPUT_PATH                       "path/to/output"                    # Build output path
 
-BUILD_SYSTEM_SUPPORTED              "Makefile"                          # Script, Makefile, VSCode, VS2022, CMake
-BUILD_OUTPUT_PATH                   "path/to/output"                    # Build output path
+BUILD_PLATFORM                          "Windows"                           # Build target platform (Supported: Windows, Linux, macOS, Android, Web)
+BUILD_ARCHITECTURE                      "x86-64"                            # Build architecture (Supported: x86-64, Win32, arm64)
+BUILD_MODE                              "RELEASE"                           # Build mode (Supported: DEBUG, RELEASE, DEBUG_DLL, RELEASE_DLL)
 
-BUILD_PLATFORM                      "Windows"                           # Supported: Windows, Linux, macOS, Android, Web
-BUILD_ARCHITECTURE                  "x86-64"                            # Architectures: x86-64, Win32, arm64
-BUILD_MODE                          "RELEASE"                           # Modes: DEBUG, RELEASE, DEBUG_DLL, RELEASE_DLL
+BUILD_FLAG_GEN_SCRIPT                   0                                   # On project structure generation, request pre-configured build system: Script
+BUILD_FLAG_GEN_MAKEFILE                 1                                   # On project structure generation, request pre-configured build system: Makefile
+BUILD_FLAG_GEN_VSCODE                   0                                   # On project structure generation, request pre-configured build system: VScode
+BUILD_FLAG_GEN_VS2022                   1                                   # On project structure generation, request pre-configured build system: VS2022
+BUILD_FLAG_GEN_CMAKE                    0                                   # On project structure generation, request pre-configured build system: CMake
 
-BUILD_FLAG_VALIDATE_RESOURCES       1                                   # Flag: request resources validation on building -> generate report
-BUILD_FLAG_PACKAGE_RESOURCES        0                                   # Flag: request resources packaging on building
-BUILD_FLAG_PACKAGE_ZIPPED           0                                   # Flag: request package zipped
-BUILD_FLAG_GENERATE_IMAGERY         0                                   # Flag: request project imagery generation: Social Cards, itchio, Steam...
+BUILD_FLAG_PACKAGE_RESOURCES            0                                   # Flag: request resources packaging on building
+#------------------------------------------------------------------------------------
 
-# Platform-specific settings: Windows
-BUILD_WINDOWS_MSBUILD_PATH          "path/to/msbuild"                   # Path to MSBuild system, required to build VS2022 solution
-BUILD_WINDOWS_W64DEVKIT_PATH        "path/to/w64devkit"                 # Path to w64devkit (GCC), required to use Makefile building
-BUILD_WINDOWS_SIGNTOOL_PATH         "path/to/signtool"                  # Path to signtool in case program needs to be signed (certificate required)
+# Platform-specific settings
+#------------------------------------------------------------------------------------
+# Platform: Windows
+PLATFORM_WINDOWS_MSBUILD_PATH           "path/to/msbuild"                   # Path to MSBuild system, required to build VS2022 solution
+PLATFORM_WINDOWS_W64DEVKIT_PATH         "path/to/w64devkit"                 # Path to w64devkit (GCC), required to use Makefile building
+PLATFORM_WINDOWS_SIGNTOOL_PATH          "path/to/signtool"                  # Path to signtool in case program needs to be signed (certificate required)
 
-# Platform-specific settings: macOS
-#BUILD_MACOS_BUNDLE_NAME            "project.name"                      # Bundle name
-#BUILD_MACOS_BUNDLE_VERSION         1                                   # Bundle version
-#BUILD_MACOS_BUNDLE_IDENTIFIER      "project.identifier"                # Bundle project identifier
-BUILD_MACOS_BUNDLE_INFO_PATH        "path/to/Info.plist"                # Path to macOS bundle options (Info.plist)
+# Platform: macOS
+#PLATFORM_MACOS_BUNDLE_NAME             "project.name"                      # Bundle name
+#PLATFORM_MACOS_BUNDLE_VERSION          1                                   # Bundle version
+#PLATFORM_MACOS_BUNDLE_IDENTIFIER       "project.identifier"                # Bundle project identifier
+PLATFORM_MACOS_BUNDLE_INFO_FILE         "path/to/Info.plist"                # Path to macOS bundle options (Info.plist)
 
-# Platform-specific settings: HTML5
-BUILD_HTML5_EMSDK_PATH              "path/to/emsdk"                     # Path to emsdk, required for Web building
-BUILD_HTML5_SHELL_PATH              "path/to/shell.html"                # Path to shell file to be used by emscripten
-BUILD_HTML5_HEAP_SIZE               128                                 # Required build heap size in MB
-#BUILD_HTML5_USE_ASINCIFY           0                                   # Flag: use ASINCIFY mode on building
-#BUILD_HTML5_USE_WEBGL2             0                                   # Flag: use WebGL2 (OpenGL ES 3.1) instead of default WebGL1 (OpenGL ES 2.0)
+# Platform: HTML5
+PLATFORM_HTML5_EMSDK_PATH               "path/to/emsdk"                     # Path to emsdk, required for Web building
+PLATFORM_HTML5_SHELL_FILE               "path/to/shell.html"                # Path to shell file to be used by emscripten
+PLATFORM_HTML5_HEAP_SIZE                128                                 # Required build heap size in MB
+#PLATFORM_HTML5_FLAG_USE_ASINCIFY       0                                   # Flag: use ASINCIFY mode on building
+#PLATFORM_HTML5_FLAG_USE_WEBGL2         0                                   # Flag: use WebGL2 (OpenGL ES 3.1) instead of default WebGL1 (OpenGL ES 2.0)
 
-# Platform-specific settings: Android
-BUILD_ANDROID_SDK_PATH              "path/to/android-sdk"               # Path to Android SDK, required for Android App building and support tools
-BUILD_ANDROID_NDK_PATH              "path/to/android-ndk-r28"           # Path to Android NDK, required for C native building to Android
-BUILD_ANDROID_JAVE_SDK_PATH         "path/to/java"                      # Path to Java SDK, required for some tools
+# Platform: Android
+PLATFORM_ANDROID_SDK_PATH               "path/to/android-sdk"               # Path to Android SDK, required for Android App building and support tools
+PLATFORM_ANDROID_NDK_PATH               "path/to/android-ndk-r28"           # Path to Android NDK, required for C native building to Android
+PLATFORM_ANDROID_JAVE_SDK_PATH          "path/to/java"                      # Path to Java SDK, required for some tools
+PLATFORM_ANDROID_MIN_SDK_VERSION        19                                  # Minimum SDK version required
+PLATFORM_ANDROID_TARGET_SDK_VERSION     36                                  # Target SDK version
+PLATFORM_ANDROID_MANIFEST_FILE          "path/to/AndroidManifest.xml"       # Path to Android manifest, including build options
+PLATFORM_ANDROID_PACKAGE                "com.project.cool"                  # Package identifier
 
-BUILD_ANDROID_MIN_SDK_VERSION       19                                  # Minimum SDK version required
-BUILD_ANDROID_TARGET_SDK_VERSION    36                                  # Target SDK version
-BUILD_ANDROID_MANIFEST_PATH         "path/to/AndroidManifest.xml"       # Path to Android manifest, including build options
-BUILD_ANDROID_PACKAGE               "com.project.cool"                  # Package identifier
+# Platform: DRM
+PLATFORM_DRM_COMPILER_PATH              "path/to/gcc-abi"                   # Path to DRM cross-compiler for target ABI
 
-# Platform-specific settings: Dreamcast
-BUILD_DREAMCAST_SDK_PATH            "path/to/dcdev-sdk"                 # Path to Dreamcast SDK (KallistiOS), required for Dreamcast building
+# Platform: FreeBSD
+
+# Platform: Dreamcast
+PLATFORM_DREAMCAST_SDK_PATH             "path/to/dcdev-sdk"                 # Path to Dreamcast SDK (KallistiOS), required for Dreamcast building
+#------------------------------------------------------------------------------------
+
+# Deploy settings
+#------------------------------------------------------------------------------------
+DEPLOY_FLAG_ZIP_PACKAGE                 0                                   # Flag: request package to be zipped for distribution
+DEPLOY_FLAG_RIF_INSTALLER               0                                   # Flag: request installer creation using rInstallFriendly tool
+#DEPLOY_FLAG_INCUDE_EULA                1                                   # Flag: include EULA file on package (vs LICENSE file for FOSS)
+
+# TODO: Itchio, Steam, resources-packaging, installer creation tooling and options...
+#------------------------------------------------------------------------------------
+
+# Imagery edition and generation
+#------------------------------------------------------------------------------------
+IMAGERY_FLAG_GENERATE                   0                                   # Flag: request project imagery generation: Social Cards, itchio, Steam...
+
+# TODO: Options for imagery edition and generation
 #------------------------------------------------------------------------------------
