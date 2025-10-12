@@ -29,10 +29,10 @@
 PLATFORM              ?= PLATFORM_DESKTOP
 
 # Define project variables
-PROJECT_NAME          ?= raylib_project_creator
+PROJECT_NAME          ?= rpc
 PROJECT_VERSION       ?= 1.0
 PROJECT_BUILD_PATH    ?= .
-PROJECT_SOURCE_FILES  ?= raylib_project_creator.c external/tinyfiledialogs.c
+PROJECT_SOURCE_FILES  ?= rpc.c external/tinyfiledialogs.c
 
 RAYLIB_SRC_PATH       ?= C:\GitHub\raylib\src
 RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_SRC_PATH)
