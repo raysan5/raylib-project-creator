@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
 
                 strcpy(config->Building.compilerPath, "C:\\raylib\\w64devkit\\bin");
                 strcpy(config->Building.raylibSrcPath, "C:\\raylib\\raylib\\src");
-                
+
                 SetupProject(config);
 
                 RL_FREE(config);
@@ -373,7 +373,7 @@ int main(int argc, char *argv[])
     strcpy(config->Project.outputPath, ".");
 
     strcpy(config->Building.compilerPath, "C:\\raylib\\w64devkit\\bin");
-    strcpy(config->Building.raylibSrcPath, "C:\\raylib\\raylib\\src");    
+    strcpy(config->Building.raylibSrcPath, "C:\\raylib\\raylib\\src");
 
     // Source file names (without path) are used for display on source textbox
     srcFileNameList = (char **)RL_CALLOC(256, sizeof(char *)); // Max number of input source files supported
