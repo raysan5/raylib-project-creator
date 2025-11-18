@@ -63,8 +63,8 @@
 #define TOOL_NAME               "raylib project creator"
 #define TOOL_SHORT_NAME         "rpc"
 #define TOOL_VERSION            "2.0"
-#define TOOL_DESCRIPTION        "A simple and easy-to-use raylib project creator"
-#define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use\nraylib project creator"
+#define TOOL_DESCRIPTION        "A simple and easy-to-use raylib projects creator"
+#define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use\nraylib projects creator"
 #define TOOL_RELEASE_DATE       "Sep.2025"
 #define TOOL_LOGO_COLOR         0x000000ff
 #define TOOL_CONFIG_FILENAME    "rpc.ini"
