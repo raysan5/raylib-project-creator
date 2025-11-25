@@ -74,6 +74,7 @@
 #if defined(PLATFORM_WEB)
     #define CUSTOM_MODAL_DIALOGS            // Force custom modal dialogs usage
     #include <emscripten/emscripten.h>      // Emscripten library - LLVM to JavaScript compiler
+    #include <emscripten/html5.h>           // Emscripten HTML5 browser functionality (emscripten_set_beforeunload_callback)
 #endif
 
 #define RAYGUI_IMPLEMENTATION
@@ -355,7 +356,7 @@ static void SaveApplicationConfig(void);
 static void SaveWebLocalStorage(const char *key, const char *value);
 static char *LoadWebLocalStorage(const char *key);
 // Web function to be called before page unload/close
-static const char *WebBeforeUnload(int eventType, const void *reserved, void *userData) { SaveApplicationConfig(); return NULL; }
+static const char *RunBeforeWebUnload(int eventType, const void *reserved, void *userData) { SaveApplicationConfig(); return NULL; }
 #endif
 //------------------------------------------------------------------------------------
 
@@ -565,7 +566,7 @@ int main(int argc, char *argv[])
     LoadApplicationConfig();
 #if defined(PLATFORM_WEB)
     // Set callback to automatically save app config on page closing
-    emscripten_set_beforeunload_callback(NULL, WebBeforeUnload);
+    emscripten_set_beforeunload_callback(NULL, RunBeforeWebUnload);
 #endif
     //-------------------------------------------------------------------------------------
 
