@@ -21,12 +21,12 @@
 *       2.0  (xx-Nov-2025)  ADDED: Load and save project configuration data
 *                           ADDED: Resource scan from code files
 *                           REVIEWED: Resource management, copy to generated project
-* 
+*
 *       1.1  (30-Sep-2024)  ADDED: Support raylib path as property on VS2022 projects
 *                           ADDED: Support for HighDPI/4K monitors, scaling UI automatically
 *                           REVIEWED: Issue with browser files filter (*.c;*.h) not working properly
 *                           REVIEWED: Issue while building Basic Sample
-* 
+*
 *       1.0  (26-Sep-2024)  First release
 *
 *   DEPENDENCIES:
@@ -104,7 +104,7 @@
 
 
 // miniz: Single C source file zlib-replacement library
-// https://github.com/richgel999/miniz
+// Ref: https://github.com/richgel999/miniz
 #include "external/miniz.h"                 // ZIP packaging functions definition
 #include "external/miniz.c"                 // ZIP packaging implementation
 

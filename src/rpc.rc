@@ -5,10 +5,10 @@ PRODUCTVERSION  1,0,0,0
 BEGIN
   BLOCK "StringFileInfo"
   BEGIN
-	//BLOCK "080904E4" 	// English UK
-    BLOCK "040904E4"	// English US
+    //BLOCK "080904E4"     // English UK
+    BLOCK "040904E4"    // English US
     BEGIN
-	  VALUE "CompanyName", "raylibtech"
+      VALUE "CompanyName", "raylibtech"
       VALUE "FileDescription", "raylib project creator | A simple and easy-to-use raylib build projects creator"
       VALUE "FileVersion", "1.0"
       VALUE "InternalName", "rpc"
@@ -20,7 +20,7 @@ BEGIN
   END
   BLOCK "VarFileInfo"
   BEGIN
-	//VALUE "Translation", 0x809, 1252	// English UK
-    VALUE "Translation", 0x409, 1252	// English US
+    //VALUE "Translation", 0x809, 1252    // English UK
+    VALUE "Translation", 0x409, 1252    // English US
   END
 END
