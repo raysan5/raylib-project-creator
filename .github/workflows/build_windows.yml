@@ -20,7 +20,7 @@ jobs:
 
     # WARNING: Project (internal) name could not be the same as repository name
     env:
-      REPO_NAME: ${{ github.event.repository.name }}
+      PROJECT_REPO_NAME: ${{ github.event.repository.name }}
       PROJECT_NAME: rpc
       PROJECT_BUILD_PATH: "${{ github.event.repository.name }}\\projects\\VS2022\\build\\rpc\\bin\\x64\\Release"
       PROJECT_RELEASE_PATH: rpc_dev_win_x64
@@ -30,7 +30,7 @@ jobs:
     - name: Checkout this repo
       uses: actions/checkout@master
       with:
-        path: ${{ env.REPO_NAME }}
+        path: ${{ env.PROJECT_REPO_NAME }}
       
     - name: Checkout raylib repo
       uses: actions/checkout@v4
@@ -59,7 +59,7 @@ jobs:
     - name: Build raylib Library + Product (VS2022 solution)
       run: |
         dir
-        cd ${{ env.REPO_NAME }}/projects/VS2022
+        cd ${{ env.PROJECT_REPO_NAME }}/projects/VS2022
         msbuild.exe ${{ env.PROJECT_NAME }}.sln /target:${{ env.PROJECT_NAME }} /property:Configuration=Release /property:Platform=x64 /property:RaylibSrcPath="..\..\..\..\raylib\src"
         cd ../..
       shell: cmd
@@ -69,8 +69,8 @@ jobs:
         dir ${{ env.PROJECT_BUILD_PATH }}
         copy /Y ${{ env.PROJECT_BUILD_PATH }}\${{ env.PROJECT_NAME }}.exe ${{ env.PROJECT_RELEASE_PATH }}\${{ env.PROJECT_NAME }}.exe
         xcopy ${{ env.PROJECT_NAME }}\${{ env.PROJECT_RESOURCES_PATH }} ${{ env.PROJECT_RELEASE_PATH }}\template /s /e /i
-        copy /Y ${{ env.REPO_NAME }}\README.md ${{ env.PROJECT_RELEASE_PATH }}\README.md
-        copy /Y ${{ env.REPO_NAME }}\LICENSE ${{ env.PROJECT_RELEASE_PATH }}\LICENSE
+        copy /Y ${{ env.PROJECT_REPO_NAME }}\README.md ${{ env.PROJECT_RELEASE_PATH }}\README.md
+        copy /Y ${{ env.PROJECT_REPO_NAME }}\LICENSE ${{ env.PROJECT_RELEASE_PATH }}\LICENSE
         dir ${{ env.PROJECT_RELEASE_PATH }}
         7z a .\${{ env.PROJECT_RELEASE_PATH }}.zip .\${{ env.PROJECT_RELEASE_PATH }}
       shell: cmd
