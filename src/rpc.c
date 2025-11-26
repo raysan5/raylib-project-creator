@@ -2064,11 +2064,8 @@ static void LoadApplicationConfig(void)
         // Load required config variables
         // NOTE: Keys not found default to 0 value, unless fallback is requested
         windowAboutState.showSplash = rini_get_value(config, "SHOW_WINDOW_WELCOME");
-        //mainToolbarState.showInfoWindowActive = rini_get_value_fallback(config, "SHOW_WINDOW_INFO", 1);
-        //mainToolbarState.showTooltips = rini_get_value_fallback(config, "SHOW_CONTROL_TOOLTIPS", 1); // Default to 1 if key not found
         windowMaximized = rini_get_value(config, "INIT_WINDOW_MAXIMIZED");
         mainToolbarState.visualStyleActive = rini_get_value(config, "GUI_VISUAL_STYLE");
-        //mainToolbarState.cleanModeActive = rini_get_value(config, "CLEAN_WINDOW_MODE");
 
         rini_unload(&config);
 
@@ -2101,14 +2098,10 @@ static void SaveApplicationConfig(void)
     int windowMaximized = (int)IsWindowMaximized();
 #endif
     rini_set_value(&config, "SHOW_WINDOW_WELCOME", (int)windowAboutState.showSplash, "Show welcome window at initialization");
-    //rini_set_value(&config, "SHOW_WINDOW_INFO", (int)mainToolbarState.showInfoWindowActive, "Show image info window");
-    //rini_set_value(&config, "SHOW_CONTROL_TOOLTIPS", (int)mainToolbarState.showTooltips, "Show controls tooltips on mouse hover");
 #if defined(PLATFORM_DESKTOP)
     rini_set_value(&config, "INIT_WINDOW_MAXIMIZED", (int)windowMaximized, "Initialize window maximized");
 #endif
-    //rini_set_value(&config, "SHOW_IMAGE_GRID", (int)mainToolbarState.helperGridActive, "Show image grid");
     rini_set_value(&config, "GUI_VISUAL_STYLE", (int)mainToolbarState.visualStyleActive, "UI visual style selected");
-    //rini_set_value(&config, "CLEAN_WINDOW_MODE", (int)mainToolbarState.cleanModeActive, "Clean window mode enabled");
 
 #if defined(PLATFORM_WEB)
     int outputSize = 0;
