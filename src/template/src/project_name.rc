@@ -8,11 +8,11 @@ BEGIN
     //BLOCK "080904E4"     // English UK
     BLOCK "040904E4"    // English US
     BEGIN
-      VALUE "CompanyName", "ProjectDev"
+      VALUE "CompanyName", "ProjectDeveloper"
       VALUE "FileDescription", "CommercialName | ProjectDescription"
       VALUE "FileVersion", "1.0"
       VALUE "InternalName", "project_name"
-      VALUE "LegalCopyright", "(c) 2025 ProjectDev"
+      VALUE "LegalCopyright", "(c) ProjectYear ProjectDeveloper"
       //VALUE "OriginalFilename", "project_name.exe"
       VALUE "ProductName", "CommercialName"
       VALUE "ProductVersion", "1.0"

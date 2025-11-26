@@ -331,7 +331,6 @@ else
 endif
 
 # Default target entry
-# NOTE: We call this Makefile target or Makefile.Android target
 all:
 	$(MAKE) $(MAKEFILE_TARGET)
 
