@@ -355,6 +355,7 @@
     <ClInclude Include="..\..\..\src\gui_main_toolbar.h" />
     <ClInclude Include="..\..\..\src\gui_window_about_welcome.h" />
     <ClInclude Include="..\..\..\src\gui_window_help.h" />
+    <ClInclude Include="..\..\..\src\rpconfig.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\external\tinyfiledialogs.c" />
