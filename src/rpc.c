@@ -640,7 +640,22 @@ static void UpdateDrawFrame(void)
     // New style file, previous in/out files registeres are reseted
     if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_N)) || mainToolbarState.btnNewFilePressed)
     {
-        // TODO: Create new project
+        memset(config, 0, sizeof(rpcProjectConfig));
+        config->Project.selectedSource = 2;  // Custom files
+        strcpy(config->Project.internalName, "cool_project");
+        strcpy(config->Project.commercialName, "Cool Project");
+        strcpy(config->Project.description, "my new cool project");
+        strcpy(config->Project.developerName, "raylib technologies");
+        strcpy(config->Project.developerUrl, "www.raylibtech.com");
+        //strcpy(config->Project.sourceFilePaths[0], argv[1]);
+        //config->Project.sourceFileCount = 1;
+        strcpy(config->Project.generationOutPath, ".");
+
+        strcpy(config->Platform.Windows.w64devkitPath, "C:\\raylib\\w64devkit\\bin");
+        strcpy(config->raylib.srcPath, "C:\\raylib\\raylib\\src");
+        config->Project.year = currentYear;
+        config->Build.requestedBuildSystems[1] = true;
+        config->Build.requestedBuildSystems[3] = true;
     }
 
     // Show dialog: load input project config file (.rpc)
