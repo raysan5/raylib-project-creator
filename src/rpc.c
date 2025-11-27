@@ -117,6 +117,7 @@
 #define RPNG_IMPLEMENTATION
 #include "external/rpng.h"                  // PNG chunks management
 
+#define RINI_MAX_TEXT_SIZE      256
 #define RINI_IMPLEMENTATION
 #include "external/rini.h"                  // Config file values reader/writer
 
@@ -164,7 +165,9 @@ static const char *toolName = TOOL_NAME;
 static const char *toolVersion = TOOL_VERSION;
 static const char *toolDescription = TOOL_DESCRIPTION;
 
-static const int screenWidth = 960;        // Default screen width (at initialization)
+// Basic program variables
+//----------------------------------------------------------------------------------
+static const int screenWidth = 960;         // Default screen width (at initialization)
 static const int screenHeight = 660;        // Default screen height (at initialization)
 
 // NOTE: Max length depends on OS, in Windows MAX_PATH = 256
@@ -182,13 +185,6 @@ static RenderTexture2D screenTarget = { 0 }; // Render texture to render the too
 
 static Vector2 panelScroll = { 0 };
 static Rectangle panelView = { 0 };
-
-static bool showLoadSourceFilesDialog = false;
-static bool showLoadResourcePathDialog = false;
-static bool showLoadRaylibSourcePathDialog = false;
-static bool showLoadCompilerPathDialog = false;
-static bool showLoadOutputPathDialog = false;
-static bool showExportProjectProgress = false;
 
 static bool showInfoMessagePanel = false;
 static const char *infoTitle = NULL;
@@ -210,6 +206,8 @@ static bool showMessageExit = false;        // Show message: exit (quit)
 
 static double baseTime = 0;                 // Base time in seconds to start counting
 static double currentTime = 0;              // Current time counter in seconds
+
+static int currentYear = 2025;              // Current year for project, retrieved at init
 //-----------------------------------------------------------------------------------
 
 // Support Message Box
@@ -237,6 +235,20 @@ static bool projectResourcePathEditMode = false;
 static bool buildingRaylibPathEditMode = false;
 static bool buildingCompilerPathEditMode = false;
 static bool buildingOutputPathEditMode = false;
+//-----------------------------------------------------------------------------------
+
+// GUI: Custom file dialogs
+//-----------------------------------------------------------------------------------
+static bool showLoadProjectDialog = false;
+static bool showSaveProjectDialog = false;
+static bool showGenerateProjectDialog = false;  // Not used
+static bool showGenerateProjectProgress = false;
+static bool showLoadOutputPathDialog = false;
+
+static bool showLoadSourceFilesDialog = false;
+static bool showLoadResourcePathDialog = false;
+static bool showLoadRaylibSourcePathDialog = false;
+static bool showLoadCompilerPathDialog = false;
 //-----------------------------------------------------------------------------------
 
 // GUI: Main toolbar panel
@@ -267,20 +279,13 @@ static bool showIssueReportWindow = false;
 // GUI: Export Window
 //-----------------------------------------------------------------------------------
 static bool windowExportActive = false;
-static int exportFormatActive = 0;         // ComboBox file type selection
+static int exportFormatActive = 0;         // ComboBox file selectedSource selection
 //-----------------------------------------------------------------------------------
 
 // GUI: Exit Window
 //-----------------------------------------------------------------------------------
 static bool closeWindow = false;
 static bool windowExitActive = false;
-//-----------------------------------------------------------------------------------
-
-// GUI: Custom file dialogs
-//-----------------------------------------------------------------------------------
-static bool showLoadFileDialog = false;
-static bool showSaveFileDialog = false;
-static bool showExportFileDialog = false;
 //-----------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------
@@ -365,12 +370,18 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    // Get current year
+    time_t now = time(NULL);
+    struct tm *nowTime = localtime(&now); 
+    currentYear = nowTime->tm_year + 1900;
+
 #if !defined(_DEBUG)
     SetTraceLogLevel(LOG_NONE);         // Disable raylib trace log messsages
 #endif
 #if defined(COMMAND_LINE_ONLY)
     ProcessCommandLine(argc, argv);
 #else
+
 #if defined(PLATFORM_DESKTOP)
     // Command-line usage mode
     //--------------------------------------------------------------------------------------
@@ -499,7 +510,7 @@ int main(int argc, char *argv[])
 
     // Welcome panel data
     infoTitle = "WELCOME! LET'S CREATE A PROJECT!";
-    infoMessage = "Provide some source code files (.c) to generate project!";// \nOr choose a default project type!";
+    infoMessage = "Provide some source code files (.c) to generate project!";// \nOr choose a default project selectedSource!";
     infoButton = "Sure! Let's start!";
     showInfoMessagePanel = true;
 
@@ -554,7 +565,7 @@ int main(int argc, char *argv[])
     if ((inFileName[0] != '\0') && (IsFileExtension(inFileName, ".rpc")))
     {
         // TODO: Load tool data from file
-        //rpbConfigData data = LoadProjectData(inFileName);
+        //rpbConfigData data = LoadProjectConfig(inFileName);
 
         // TODO: Do something with loaded data
     }
@@ -658,14 +669,14 @@ static void UpdateDrawFrame(void)
         config->Build.requestedBuildSystems[3] = true;
     }
 
-    // Show dialog: load input project config file (.rpc)
-    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) showLoadFileDialog = true;
+    // Show dialog: load project config file (.rpc)
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) showLoadProjectDialog = true;
 
-    // Show dialog: export project
+    // Show dialog: save project config file (.rpc)
     if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S))
     {
         strcpy(outFileName, TextToLower(config->Project.internalName));
-        showExportProjectProgress = true;
+        showSaveProjectDialog = true;
     }
 
     // Show dialog: load source files
@@ -691,12 +702,15 @@ static void UpdateDrawFrame(void)
         else if (showInfoMessagePanel) showInfoMessagePanel = false;
         else windowExitActive = !windowExitActive;
 #else
+        else if (showLoadProjectDialog) showLoadProjectDialog = false;
+        else if (showSaveProjectDialog) showLoadProjectDialog = false;
+        else if (showGenerateProjectDialog) showGenerateProjectDialog = false;
+        else if (showGenerateProjectProgress) showGenerateProjectProgress = false;
+        else if (showLoadOutputPathDialog) showLoadOutputPathDialog = false;
         else if (showLoadSourceFilesDialog) showLoadSourceFilesDialog = false;
         else if (showLoadResourcePathDialog) showLoadResourcePathDialog = false;
         else if (showLoadRaylibSourcePathDialog) showLoadRaylibSourcePathDialog = false;
         else if (showLoadCompilerPathDialog) showLoadCompilerPathDialog = false;
-        else if (showLoadOutputPathDialog) showLoadCompilerPathDialog = false;
-        else if (showExportProjectProgress) showExportProjectProgress = false;
 #endif
     }
     //----------------------------------------------------------------------------------
@@ -704,12 +718,12 @@ static void UpdateDrawFrame(void)
     // Main toolbar logic
     //----------------------------------------------------------------------------------
     // File options logic
-    if (mainToolbarState.btnLoadFilePressed) showLoadFileDialog = true;
+    if (mainToolbarState.btnLoadFilePressed) showLoadProjectDialog = true;
     else if (mainToolbarState.btnSaveFilePressed)
     {
         memset(outFileName, 0, 512);
         strcpy(outFileName, TextFormat("%s.rpc", config->Project.internalName));
-        showExportFileDialog = true;
+        showSaveProjectDialog = true;
     }
 
     // Visual options logic
@@ -779,12 +793,15 @@ static void UpdateDrawFrame(void)
         windowAboutState.windowActive ||
         showIssueReportWindow ||
         showInfoMessagePanel ||
+        showLoadProjectDialog ||
+        showSaveProjectDialog ||
+        showLoadOutputPathDialog ||
+        showGenerateProjectDialog ||
+        showGenerateProjectProgress ||
         showLoadSourceFilesDialog ||
         showLoadResourcePathDialog ||
         showLoadRaylibSourcePathDialog ||
-        showLoadCompilerPathDialog ||
-        showLoadOutputPathDialog ||
-        showExportProjectProgress) lockBackground = true;
+        showLoadCompilerPathDialog) lockBackground = true;
     else lockBackground = false;
 
     if (lockBackground) GuiLock();
@@ -1005,7 +1022,7 @@ static void UpdateDrawFrame(void)
         if (result == 1)    // Export button pressed
         {
             windowExportActive = false;
-            showExportFileDialog = true;
+            showGenerateProjectDialog = true;
         }
         else if (result == 0) windowExportActive = false;
     }
@@ -1013,7 +1030,7 @@ static void UpdateDrawFrame(void)
 
     // GUI: Load File Dialog (and loading logic)
     //----------------------------------------------------------------------------------------
-    if (showLoadFileDialog)
+    if (showLoadProjectDialog)
     {
 #if defined(CUSTOM_MODAL_DIALOGS)
         int result = GuiFileDialog(DIALOG_MESSAGE, "Load project file", inFileName, "Ok", "Just drag and drop your file!");
@@ -1025,7 +1042,7 @@ static void UpdateDrawFrame(void)
             // Load project file
         }
 
-        if (result >= 0) showLoadFileDialog = false;
+        if (result >= 0) showLoadProjectDialog = false;
     }
     //----------------------------------------------------------------------------------------
 
@@ -1177,7 +1194,7 @@ static void UpdateDrawFrame(void)
 
     // GUI: Export Project Dialog (and saving logic)
     //----------------------------------------------------------------------------------------
-    if (showExportProjectProgress)
+    if (showGenerateProjectProgress)
     {
         GuiPanel((Rectangle){ -10, screenHeight/2 - 100, screenWidth + 20, 200 }, NULL);
 
@@ -1196,7 +1213,7 @@ static void UpdateDrawFrame(void)
         if (exportProjectProgress < 100.0f) GuiDisable();
         if (GuiButton((Rectangle){ screenWidth/4, screenHeight/2 + 40, screenWidth/2, 40 }, "GREAT!"))
         {
-            showExportProjectProgress = false;
+            showGenerateProjectProgress = false;
         }
         GuiEnable();
 
@@ -1204,7 +1221,7 @@ static void UpdateDrawFrame(void)
         GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize);
         GuiSetStyle(DEFAULT, TEXT_SPACING, textSpacing);
 
-        if (!showExportProjectProgress)
+        if (!showGenerateProjectProgress)
         {
 #if defined(PLATFORM_WEB)
             strcpy(outFileName, TextFormat("%s/%s", config->Project.generationOutPath, TextToLower(config->Project.repoName)));
@@ -1268,7 +1285,7 @@ static void ShowCommandLineInfo(void)
     printf("// %s v%s - %s     //\n", TOOL_NAME, TOOL_VERSION, TOOL_DESCRIPTION);
     printf("// powered by raylib v%s and raygui v%s                               //\n", RAYLIB_VERSION, RAYGUI_VERSION);
     printf("//                                                                              //\n");
-    printf("// Copyright (c) 2024-2025 Ramon Santamaria (@raysan5)                          //\n");
+    printf("// Copyright (c) 2024-%i Ramon Santamaria (@raysan5)                        //\n", currentYear);
     printf("//                                                                              //\n");
     printf("//////////////////////////////////////////////////////////////////////////////////\n\n");
 
