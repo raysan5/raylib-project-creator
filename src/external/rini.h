@@ -84,7 +84,7 @@
 *
 *   VERSIONS HISTORY:
 *       3.0 (xx-May-2025) REDESIGN: BREAKING: Avoid the _config_ in naming
-*                         ADDED: Property to set entries as text or value
+*                         ADDED: Flag to define entries be considered as text
 *                         ADDED: Key and Value spacing defines
 *
 *       2.0 (26-Jan-2024) ADDED: Support custom comment lines (as config entries)
@@ -231,7 +231,7 @@ typedef struct {
     char key[RINI_MAX_KEY_SIZE];    // Value key identifier
     char text[RINI_MAX_TEXT_SIZE];  // Value text
     char desc[RINI_MAX_DESC_SIZE];  // Value description
-    bool isText;                    // Value should be considered as text 
+    bool is_text;                   // Value should be considered as text
 } rini_value;
 
 // rini data
@@ -304,7 +304,7 @@ RINIAPI int rini_set_value_description(rini_data *data, const char *key, const c
 // Module Internal Functions Declaration
 //----------------------------------------------------------------------------------
 static int rini_read_key(const char *buffer, char *key); // Get key from a buffer line containing key-value-(description)
-static int rini_read_value_text(const char *buffer, char *text, char *desc); // Get value text (and description) from a buffer line
+static int rini_read_value_text(const char *buffer, char *text, char *desc, bool *is_text); // Get value text (and description) from a buffer line
 
 static int rini_text_to_int(const char *text); // Convert text to int value (if possible), same as atoi()
 
@@ -476,12 +476,12 @@ void rini_save(rini_data data, const char *file_name)
                 memset(valuestr, 0, 130); 
 #if RINI_USE_TEXT_QUOTATION_MARKS
                 // Add quotation marks if required
-                if (data.values[i].isText) snprintf(valuestr, 130, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
+                if (data.values[i].is_text) snprintf(valuestr, 130, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
 #else
                 snprintf(valuestr, 130, "%s", data.values[i].text);
 #endif
                 fprintf(rini_file, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
-                    RINI_VALUE_SPACING, data.values[i].isText? valuestr : data.values[i].text, 
+                    RINI_VALUE_SPACING, data.values[i].is_text? valuestr : data.values[i].text, 
                     RINI_DESCRIPTION_DELIMITER, data.values[i].desc);
             }
         }
@@ -520,12 +520,12 @@ char *rini_save_to_memory(rini_data data)
             memset(valuestr, 0, 130); 
 #if RINI_USE_TEXT_QUOTATION_MARKS
             // Add quotation marks if required
-            if (data.values[i].isText) snprintf(valuestr, 130, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
+            if (data.values[i].is_text) snprintf(valuestr, 130, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
 #else
             snprintf(valuestr, 130, "%s", data.values[i].text);
 #endif
             offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
-                    RINI_VALUE_SPACING, data.values[i].isText? valuestr : data.values[i].text, 
+                    RINI_VALUE_SPACING, data.values[i].is_text? valuestr : data.values[i].text, 
                     RINI_DESCRIPTION_DELIMITER, data.values[i].desc);
         }
     }
@@ -650,7 +650,7 @@ int rini_set_value(rini_data *data, const char *key, int value, const char *desc
 
     result = rini_set_value_text(data, key, value_text, desc);
 
-    data->values[data->count - 1].isText = false;
+    data->values[data->count - 1].is_text = false;
 
     return result;
 }
@@ -703,7 +703,7 @@ int rini_set_value_text(rini_data *data, const char *key, const char *text, cons
                 if (desc != NULL) for (int i = 0; (i < RINI_MAX_DESC_SIZE) && (desc[i] != '\0'); i++) data->values[data->count].desc[i] = desc[i];
             }
 
-            data->values[data->count].isText = true;
+            data->values[data->count].is_text = true;
             data->count++;
             result = 0;
         }
@@ -805,6 +805,8 @@ static int rini_read_value_text(const char *buffer, char *text, char *desc)
 
         // Remove ending quotation-mark from text (if being used)
         if (buffer_ptr[value_len - 1] == RINI_VALUE_QUOTATION_MARKS) { value_len--; }
+
+        *is_text = true;
     }
 #endif
 
