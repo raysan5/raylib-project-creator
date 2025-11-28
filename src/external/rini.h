@@ -67,7 +67,7 @@
 *           Default value: ' '
 *
 *       #define RINI_VALUE_QUOTATION_MARKS
-*           Defines quotation marks to be used around text values 
+*           Defines quotation marks to be used around text values
 *           Text values are determined checking text with atoi(), only for integer values,
 *           in case of float values they are always considered as text
 *           Default value: '\"'
@@ -83,8 +83,8 @@
 *       - string.h: memset(), memcpy(), strcmp(), strlen()
 *
 *   VERSIONS HISTORY:
-*       3.0 (xx-May-2025) REDESIGN: BREAKING: Avoid the _config_ in naming
-*                         ADDED: Flag to define entries be considered as text
+*       3.0 (xx-May-2025) REDESIGN: BREAKING: Removed the _config_ in naming
+*                         ADDED: Flag to consider a text entry as text
 *                         ADDED: Key and Value spacing defines
 *
 *       2.0 (26-Jan-2024) ADDED: Support custom comment lines (as config entries)
@@ -248,11 +248,11 @@ extern "C" {                    // Prevents name mangling of functions
 //------------------------------------------------------------------------------------
 // Functions declaration
 //------------------------------------------------------------------------------------
-RINIAPI rini_data rini_load(const char *file_name);            // Load data from file (*.ini) or create a new rini object (pass NULL)
-RINIAPI rini_data rini_load_from_memory(const char *text);     // Load data from text buffer
+RINIAPI rini_data rini_load(const char *file_name);         // Load data from file (*.ini) or create a new rini object (pass NULL)
+RINIAPI rini_data rini_load_from_memory(const char *text);  // Load data from text buffer
 RINIAPI void rini_save(rini_data data, const char *file_name); // Save data to file, with custom header
-RINIAPI char *rini_save_to_memory(rini_data data);           // Save data to text buffer ('\0' EOL)
-RINIAPI void rini_unload(rini_data *data);                   // Unload data from memory
+RINIAPI char *rini_save_to_memory(rini_data data);          // Save data to text buffer ('\0' EOL)
+RINIAPI void rini_unload(rini_data *data);                  // Unload data from memory
 
 RINIAPI int rini_get_value(rini_data data, const char *key); // Get value int for provided key, returns 0 if not found
 RINIAPI const char *rini_get_value_text(rini_data data, const char *key); // Get value text for provided key
@@ -339,7 +339,7 @@ rini_data rini_load(const char *file_name)
                 // NOTE: We are also skipping sections delimiters
                 if ((buffer[0] != RINI_LINE_COMMENT_DELIMITER) &&
                     (buffer[0] != RINI_LINE_SECTION_DELIMITER) &&
-                    (buffer[0] != '\n') && (buffer[0] != '\0')) value_counter++;
+                    (buffer[0] != '\n') && (buffer[0] != '\r') && (buffer[0] != '\0')) value_counter++;
             }
 
             // WARNING: We can't store more values than its max capacity
@@ -359,12 +359,12 @@ rini_data rini_load(const char *file_name)
                     // Skip commented lines and empty lines
                     if ((buffer[0] != RINI_LINE_COMMENT_DELIMITER) &&
                         (buffer[0] != RINI_LINE_SECTION_DELIMITER) &&
-                        (buffer[0] != '\n') && (buffer[0] != '\0'))
+                        (buffer[0] != '\n') && (buffer[0] != '\r') && (buffer[0] != '\0'))
                     {
                         // Get key identifier string
                         memset(data.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
                         rini_read_key(buffer, data.values[value_counter].key);
-                        rini_read_value_text(buffer, data.values[value_counter].text, data.values[value_counter].desc);
+                        rini_read_value_text(buffer, data.values[value_counter].text, data.values[value_counter].desc, &data.values[value_counter].is_text);
 
                         value_counter++;
 
@@ -419,7 +419,7 @@ rini_data rini_load_from_memory(const char *text)
             // NOTE: We are also skipping sections delimiters
             if ((lines[l][0] != RINI_LINE_COMMENT_DELIMITER) &&
                 (lines[l][0] != RINI_LINE_SECTION_DELIMITER) &&
-                (lines[l][0] != '\n') && (lines[l][0] != '\0')) value_counter++;
+                (lines[l][0] != '\n') && (lines[l][0] != '\r') && (lines[l][0] != '\0')) value_counter++;
         }
 
         // WARNING: We can't store more values than its max capacity
@@ -436,12 +436,12 @@ rini_data rini_load_from_memory(const char *text)
                 // Skip commented lines and empty lines
                 if ((lines[l][0] != RINI_LINE_COMMENT_DELIMITER) &&
                     (lines[l][0] != RINI_LINE_SECTION_DELIMITER) &&
-                    (lines[l][0] != '\n') && (lines[l][0] != '\0'))
+                    (lines[l][0] != '\n') && (lines[l][0] != '\r') && (lines[l][0] != '\0'))
                 {
                     // Get key identifier string
                     memset(data.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
                     rini_read_key(lines[l], data.values[value_counter].key);
-                    rini_read_value_text(lines[l], data.values[value_counter].text, data.values[value_counter].desc);
+                    rini_read_value_text(lines[l], data.values[value_counter].text, data.values[value_counter].desc, &data.values[value_counter].is_text);
 
                     value_counter++;
 
@@ -462,7 +462,7 @@ void rini_save(rini_data data, const char *file_name)
 
     if (rini_file != NULL)
     {
-        char valuestr[128 + 2] = { 0 }; // Useful for text processing, adding quotation marks if required
+        char valuestr[RINI_MAX_TEXT_SIZE + 2] = { 0 }; // Useful for text processing, adding quotation marks if required
 
         for (unsigned int i = 0; i < data.count; i++)
         {
@@ -473,12 +473,12 @@ void rini_save(rini_data data, const char *file_name)
             }
             else
             {
-                memset(valuestr, 0, 130); 
+                memset(valuestr, 0, RINI_MAX_TEXT_SIZE + 2);
 #if RINI_USE_TEXT_QUOTATION_MARKS
                 // Add quotation marks if required
                 if (data.values[i].is_text) snprintf(valuestr, 130, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
 #else
-                snprintf(valuestr, 130, "%s", data.values[i].text);
+                snprintf(valuestr, RINI_MAX_TEXT_SIZE + 2, "%s", data.values[i].text);
 #endif
                 fprintf(rini_file, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
                     RINI_VALUE_SPACING, data.values[i].is_text? valuestr : data.values[i].text, 
@@ -506,7 +506,7 @@ char *rini_save_to_memory(rini_data data)
     memset(text, 0, RINI_MAX_TEXT_FILE_SIZE);
     int offset = 0;
 
-    char valuestr[128 + 2] = { 0 }; // Useful for text processing, adding quotation marks if required
+    char valuestr[RINI_MAX_TEXT_FILE_SIZE + 2] = { 0 }; // Useful for text processing, adding quotation marks if required
 
     for (unsigned int i = 0; i < data.count; i++)
     {
@@ -517,15 +517,15 @@ char *rini_save_to_memory(rini_data data)
         }
         else
         {
-            memset(valuestr, 0, 130); 
+            memset(valuestr, 0, RINI_MAX_TEXT_FILE_SIZE + 2);
 #if RINI_USE_TEXT_QUOTATION_MARKS
             // Add quotation marks if required
-            if (data.values[i].is_text) snprintf(valuestr, 130, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
+            if (data.values[i].is_text) snprintf(valuestr, RINI_MAX_TEXT_FILE_SIZE + 2, "%c%s%c", RINI_VALUE_QUOTATION_MARKS, data.values[i].text, RINI_VALUE_QUOTATION_MARKS);
 #else
-            snprintf(valuestr, 130, "%s", data.values[i].text);
+            snprintf(valuestr, RINI_MAX_TEXT_FILE_SIZE + 2, "%s", data.values[i].text);
 #endif
             offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.values[i].key, RINI_VALUE_DELIMITER,
-                    RINI_VALUE_SPACING, data.values[i].is_text? valuestr : data.values[i].text, 
+                    RINI_VALUE_SPACING, data.values[i].is_text? valuestr : data.values[i].text,
                     RINI_DESCRIPTION_DELIMITER, data.values[i].desc);
         }
     }
@@ -634,9 +634,9 @@ int rini_set_comment_line(rini_data *data, const char *comment)
 {
     int result = -1;
     char text[2] = { RINI_LINE_COMMENT_DELIMITER, '\0' };
-    
+
     result = rini_set_value_text(data, NULL, text, comment);
-    
+
     return result;
 }
 
@@ -661,7 +661,7 @@ int rini_set_value_text(rini_data *data, const char *key, const char *text, cons
 {
     int result = -1;
 
-    if ((text == NULL) || (text[0] == '\0')) return result;
+    //if ((text == NULL) || (text[0] == '\0')) return result; // WARNING: It avoids empty text
 
     if (key != NULL)
     {
@@ -691,7 +691,7 @@ int rini_set_value_text(rini_data *data, const char *key, const char *text, cons
             {
                 data->values[data->count].key[0] = '\0';
                 data->values[data->count].text[0] = RINI_LINE_COMMENT_DELIMITER;
-                if (desc != NULL) for (int i = 0; (i < RINI_MAX_DESC_SIZE) && (desc[i] != '\0'); i++) 
+                if (desc != NULL) for (int i = 0; (i < RINI_MAX_DESC_SIZE) && (desc[i] != '\0'); i++)
                     data->values[data->count].desc[i] = desc[i];
                 else data->values[data->count].desc[0] = '\0';
             }
@@ -747,7 +747,7 @@ static int rini_read_key(const char *buffer, char *key)
 }
 
 // Get string-value from a buffer line containing id-value pair
-static int rini_read_value_text(const char *buffer, char *text, char *desc)
+static int rini_read_value_text(const char *buffer, char *text, char *desc, bool *is_text)
 {
     char *buffer_ptr = (char *)buffer;
 
