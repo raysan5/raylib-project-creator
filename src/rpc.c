@@ -1352,38 +1352,45 @@ static void ShowCommandLineInfo(void)
     printf("//////////////////////////////////////////////////////////////////////////////////\n\n");
 
     printf("USAGE:\n\n");
-    printf("    > raylib_project_creator [--help] --name <project_name> --src <source_file01.c>,<source_file02.c>\n");
-    printf("             [--product <product_name>] [--desc <project_description>]\n");
-    printf("             [--dev <developer_name>] [--devweb <developer_webpage>]\n");
+    printf("    > rpc [--help] --pn <project_name> --src <source_file01.c>,<source_file02.c>\n");
+    printf("             [--rn <repo-name>] [--cn <commercial_name>] [--pv <version>]\n");
+    printf("             [--desc <project_description>] [--dev <developer_name>]\n");
+    printf("             [--devurl <developer_webpage>] [--devmail <developer_email>]\n");
     printf("             [--raylib <raylib_src_path>] [--comp <compiler_path>]\n");
     printf("             [--out <output_path>]\n");
 
     printf("\nOPTIONS:\n\n");
-    printf("    -h, --help                      : Show tool version and command line usage help\n\n");
-    printf("    -n, --name                      : Define project name\n");
+    printf("    -h, --help                          : Show tool version and command line usage help\n\n");
     printf("    -i, --src <source_file01.c>,<source_file02.c>\n");
-    printf("                                    : Define input source files(s), comma separated.\n");
-    printf("    -p, --product <product_name>    : Define product name, commercial name\n");
-    printf("    --desc <project_description>    : Define product description, use \"desc\"\n");
-    printf("    --dev <developer_name>          : Define developer name\n");
-    printf("    --devweb <developer_webpage>    : Define developer webpage\n");
-    printf("    --raylib <raylib_src_path>      : Define raylib src path (raylib.h)\n");
-    printf("    --comp <compiler_path>          : Define compiler path (ggc.exe)\n");
-    printf("    -o, --out <output_path>         : Define output path for generated project.\n");
+    printf("                                        : Define input source files(s), comma separated\n");
+    printf("    -rpc <config_file.rpc>              : Define raylib project configuration file\n");
+
+    printf("    -pn, --project-name <project_name>  : Define project internal name\n");
+    printf("    -rn, --repo-name <repository_name>  : Define project repository name\n");
+    printf("    -cn, --commercial-name <commercial_name>  : Define project commercial name\n");
+    printf("    -pv, --project-version <version>    : Define project version\n");
+    printf("    --desc <project_description>        : Define project description, use \"Project Description\"\n");
+    printf("    --dev <developer_name>              : Define developer name\n");
+    printf("    --devurl <developer_webpage>        : Define developer webpage\n");
+    printf("    --devmail <developer_email>         : Define developer email\n");
+    printf("    --raylib <raylib_src_path>          : Define raylib src path (raylib.h)\n");
+    printf("    --comp <compiler_path>              : Define compiler path (ggc.exe)\n");
+    printf("    -o, --out <output_path>             : Define output path for project generation\n");
 
     printf("\nEXAMPLES:\n\n");
-    printf("    > raylib_project_creator -n rfxgen -p rFXGen --src rfxgen.c\n");
-    printf("        Generate <rfxgen> project build system\n");
+    printf("    > rpc -pn cool_game -rn cool-game-repo -cn \"Cool Game\" -pv 1.0\n");
+    printf("        Generates project <cool_game> in output directory <cool-game-repo>\n");
 }
 
 // Process command line input
 static void ProcessCommandLine(int argc, char *argv[])
 {
     // CLI required variables
-    bool showUsageInfo = false;         // Toggle command line usage info
+    bool showUsageInfo = false;     // Toggle command line usage info
 
     if (argc == 1) showUsageInfo = true;
 
+    char *rpcFileName[256] = { 0 }; // Provided input rpc config file, overwrites any other property
     rpcProjectConfig *config = (rpcProjectConfig *)RL_CALLOC(1, sizeof(rpcProjectConfig));
 
     // Process command line arguments
@@ -1392,14 +1399,6 @@ static void ProcessCommandLine(int argc, char *argv[])
         if ((strcmp(argv[i], "-h") == 0) || (strcmp(argv[i], "--help") == 0))
         {
             showUsageInfo = true;
-        }
-        else if ((strcmp(argv[i], "-n") == 0) || (strcmp(argv[i], "--name") == 0))
-        {
-            if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
-            {
-                strcpy(config->Project.internalName, argv[i + 1]);
-            }
-            else LOG("WARNING: Name parameter provided not valid\n");
         }
         else if ((strcmp(argv[i], "-i") == 0) || (strcmp(argv[i], "--src") == 0))
         {
@@ -1422,13 +1421,48 @@ static void ProcessCommandLine(int argc, char *argv[])
             }
             else LOG("WARNING: No input file provided\n");
         }
-        else if ((strcmp(argv[i], "-p") == 0) || (strcmp(argv[i], "--product") == 0))
+        else if (strcmp(argv[i], "-rpc") == 0)
+        {
+            if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
+            {
+                if (FileExists(argv[i + 1]) && IsFileExtension(argv[i + 1], ".rpc"))
+                {
+                    strcpy(rpcFileName, argv[i + 1]);
+                }
+            }
+            else LOG("WARNING: No .rpc config file provided or not valid\n");
+        }
+        else if ((strcmp(argv[i], "-pn") == 0) || (strcmp(argv[i], "--project-name") == 0))
+        {
+            if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
+            {
+                strcpy(config->Project.internalName, argv[i + 1]);
+            }
+            else LOG("WARNING: Project internal name provided not valid\n");
+        }
+        else if ((strcmp(argv[i], "-rn") == 0) || (strcmp(argv[i], "--repo-name") == 0))
+        {
+            if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
+            {
+                strcpy(config->Project.repoName, argv[i + 1]);
+            }
+            else LOG("WARNING: Project repo name provided not valid\n");
+        }
+        else if ((strcmp(argv[i], "-cn") == 0) || (strcmp(argv[i], "--commercial-name") == 0))
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
                 strcpy(config->Project.commercialName, argv[i + 1]);
             }
-            else LOG("WARNING: Product name parameters provided not valid\n");
+            else LOG("WARNING: Project commercial name provided not valid\n");
+        }
+        else if ((strcmp(argv[i], "-pv") == 0) || (strcmp(argv[i], "--project-version") == 0))
+        {
+            if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
+            {
+                strcpy(config->Project.version, argv[i + 1]);
+            }
+            else LOG("WARNING: Project version provided not valid\n");
         }
         else if (strcmp(argv[i], "--desc") == 0)
         {
@@ -1436,7 +1470,7 @@ static void ProcessCommandLine(int argc, char *argv[])
             {
                 strcpy(config->Project.description, argv[i + 1]);
             }
-            else LOG("WARNING: Description parameters provided not valid\n");
+            else LOG("WARNING: Project description provided not valid\n");
         }
         else if (strcmp(argv[i], "--dev") == 0)
         {
@@ -1444,15 +1478,23 @@ static void ProcessCommandLine(int argc, char *argv[])
             {
                 strcpy(config->Project.developerName, argv[i + 1]);
             }
-            else LOG("WARNING: Developer parameters provided not valid\n");
+            else LOG("WARNING: Developer name provided not valid\n");
         }
-        else if (strcmp(argv[i], "--devweb") == 0)
+        else if (strcmp(argv[i], "--devurl") == 0)
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
                 strcpy(config->Project.developerUrl, argv[i + 1]);
             }
-            else LOG("WARNING: Developer web parameters provided not valid\n");
+            else LOG("WARNING: Developer url provided not valid\n");
+        }
+        else if (strcmp(argv[i], "--devmail") == 0)
+        {
+            if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
+            {
+                strcpy(config->Project.developerEmail, argv[i + 1]);
+            }
+            else LOG("WARNING: Developer email provided not valid\n");
         }
         else if (strcmp(argv[i], "--raylib") == 0)
         {
@@ -1478,6 +1520,14 @@ static void ProcessCommandLine(int argc, char *argv[])
             }
             else LOG("WARNING: Output path provided not valid\n");
         }
+    }
+
+    if (rpcFileName[0] != '\0')
+    {
+        // Propagate project config raw data into project config for generation
+        rpcProjectConfigRaw raw = LoadProjectConfigRaw(rpcFileName);
+        SyncProjectConfig(config, raw);
+        UnloadProjectConfigRaw(raw);
     }
 
     // Generate build projects
