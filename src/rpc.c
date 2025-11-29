@@ -682,13 +682,14 @@ static void UpdateDrawFrame(void)
 #else
         else if (showLoadProjectDialog) showLoadProjectDialog = false;
         else if (showSaveProjectDialog) showLoadProjectDialog = false;
-        else if (showGenerateProjectDialog) showGenerateProjectDialog = false;
+        else if (showProjectGenPathDialog) showProjectGenPathDialog = false;
         else if (showGenerateProjectProgress) showGenerateProjectProgress = false;
-        else if (showLoadOutputPathDialog) showLoadOutputPathDialog = false;
+        else if (showLoadFileDialog) showLoadFileDialog = false;
+        else if (showLoadDirectoryDialog) showLoadDirectoryDialog = false;
         else if (showLoadSourceFilesDialog) showLoadSourceFilesDialog = false;
-        else if (showLoadResourcePathDialog) showLoadResourcePathDialog = false;
-        else if (showLoadRaylibSourcePathDialog) showLoadRaylibSourcePathDialog = false;
-        else if (showLoadCompilerPathDialog) showLoadCompilerPathDialog = false;
+        //else if (showLoadResourcePathDialog) showLoadResourcePathDialog = false;
+        //else if (showLoadRaylibSourcePathDialog) showLoadRaylibSourcePathDialog = false;
+        //else if (showLoadCompilerPathDialog) showLoadCompilerPathDialog = false;
 #endif
     }
     //----------------------------------------------------------------------------------
