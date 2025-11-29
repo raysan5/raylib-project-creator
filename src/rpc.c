@@ -700,7 +700,7 @@ static void UpdateDrawFrame(void)
     if (mainToolbarState.btnLoadFilePressed) showLoadProjectDialog = true;
     else if (mainToolbarState.btnSaveFilePressed)
     {
-        memset(outFileName, 0, 512);
+        memset(outFileName, 0, 256);
         strcpy(outFileName, TextFormat("%s.rpc", project->Project.internalName));
         showSaveProjectDialog = true;
     }
@@ -1287,7 +1287,7 @@ static void UpdateDrawFrame(void)
         if (!showGenerateProjectProgress)
         {
 #if defined(PLATFORM_WEB)
-            strcpy(outFileName, TextFormat("%s/%s", config->Project.generationOutPath, TextToLower(config->Project.repoName)));
+            strcpy(outFileName, TextFormat("%s/%s", project->Project.generationOutPath, TextToLower(project->Project.repoName)));
 
             // Package all created files (in browser MEMFS) into a .zip to be exported
             mz_zip_archive zip = { 0 };
