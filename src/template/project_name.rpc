@@ -1,0 +1,125 @@
+#
+# raylib project configuration - $(project_name)
+#
+# This file contains all required data to define a raylib C/C++ project
+# and allow building it for multiple platforms using [rpb] tool
+#
+# Project configuration is organized in several categories, depending on usage requirements
+# CATEGORIES:
+#    - PROJECT: Project definition properties, required for project generation
+#    - raylib: Library configuration properties, raylib customization for the project
+#    - BUILD: Project build properties, required for project building, generic for all platforms
+#    - PLATFORM: Platform-specific properies, required for building for that platform
+#        Platform identifiers: WINDOWS, LINUX, MACOS, HTML5, ANDROID, DRM, FREEBSD, DREAMCAST
+#    - DEPLOY: Deployment properties, required to distribute the generated build
+#    - IMAGERY: Project imagery properties, required for distribution on some stores and marketing
+#
+# This file follow certain conventions to be able to display the information in
+# an easy-configurable UI manner when loaded through [rpb - raylib project builder] tool
+# CONVENTIONS:
+#    - ID containing [_FLAG_]: Value is considered a boolean, it displays with a [GuiCheckBox]
+#    - ID do not contain : Value is considered as an integer, it displays as [GuiValueBox]
+#    - ID ends with _FILE or _FILES: Value is considered as a text file path, it displays as [GuiTextBox] with a [BROWSE-File] but
+#    - ID ends with _PATH: Value is considered as a text directory path, it displays as [GuiTextBox] with a [BROWSE-Dir] button
+#
+# NOTE: The comments/description for each entry is used as tooltip when editing the entry on [rpb]
+# 
+
+# Project settings
+#------------------------------------------------------------------------------------
+PROJECT_INTERNAL_NAME                   "$(project_name)"                   # Project intenal name, used for executable and project files
+PROJECT_REPO_NAME                       "$(repo-name)"                      # Project repository name, used for VCS (GitHub, GitLab)
+PROJECT_COMMERCIAL_NAME                 "$(CommercialName)"                 # Project commercial name, used for docs and web
+PROJECT_SHORT_NAME                      "$(ShortName)"                      # Project short name
+PROJECT_VERSION                         "$(ProjectVersion)"                 # Project version
+PROJECT_DESCRIPTION                     "$(ProjectDescription)"             # Project description
+PROJECT_PUBLISHER_NAME                  "$(PublisherName)"                  # Project publisher name
+PROJECT_DEVELOPER_NAME                  "$(ProjectDeveloper)"               # Project developer name
+PROJECT_DEVELOPER_URL                   "$(DeveloperUrl)"                   # Project developer webpage url
+PROJECT_DEVELOPER_EMAIL                 "$(DeveloperEmail)"                 # Project developer email
+
+PROJECT_ICON_FILE                       "$(repo-name)/src/$(project_name).ico" # Project icon file
+
+PROJECT_SOURCE_PATH                     "$(repo-name)/src"                  # Project source directory, including all required code files (C/C++)
+PROJECT_ASSETS_PATH                     "$(repo-name)/src/resources"        # Project assets directory, including all required assets
+
+PROJECT_ASSETS_OUTPUT_PATH              "$(repo-name)/release/resources"    # Project assets destination path
+#------------------------------------------------------------------------------------
+
+# raylib settings
+#------------------------------------------------------------------------------------
+RAYLIB_SRC_PATH                         "C:/raylib/raylib/src"              # Path to raylib source code, to be build for target platform
+RAYLIB_OPENGL_VERSION                   "3.3"                               # OpenGL version to be used by raylib, WARNING: Platform dependant!
+#------------------------------------------------------------------------------------
+
+# Build settings
+# NOTE: General settings, common to all platforms
+#------------------------------------------------------------------------------------
+BUILD_OUTPUT_PATH                       "$(repo-name)/release"              # Build output path
+
+BUILD_TARGET_PLATFORM                   "Windows"                           # Build target platform (Supported: Windows, Linux, macOS, Android, Web)
+BUILD_TARGET_ARCHITECTURE               "x86-64"                            # Build target architecture (Supported: x86-64, Win32, arm64)
+BUILD_TARGET_MODE                       "RELEASE"                           # Build target mode (Supported: DEBUG, RELEASE, DEBUG_DLL, RELEASE_DLL)
+
+BUILD_FLAG_ASSETS_VALIDATION            1                                   # Flag: request assets validation on building
+BUILD_FLAG_ASSETS_PACKAGING             0                                   # Flag: request assets packaging on building
+
+BUILD_RRES_PACKER_PATH                  "tools/rrespacker.exe"              # Path to [rrespacker] tool to package assets
+#------------------------------------------------------------------------------------
+
+# Platform-specific settings
+#------------------------------------------------------------------------------------
+PLATFORM_WINDOWS_MSBUILD_PATH           "path/to/msbuild"                   # Path to MSBuild system, required to build VS2022 solution
+PLATFORM_WINDOWS_W64DEVKIT_PATH         "C:/raylib/w64devkit"               # Path to w64devkit (GCC), required to use Makefile building
+PLATFORM_WINDOWS_SIGNTOOL_PATH          "path/to/signtool"                  # Path to signtool in case program needs to be signed (certificate required)
+PLATFORM_WINDOWS_SIGNCERT_FILE          "path/to/signcert"                  # Path to a valid signature certificate to sign executable
+#
+PLATFORM_LINUX_FLAG_CROSS_COMPILE       0                                   # Flag: request cross-compiler usage
+PLATFORM_LINUX_CROSS_COMPILER_PATH      ""                                  # Path to Linux cross-compiler for target ABI
+#
+PLATFORM_MACOS_BUNDLE_INFO_FILE         "$(repo-name)/src/Info.plist"       # Path to macOS bundle options (Info.plist)
+PLATFORM_MACOS_BUNDLE_NAME              "$(CommercialName)"                 # Bundle name (commercial product name)
+PLATFORM_MACOS_BUNDLE_VERSION           "1"                                 # Bundle version
+#
+PLATFORM_HTML5_EMSDK_PATH               "C:/raylib/emsdk"                   # Path to emsdk, required for Web building
+PLATFORM_HTML5_SHELL_FILE               "$(repo-name)/src/minshell.html"    # Path to shell file to be used by emscripten
+PLATFORM_HTML5_HEAP_MEMORY_SIZE         128                                 # Required heap memory size in MB (required for assets loading)
+PLATFORM_HTML5_FLAG_USE_ASINCIFY        0                                   # Flag: use ASINCIFY mode on building
+PLATFORM_HTML5_FLAG_USE_WEBGL2          0                                   # Flag: use WebGL2 (OpenGL ES 3.1) instead of default WebGL1 (OpenGL ES 2.0)
+
+# Platform: Android
+PLATFORM_ANDROID_SDK_PATH               "path/to/android-sdk"               # Path to Android SDK, required for Android App building and support tools
+PLATFORM_ANDROID_NDK_PATH               "path/to/android-ndk-r28"           # Path to Android NDK, required for C native building to Android
+PLATFORM_ANDROID_JAVA_SDK_PATH          "path/to/java"                      # Path to Java SDK, required for some tools
+PLATFORM_ANDROID_MANIFEST_FILE          "$(repo-name)/src/AndroidManifest.xml"  # Path to Android manifest, including build options
+PLATFORM_ANDROID_MIN_SDK_VERSION        19                                  # Minimum SDK version required
+PLATFORM_ANDROID_TARGET_SDK_VERSION     36                                  # Target SDK version
+
+# Platform: DRM
+PLATFORM_DRM_FLAG_CROSS_COMPILE         0                                   # Flag: request cross-compiler usage
+PLATFORM_DRM_CROSS_COMPILER_PATH        "path/to/cross-compiler"            # Path to DRM cross-compiler for target ABI
+#
+PLATFORM_DREAMCAST_SDK_PATH             "path/to/dcdev-sdk"                 # Path to Dreamcast SDK (KallistiOS), required for Dreamcast building
+#------------------------------------------------------------------------------------
+
+# Deploy settings
+#------------------------------------------------------------------------------------
+DEPLOY_FLAG_ZIP_PACKAGE                 0                                   # Flag: request package to be zipped for distribution
+DEPLOY_FLAG_RIF_INSTALLER               0                                   # Flag: request installer creation using rInstallFriendly tool
+DEPLOY_RIF_INSTALLER_PATH               "tools/rinstallfriendly.exe"        # Path to [rInstallFriendly] tool
+
+DEPLOY_FLAG_INCUDE_README               1                                   # Flag: request including README file on package
+DEPLOY_README_FILE                      "$(repo-name)/README.md"            # Project README file path, contains product information
+DEPLOY_FLAG_INCUDE_EULA                 1                                   # Flag: request including EULA file on package (vs LICENSE file for FOSS)
+DEPLOY_EULA_FILE                        "$(repo-name)/EULA.txt"             # Project EULA (End-User-License-Agreement) file path
+#------------------------------------------------------------------------------------
+
+# Imagery settings
+# NOTE: Useful for project distribution on several stores
+#------------------------------------------------------------------------------------
+IMAGERY_LOGO_FILE                       "$(repo-name)/images/logo.png"      # Project logo image, useful for imagery generation
+IMAGERY_SPLASH_FILE                     "$(repo-name)/images/splash.png"    # Project splash image, useful for imagery generation
+
+IMAGERY_FLAG_GENERATE                   0                                   # Flag: request project imagery generation: Social Cards, itchio, Steam...
+IMAGERY_RIP_PACKER_PATH                 "tools/riconpacker.exe"             # Path to [rIconPacker] tool
+#------------------------------------------------------------------------------------
