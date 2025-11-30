@@ -1570,8 +1570,18 @@ static void SetupProject(rpcProjectConfig *config)
     // Get template directory
     // TODO: Use embedded template into executable?
     char templatePath[256] = { 0 };
-    strcpy(templatePath, TextFormat("%s/template", GetWorkingDirectory()));//GetApplicationDirectory()));
-    //strcpy(templatePath, "./template"); // NOTE: Template directory should be in same directory as application, usually working directory
+    // NOTE: [template] directory must be in same directory as [rpc] tool
+    strcpy(templatePath, TextFormat("%s/template", GetApplicationDirectory()));
+
+    // Security check to validate required template
+    if (!DirectoryExists(templatePath) ||
+        !DirectoryExists(TextFormat("%s/src", templatePath)) ||
+        !DirectoryExists(TextFormat("%s/projects", templatePath)) ||
+        !FileExists(TextFormat("%s/project_name.rpc", templatePath)))
+    {
+        LOG("WARNING: Project generation template required files can not be found\n");
+        return;
+    }
 
     //mz_bool mz_zip_reader_init_mem(mz_zip_archive *pZip, const void *pMem, size_t size, mz_uint flags); // Read file from memory zip data
     // TODO: Replace LoadFileText(), from template path, by reading text file from zip data, decompressing it...
@@ -1580,9 +1590,9 @@ static void SetupProject(rpcProjectConfig *config)
     char internalNameLower[256] = { 0 };
     TextCopy(internalNameLower, TextToLower(config->Project.internalName));//TextRemoveSpaces(TextToLower(config->Project.name)));
 
-    if (config->Project.repoName[0] == '\0') strcpy(config->Project.repoName, internalNameLower);
+    if (config->Project.repoName[0] == '\0') strcpy(config->Project.repoName, config->Project.internalName);
 
-    LOG("INFO: Output path: %s\n", TextFormat("%s/%s", config->Project.generationOutPath, config->Project.repoName));
+    LOG("INFO: Output path: %s/%s\n", config->Project.generationOutPath, config->Project.repoName);
 
     // Copy project source file(s) provided
     //--------------------------------------------------------------------------
@@ -1626,7 +1636,43 @@ static void SetupProject(rpcProjectConfig *config)
             LOG("INFO: Copied src/%s successfully\n", GetFileName(config->Project.sourceFilePaths[i]));
         }
     }
-    //--------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------
+    
+    // Project configuration file (.rpc)
+    // NOTE: This file can be used by [rpb] to build the project
+    //-------------------------------------------------------------------------------------   
+    // Update project configuration .rpc to defined values by [rpc] tool:
+    /*
+    PROJECT_INTERNAL_NAME                   "$(project_name)"                   # Project intenal name, used for executable and project files
+    PROJECT_REPO_NAME                       "$(repo-name)"                      # Project repository name, used for VCS (GitHub, GitLab)
+    PROJECT_COMMERCIAL_NAME                 "$(CommercialName)"                 # Project commercial name, used for docs and web
+    PROJECT_SHORT_NAME                      "$(ShortName)"                      # Project short name
+    PROJECT_VERSION                         "$(ProjectVersion)"                 # Project version
+    PROJECT_DESCRIPTION                     "$(ProjectDescription)"             # Project description
+    PROJECT_PUBLISHER_NAME                  "$(PublisherName)"                  # Project publisher name
+    PROJECT_DEVELOPER_NAME                  "$(ProjectDeveloper)"               # Project developer name
+    PROJECT_DEVELOPER_URL                   "$(DeveloperUrl)"                   # Project developer webpage url
+    PROJECT_DEVELOPER_EMAIL                 "$(DeveloperEmail)"                 # Project developer email
+    PROJECT_ICON_FILE                       "$(repo-name)/src/$(project_name).ico" # Project icon file
+    PROJECT_SOURCE_PATH                     "$(repo-name)/src"                  # Project source directory, including all required code files (C/C++)
+    PROJECT_ASSETS_PATH                     "$(repo-name)/src/resources"        # Project assets directory, including all required assets
+    PROJECT_ASSETS_OUTPUT_PATH              "$(repo-name)/release/resources"    # Project assets destination path
+    */
+    fileText = LoadFileText(TextFormat("%s/project_name.rpc", templatePath));
+    fileTextUpdated[0] = TextReplace(fileText, "$(project_name)", config->Project.internalName); // GetProjectConfigText(projectraw, "PROJECT_INTERNAL_NAME")
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "$(repo-name)", config->Project.repoName);
+    fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "$(CommercialName)", config->Project.commercialName);
+    fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "$(ShortName)", config->Project.shortName);
+    fileTextUpdated[4] = TextReplace(fileTextUpdated[3], "$(ProjectVersion)", config->Project.version);
+    fileTextUpdated[5] = TextReplace(fileTextUpdated[4], "$(ProjectDescription)", config->Project.description);
+    fileTextUpdated[6] = TextReplace(fileTextUpdated[5], "$(PublisherName)", config->Project.publisherName);
+    fileTextUpdated[7] = TextReplace(fileTextUpdated[6], "$(ProjectDeveloper)", config->Project.developerName);
+    fileTextUpdated[8] = TextReplace(fileTextUpdated[7], "$(DeveloperUrl)", config->Project.developerUrl);
+    fileTextUpdated[9] = TextReplace(fileTextUpdated[8], "$(DeveloperEmail)", config->Project.developerUrl);
+    SaveFileText(TextFormat("%s/%s.rpc", config->Project.generationOutPath, config->Project.internalName), fileTextUpdated[9]);
+    for (int i = 0; i < 10; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
+    UnloadFileText(fileText);
+    //-------------------------------------------------------------------------------------
 
     // Project build system: Scripts
     //-------------------------------------------------------------------------------------
