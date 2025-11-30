@@ -796,6 +796,8 @@ char *GetProjectConfigText(rpcProjectConfigRaw raw, const char *key)
     {
         if (TextIsEqual(raw.entries[i].key, key)) return raw.entries[i].text;
     }
+
+    return NULL;
 }
 
 // Get project config value by key
@@ -806,6 +808,8 @@ int *GetProjectConfigValue(rpcProjectConfigRaw raw, const char *key)
     {
         if (TextIsEqual(raw.entries[i].key, key)) return &raw.entries[i].value;
     }
+
+    return NULL;
 }
 
 #endif // RPCDATA_IMPLEMENTATION
