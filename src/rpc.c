@@ -1565,7 +1565,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 static void SetupProject(rpcProjectConfig *config)
 {
     char *fileText = NULL;
-    char *fileTextUpdated[8] = { 0 };
+    char *fileTextUpdated[10] = { 0 };
 
     // Get template directory
     // TODO: Use embedded template into executable?
@@ -1586,10 +1586,6 @@ static void SetupProject(rpcProjectConfig *config)
     //mz_bool mz_zip_reader_init_mem(mz_zip_archive *pZip, const void *pMem, size_t size, mz_uint flags); // Read file from memory zip data
     // TODO: Replace LoadFileText(), from template path, by reading text file from zip data, decompressing it...
 
-    // Remove spaces from directories/files names
-    char internalNameLower[256] = { 0 };
-    TextCopy(internalNameLower, TextToLower(config->Project.internalName));//TextRemoveSpaces(TextToLower(config->Project.name)));
-
     if (config->Project.repoName[0] == '\0') strcpy(config->Project.repoName, config->Project.internalName);
 
     LOG("INFO: Output path: %s/%s\n", config->Project.generationOutPath, config->Project.repoName);
@@ -1602,14 +1598,14 @@ static void SetupProject(rpcProjectConfig *config)
     if (config->Project.selectedSource == 0)  // Use base sample (one source file)
     {
         FileCopy(TextFormat("%s/src/project_name.c", templatePath),
-            TextFormat("%s/%s/src/%s.c", config->Project.generationOutPath, config->Project.repoName, internalNameLower));
+            TextFormat("%s/%s/src/%s.c", config->Project.generationOutPath, config->Project.repoName, config->Project.internalName));
 
-        LOG("INFO: Copied src/%s.c successfully\n", internalNameLower);
+        LOG("INFO: Copied src/%s.c successfully\n", config->Project.internalName);
     }
     else if (config->Project.selectedSource == 1) // Use advance sample (screen manager, multiple source files)
     {
         FileCopy(TextFormat("%s/src/raylib_advanced.c", templatePath),
-            TextFormat("%s/%s/src/%s.c", config->Project.generationOutPath, config->Project.repoName, internalNameLower));
+            TextFormat("%s/%s/src/%s.c", config->Project.generationOutPath, config->Project.repoName, config->Project.internalName));
 
         FileCopy(TextFormat("%s/src/screens.h", templatePath),
             TextFormat("%s/%s/src/screens.h", config->Project.generationOutPath, config->Project.repoName));
@@ -1624,7 +1620,7 @@ static void SetupProject(rpcProjectConfig *config)
         FileCopy(TextFormat("%s/src/screen_ending.c", templatePath),
             TextFormat("%s/%s/src/screen_ending.c", config->Project.generationOutPath, config->Project.repoName));
 
-        LOG("INFO: Copied advance project with src/%s.c successfully\n", internalNameLower);
+        LOG("INFO: Copied advance project with src/%s.c successfully\n", config->Project.internalName);
     }
     else if (config->Project.selectedSource == 2) // Use provided source files
     {
@@ -1679,12 +1675,12 @@ static void SetupProject(rpcProjectConfig *config)
     if (config->Build.requestedBuildSystems[0])
     {
         // Create required output directories
-        MakeDirectory(TextFormat("%s/%s/projects/scripts", config->Project.generationOutPath, internalNameLower));
+        MakeDirectory(TextFormat("%s/%s/projects/scripts", config->Project.generationOutPath, config->Project.internalName));
 
         // Update src/build.bat (Windows only)
         // TODO: Use CMD/Shell calls directly, current script uses Makefile
         fileText = LoadFileText(TextFormat("%s/projects/scripts/build.bat", templatePath));
-        fileTextUpdated[0] = TextReplace(fileText, "project_name", internalNameLower);
+        fileTextUpdated[0] = TextReplace(fileText, "project_name", config->Project.internalName);
         fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "ProjectDescription", config->Project.description);
         fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "C:\\raylib\\w64devkit\\bin", config->Platform.Windows.w64devkitPath);
         SaveFileText(TextFormat("%s/%s/projects/scripts/build.bat", config->Project.generationOutPath, config->Project.repoName), fileTextUpdated[2]);
@@ -1703,11 +1699,11 @@ static void SetupProject(rpcProjectConfig *config)
         fileText = LoadFileText(TextFormat("%s/src/Makefile", templatePath));
         if (config->Project.selectedSource == 0) // Using basic template (one file)
         {
-            fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", internalNameLower));
+            fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", config->Project.internalName));
         }
         else if (config->Project.selectedSource == 1) // Using advance template (multiple files)
         {
-            fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c screen_logo.c screen_title.c screen_options.c screen_gameplay.c screen_ending.c", internalNameLower));
+            fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c screen_logo.c screen_title.c screen_options.c screen_gameplay.c screen_ending.c", config->Project.internalName));
         }
         else if (config->Project.selectedSource == 2) // Using custom provided source files
         {
@@ -1729,7 +1725,7 @@ static void SetupProject(rpcProjectConfig *config)
             for (int i = 0; i < 256; i++) RL_FREE(srcFileNames[i]);
             RL_FREE(srcFileNames);
         }
-        fileTextUpdated[1] = TextReplace(fileText, "project_name", internalNameLower);
+        fileTextUpdated[1] = TextReplace(fileText, "project_name", config->Project.internalName);
         fileTextUpdated[2] = TextReplace(fileTextUpdated[0], "C:\\raylib\\w64devkit\\bin", config->Platform.Windows.w64devkitPath);
         fileTextUpdated[3] = TextReplace(fileTextUpdated[1], "C:/raylib/raylib/src", config->raylib.srcPath);
         SaveFileText(TextFormat("%s/%s/src/Makefile", config->Project.generationOutPath, config->Project.repoName), fileTextUpdated[3]);
@@ -1749,7 +1745,7 @@ static void SetupProject(rpcProjectConfig *config)
 
         // Update projects/VSCode/.vscode/launch.json
         fileText = LoadFileText(TextFormat("%s/projects/VSCode/.vscode/launch.json", templatePath));
-        fileTextUpdated[0] = TextReplace(fileText, "project_name", internalNameLower);
+        fileTextUpdated[0] = TextReplace(fileText, "project_name", config->Project.internalName);
         fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "C:/raylib/w64devkit/bin", config->Platform.Windows.w64devkitPath);
         SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/launch.json", config->Project.generationOutPath, config->Project.repoName), fileTextUpdated[1]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
@@ -1769,12 +1765,12 @@ static void SetupProject(rpcProjectConfig *config)
         // Update source code files
         if (config->Project.selectedSource == 0) // Using basic template (one file)
         {
-            fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", internalNameLower));
+            fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", config->Project.internalName));
         }
         else if (config->Project.selectedSource == 1) // Using advance template (multiple files)
         {
             fileTextUpdated[0] = TextReplace(fileText, "project_name.c",
-                TextFormat("%s.c screen_logo.c screen_title.c screen_options.c screen_gameplay.c screen_ending.c", internalNameLower));
+                TextFormat("%s.c screen_logo.c screen_title.c screen_options.c screen_gameplay.c screen_ending.c", config->Project.internalName));
         }
         else if (config->Project.selectedSource == 2) // Using custom provided source files
         {
@@ -1797,7 +1793,7 @@ static void SetupProject(rpcProjectConfig *config)
             RL_FREE(srcFileNames);
         }
 
-        fileTextUpdated[1] = TextReplace(fileText, "project_name", internalNameLower);
+        fileTextUpdated[1] = TextReplace(fileText, "project_name", config->Project.internalName);
         fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "C:/raylib/raylib/src", config->raylib.srcPath);
         fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "C:/raylib/w64devkit/bin", config->Platform.Windows.w64devkitPath);
 
@@ -1827,30 +1823,30 @@ static void SetupProject(rpcProjectConfig *config)
     {
         // Create required output directories
         MakeDirectory(TextFormat("%s/%s/projects/VS2022/raylib", config->Project.generationOutPath, config->Project.repoName));
-        MakeDirectory(TextFormat("%s/%s/projects/VS2022/%s", config->Project.generationOutPath, config->Project.repoName, internalNameLower));
+        MakeDirectory(TextFormat("%s/%s/projects/VS2022/%s", config->Project.generationOutPath, config->Project.repoName, config->Project.internalName));
 
         // Copy projects/VS2022/raylib/raylib.vcxproj
         fileText = LoadFileText(TextFormat("%s/projects/VS2022/raylib/raylib.vcxproj", templatePath));
         fileTextUpdated[0] = TextReplace(fileText, "C:\\raylib\\raylib\\src", config->raylib.srcPath);
-        SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/raylib.vcxproj", config->Project.generationOutPath, config->Project.repoName, internalNameLower), fileTextUpdated[0]);
+        SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/raylib.vcxproj", config->Project.generationOutPath, config->Project.repoName, config->Project.internalName), fileTextUpdated[0]);
         for (int i = 0; i < 6; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
 
         // Copy projects/VS2022/raylib/Directory.Build.props
         //fileText = LoadFileText(TextFormat("%s/projects/VS2022/raylib/Directory.Build.props", templatePath));
-        //SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/Directory.Build.props", config->Project.generationOutPath, internalNameLower, internalNameLower), fileText);
+        //SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/Directory.Build.props", config->Project.generationOutPath, config->Project.internalName, config->Project.internalName), fileText);
         //UnloadFileText(fileText);
 
         // Update projects/VS2022/project_name/config->project_name.vcproj
         fileText = LoadFileText(TextFormat("%s/projects/VS2022/project_name/project_name.vcxproj", templatePath));
         if (config->Project.selectedSource == 0) // Using basic template (one file)
         {
-            fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", internalNameLower));
+            fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", config->Project.internalName));
             fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", "project_name"); // WARNING: Only used to force a second buffer usage!
         }
         else if (config->Project.selectedSource == 1) // Using advance template (multiple files)
         {
-            fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", internalNameLower));
+            fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", config->Project.internalName));
             fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "<!--Additional Compile Items-->",
                 "<ClCompile Include=\"..\\..\\..\\src\\screen_logo.c\" />\n    \
          <ClCompile Include=\"..\\..\\..\\src\\screen_title.c\" />\n    \
@@ -1886,16 +1882,16 @@ static void SetupProject(rpcProjectConfig *config)
             for (int i = 0; i < 256; i++) RL_FREE(srcFileNames[i]);
             RL_FREE(srcFileNames);
         }
-        fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "project_name", internalNameLower);
+        fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "project_name", config->Project.internalName);
         fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "C:\\raylib\\raylib\\src", config->raylib.srcPath);
-        SaveFileText(TextFormat("%s/%s/projects/VS2022/%s/%s.vcxproj", config->Project.generationOutPath, config->Project.repoName, internalNameLower, internalNameLower), fileTextUpdated[3]);
+        SaveFileText(TextFormat("%s/%s/projects/VS2022/%s/%s.vcxproj", config->Project.generationOutPath, config->Project.repoName, config->Project.internalName, config->Project.internalName), fileTextUpdated[3]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
 
         // Update projects/VS2022/project_name.sln
         fileText = LoadFileText(TextFormat("%s/projects/VS2022/project_name.sln", templatePath));
-        fileTextUpdated[0] = TextReplace(fileText, "project_name", internalNameLower);
-        SaveFileText(TextFormat("%s/%s/projects/VS2022/%s.sln", config->Project.generationOutPath, config->Project.repoName, internalNameLower), fileTextUpdated[0]);
+        fileTextUpdated[0] = TextReplace(fileText, "project_name", config->Project.internalName);
+        SaveFileText(TextFormat("%s/%s/projects/VS2022/%s.sln", config->Project.generationOutPath, config->Project.repoName, config->Project.internalName), fileTextUpdated[0]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
 
@@ -1938,29 +1934,29 @@ static void SetupProject(rpcProjectConfig *config)
     // Update src/project_name.rc
     fileText = LoadFileText(TextFormat("%s/src/project_name.rc", templatePath));
     fileTextUpdated[0] = TextReplace(fileText, "CommercialName", config->Project.commercialName);
-    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", internalNameLower);
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", config->Project.internalName);
     fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->Project.description);
     fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDeveloper", config->Project.developerName);
     fileTextUpdated[4] = TextReplace(fileTextUpdated[3], "ProjectYear", TextFormat("%i", config->Project.year));
-    SaveFileText(TextFormat("%s/%s/src/%s.rc", config->Project.generationOutPath, config->Project.repoName, internalNameLower), fileTextUpdated[4]);
+    SaveFileText(TextFormat("%s/%s/src/%s.rc", config->Project.generationOutPath, config->Project.repoName, config->Project.internalName), fileTextUpdated[4]);
     for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
-    LOG("INFO: Updated src/%s.rc successfully\n", internalNameLower);
+    LOG("INFO: Updated src/%s.rc successfully\n", config->Project.internalName);
 
     // Copy src/project_name.ico to src/project_name.ico
     FileCopy(TextFormat("%s/src/project_name.ico", templatePath),
-        TextFormat("%s/%s/src/%s.ico", config->Project.generationOutPath, config->Project.repoName, internalNameLower));
-    LOG("INFO: Copied src/%s.ico successfully\n", internalNameLower);
+        TextFormat("%s/%s/src/%s.ico", config->Project.generationOutPath, config->Project.repoName, config->Project.internalName));
+    LOG("INFO: Copied src/%s.ico successfully\n", config->Project.internalName);
 
     // Copy src/project_name.icns to src/project_name.icns
     FileCopy(TextFormat("%s/src/project_name.icns", templatePath),
-        TextFormat("%s/%s/src/%s.icns", config->Project.generationOutPath, config->Project.repoName, internalNameLower));
-    LOG("INFO: Copied src/%s.icns successfully\n", internalNameLower);
+        TextFormat("%s/%s/src/%s.icns", config->Project.generationOutPath, config->Project.repoName, config->Project.internalName));
+    LOG("INFO: Copied src/%s.icns successfully\n", config->Project.internalName);
 
     // Update src/Info.plist
     fileText = LoadFileText(TextFormat("%s/src/Info.plist", templatePath));
     fileTextUpdated[0] = TextReplace(fileText, "CommercialName", config->Project.commercialName);
-    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", internalNameLower);
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", config->Project.internalName);
     fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->Project.description);
     fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDeveloper", config->Project.developerName);
     fileTextUpdated[4] = TextReplace(fileTextUpdated[3], "project_developer", TextToLower(config->Project.developerName));
@@ -1974,7 +1970,7 @@ static void SetupProject(rpcProjectConfig *config)
     // Review Webpage, links, OpenGraph/X card, keywords...
     fileText = LoadFileText(TextFormat("%s/src/minshell.html", templatePath));
     fileTextUpdated[0] = TextReplace(fileText, "CommercialName", config->Project.commercialName);
-    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", internalNameLower);
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", config->Project.internalName);
     fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->Project.description);
     fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDeveloper", config->Project.developerName);
     fileTextUpdated[4] = TextReplace(fileTextUpdated[3], "project_developer", TextToLower(config->Project.developerName));
@@ -1993,7 +1989,7 @@ static void SetupProject(rpcProjectConfig *config)
     // Update README.md
     fileText = LoadFileText(TextFormat("%s/README.md", templatePath));
     fileTextUpdated[0] = TextReplace(fileText, "CommercialName", config->Project.commercialName);
-    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", internalNameLower);
+    fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", config->Project.internalName);
     fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "ProjectDescription", config->Project.description);
     fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "ProjectDeveloper", config->Project.developerName);
     fileTextUpdated[4] = TextReplace(fileTextUpdated[3], "ProjectYear", TextFormat("%i", config->Project.year));
