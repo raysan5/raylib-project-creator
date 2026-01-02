@@ -18,7 +18,7 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       2.0  (xx-Nov-2025)  ADDED: Load and save project configuration data
+*       2.0  (xx-Nov-2026)  ADDED: Load and save project configuration data
 *                           ADDED: Resource scan from code files
 *                           REVIEWED: Resource management, copy to generated project
 *
@@ -41,7 +41,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2024-2025 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2024-2026 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -108,7 +108,7 @@
 
 
 // miniz: Single C source file zlib-replacement library
-// Ref: https://github.com/richgel999/miniz
+// REF: https://github.com/richgel999/miniz
 #include "external/miniz.h"                 // ZIP packaging functions definition
 #include "external/miniz.c"                 // ZIP packaging implementation
 
@@ -377,7 +377,7 @@ int main(int argc, char *argv[])
 
     // Get current year
     time_t now = time(NULL);
-    struct tm *nowTime = localtime(&now); 
+    struct tm *nowTime = localtime(&now);
     currentYear = nowTime->tm_year + 1900;
 
 #if !defined(_DEBUG)
@@ -410,8 +410,8 @@ int main(int argc, char *argv[])
                 rpcProjectConfig *config = (rpcProjectConfig *)RL_CALLOC(1, sizeof(rpcProjectConfig));
 
                 config->Project.selectedSource = 0;  // Custom files
-                strcpy(config->Project.internalName, GetFileNameWithoutExt(argv[1]));
-                strcpy(config->Project.commercialName, GetFileNameWithoutExt(argv[1]));
+                strncpy(config->Project.internalName, GetFileNameWithoutExt(argv[1]), 64 - 1);
+                strncpy(config->Project.commercialName, GetFileNameWithoutExt(argv[1]), 64 - 1);
                 strcpy(config->Project.description, "My cool project");
                 strcpy(config->Project.developerName, "raylibtech");
                 strcpy(config->Project.developerUrl, "www.raylibtech.com");
@@ -828,7 +828,7 @@ static void UpdateDrawFrame(void)
     {
         if (projectraw.entries[i].category == RPC_CAT_PROJECT) // Only project category
         {
-            if (projectraw.entries[i].type != RPC_TYPE_BOOL) 
+            if (projectraw.entries[i].type != RPC_TYPE_BOOL)
                 GuiLabel((Rectangle){ 24, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, 180, 24 }, TextFormat("%s:", projectraw.entries[i].name));
 
             int descWidth = 460;
@@ -845,17 +845,17 @@ static void UpdateDrawFrame(void)
             } break;
             case RPC_TYPE_VALUE:
             {
-                if (GuiValueBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, 180, 24 }, 
+                if (GuiValueBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, 180, 24 },
                     NULL, &projectraw.entries[i].value, 0, 1024, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
             } break;
             case RPC_TYPE_TEXT:
             {
-                if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth, 24 }, 
+                if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth, 24 },
                     projectraw.entries[i].text, 255, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
             } break;
             case RPC_TYPE_TEXT_FILE:
             {
-                if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth - 90, 24 }, 
+                if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth - 90, 24 },
                     projectraw.entries[i].text, 255, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
                 if (GuiButton((Rectangle){ 24 + 180 + textWidth - 86, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, 86, 24 }, "#6#Browse"))
                 {
@@ -865,7 +865,7 @@ static void UpdateDrawFrame(void)
             } break;
             case RPC_TYPE_TEXT_PATH:
             {
-                if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth - 90, 24 }, 
+                if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth - 90, 24 },
                     projectraw.entries[i].text, 255, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
                 if (GuiButton((Rectangle){ 24 + 180 + textWidth - 86, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, 86, 24 }, "#173#Browse"))
                 {
@@ -1633,10 +1633,10 @@ static void SetupProject(rpcProjectConfig *config)
         }
     }
     //-------------------------------------------------------------------------------------
-    
+
     // Project configuration file (.rpc)
     // NOTE: This file can be used by [rpb] to build the project
-    //-------------------------------------------------------------------------------------   
+    //-------------------------------------------------------------------------------------
     // Update project configuration .rpc to defined values by [rpc] tool:
     /*
     PROJECT_INTERNAL_NAME                   "$(project_name)"                   # Project intenal name, used for executable and project files
@@ -2142,12 +2142,12 @@ static const char **GetSubtextPtrs(char *text, char delimiter, int *count)
 
     result[0] = text;
     int counter = 1;
-    int textSize = TextLength(text);
+    int textLength = TextLength(text);
 
     if (text != NULL)
     {
         // Count how many substrings we have on text and point to every one
-        for (int i = 0; i < textSize; i++)
+        for (int i = 0; i < textLength; i++)
         {
             if (text[i] == '\0') break;
             else if (text[i] == delimiter)

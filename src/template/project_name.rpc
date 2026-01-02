@@ -23,7 +23,7 @@
 #    - ID ends with _PATH: Value is considered as a text directory path, it displays as [GuiTextBox] with a [BROWSE-Dir] button
 #
 # NOTE: The comments/description for each entry is used as tooltip when editing the entry on [rpb]
-# 
+#
 
 # Project settings
 #------------------------------------------------------------------------------------
