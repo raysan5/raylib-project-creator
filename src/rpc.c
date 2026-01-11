@@ -409,7 +409,7 @@ int main(int argc, char *argv[])
                 // TODO: Really? Is this thee desired behaviour?
                 rpcProjectConfig *config = (rpcProjectConfig *)RL_CALLOC(1, sizeof(rpcProjectConfig));
 
-                config->Project.selectedSource = 0;  // Custom files
+                config->Project.selectedTemplate = 0;  // Custom files
                 strncpy(config->Project.internalName, GetFileNameWithoutExt(argv[1]), 64 - 1);
                 strncpy(config->Project.commercialName, GetFileNameWithoutExt(argv[1]), 64 - 1);
                 strcpy(config->Project.description, "My cool project");
@@ -460,7 +460,7 @@ int main(int argc, char *argv[])
     {
         // Initialize project config default
         project = (rpcProjectConfig *)RL_CALLOC(1, sizeof(rpcProjectConfig));
-        project->Project.selectedSource = 0;  // Custom files
+        project->Project.selectedTemplate = 0;  // Custom files
         strcpy(project->Project.internalName, "cool_project");
         strcpy(project->Project.commercialName, "Cool Project");
         strcpy(project->Project.description, "my new cool project");
@@ -632,7 +632,7 @@ static void UpdateDrawFrame(void)
     if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_N)) || mainToolbarState.btnNewFilePressed)
     {
         memset(project, 0, sizeof(rpcProjectConfig));
-        project->Project.selectedSource = 0;  // Custom files
+        project->Project.selectedTemplate = 0;  // Custom files
         strcpy(project->Project.internalName, "cool_project");
         strcpy(project->Project.commercialName, "Cool Project");
         strcpy(project->Project.description, "my new cool project");
@@ -792,21 +792,21 @@ static void UpdateDrawFrame(void)
 
     // GUI: Main Window
     //----------------------------------------------------------------------------------
-    int prevProjectType = project->Project.selectedSource;
+    int prevProjectType = project->Project.selectedTemplate;
 
     GuiLabel((Rectangle){ 16, 44, 200, 24 }, "CHOOSE PROJECT TEMPLATE:");
     //GuiSetTooltip("Choose from a default project template or custom source files");
-    GuiToggleGroup((Rectangle){ 16, 72, 206, 100 }, "Custom;Basic Window;Screen Manager;Platform 2D;First Person 3D;Puzzle Game", &project->Project.selectedSource);
+    GuiToggleGroup((Rectangle){ 16, 72, 206, 100 }, "Custom;Basic Window;Screen Manager;Platform 2D;First Person 3D;Puzzle Game", &project->Project.selectedTemplate);
     GuiSetTooltip(NULL);
 
-    if (project->Project.selectedSource != prevProjectType)
+    if (project->Project.selectedTemplate != prevProjectType)
     {
-        if (project->Project.selectedSource == 0)
+        if (project->Project.selectedTemplate == 0)
         {
             strcpy(srcFileNameList[0], TextFormat("%s.c", TextToLower(project->Project.internalName)));
             project->Project.sourceFileCount = 1;
         }
-        else if (project->Project.selectedSource == 1)
+        else if (project->Project.selectedTemplate == 1)
         {
             strcpy(srcFileNameList[0], TextFormat("%s.c", TextToLower(project->Project.internalName)));
             strcpy(srcFileNameList[1], "screens.h");
@@ -817,7 +817,7 @@ static void UpdateDrawFrame(void)
             strcpy(srcFileNameList[6], "screen_ending.c");
             project->Project.sourceFileCount = 7;
         }
-        else if (project->Project.selectedSource == 2)
+        else if (project->Project.selectedTemplate == 2)
         {
             project->Project.sourceFileCount = 0;
         }
@@ -900,7 +900,7 @@ static void UpdateDrawFrame(void)
     GuiLabel((Rectangle){ anchorProject.x + 408, anchorProject.y + 88, 120, 24 }, "DEV. WEBPAGE:");
     if (GuiTextBox((Rectangle){ anchorProject.x + 496, anchorProject.y + 88, 280, 24 }, project->Project.developerUrl, 128, projectDeveloperWebEditMode)) projectDeveloperWebEditMode = !projectDeveloperWebEditMode;
 
-    if (project->Project.selectedSource != 2) GuiDisable();
+    if (project->Project.selectedTemplate != 2) GuiDisable();
     GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 128, 104, 24 }, "SOURCE FILES:");
     GuiSetStyle(TEXTBOX, TEXT_READONLY, 1);
     GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 128, 536, 24 }, TextJoin(srcFileNameList, project->Project.sourceFileCount, ";"), 256, projectSourceFilePathEditMode);//) projectSourceFilePathEditMode = !projectSourceFilePathEditMode;
@@ -1595,14 +1595,14 @@ static void SetupProject(rpcProjectConfig *config)
     // Create required output directories
     MakeDirectory(TextFormat("%s/%s/src/external", config->Project.generationOutPath, config->Project.repoName));
 
-    if (config->Project.selectedSource == 0)  // Use base sample (one source file)
+    if (config->Project.selectedTemplate == 0)  // Use base sample (one source file)
     {
         FileCopy(TextFormat("%s/src/project_name.c", templatePath),
             TextFormat("%s/%s/src/%s.c", config->Project.generationOutPath, config->Project.repoName, config->Project.internalName));
 
         LOG("INFO: Copied src/%s.c successfully\n", config->Project.internalName);
     }
-    else if (config->Project.selectedSource == 1) // Use advance sample (screen manager, multiple source files)
+    else if (config->Project.selectedTemplate == 1) // Use advance sample (screen manager, multiple source files)
     {
         FileCopy(TextFormat("%s/src/raylib_advanced.c", templatePath),
             TextFormat("%s/%s/src/%s.c", config->Project.generationOutPath, config->Project.repoName, config->Project.internalName));
@@ -1622,7 +1622,7 @@ static void SetupProject(rpcProjectConfig *config)
 
         LOG("INFO: Copied advance project with src/%s.c successfully\n", config->Project.internalName);
     }
-    else if (config->Project.selectedSource == 2) // Use provided source files
+    else if (config->Project.selectedTemplate == 2) // Use provided source files
     {
         for (int i = 0; i < config->Project.sourceFileCount; i++)
         {
@@ -1697,15 +1697,15 @@ static void SetupProject(rpcProjectConfig *config)
     {
         // Update src/Makefile
         fileText = LoadFileText(TextFormat("%s/src/Makefile", templatePath));
-        if (config->Project.selectedSource == 0) // Using basic template (one file)
+        if (config->Project.selectedTemplate == 0) // Using basic template (one file)
         {
             fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", config->Project.internalName));
         }
-        else if (config->Project.selectedSource == 1) // Using advance template (multiple files)
+        else if (config->Project.selectedTemplate == 1) // Using advance template (multiple files)
         {
             fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c screen_logo.c screen_title.c screen_options.c screen_gameplay.c screen_ending.c", config->Project.internalName));
         }
-        else if (config->Project.selectedSource == 2) // Using custom provided source files
+        else if (config->Project.selectedTemplate == 2) // Using custom provided source files
         {
             char **srcFileNames = (char **)RL_CALLOC(256, sizeof(char *)); // Max number of input source files supported
             for (int i = 0; i < 256; i++) srcFileNames[i] = (char *)RL_CALLOC(256, sizeof(char));
@@ -1763,16 +1763,16 @@ static void SetupProject(rpcProjectConfig *config)
         fileText = LoadFileText(TextFormat("%s/projects/VSCode/.vscode/tasks.json", templatePath));
 
         // Update source code files
-        if (config->Project.selectedSource == 0) // Using basic template (one file)
+        if (config->Project.selectedTemplate == 0) // Using basic template (one file)
         {
             fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", config->Project.internalName));
         }
-        else if (config->Project.selectedSource == 1) // Using advance template (multiple files)
+        else if (config->Project.selectedTemplate == 1) // Using advance template (multiple files)
         {
             fileTextUpdated[0] = TextReplace(fileText, "project_name.c",
                 TextFormat("%s.c screen_logo.c screen_title.c screen_options.c screen_gameplay.c screen_ending.c", config->Project.internalName));
         }
-        else if (config->Project.selectedSource == 2) // Using custom provided source files
+        else if (config->Project.selectedTemplate == 2) // Using custom provided source files
         {
             char **srcFileNames = (char **)RL_CALLOC(256, sizeof(char *)); // Max number of input source files supported
             for (int i = 0; i < 256; i++) srcFileNames[i] = (char *)RL_CALLOC(256, sizeof(char));
@@ -1839,12 +1839,12 @@ static void SetupProject(rpcProjectConfig *config)
 
         // Update projects/VS2022/project_name/config->project_name.vcproj
         fileText = LoadFileText(TextFormat("%s/projects/VS2022/project_name/project_name.vcxproj", templatePath));
-        if (config->Project.selectedSource == 0) // Using basic template (one file)
+        if (config->Project.selectedTemplate == 0) // Using basic template (one file)
         {
             fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", config->Project.internalName));
             fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "project_name", "project_name"); // WARNING: Only used to force a second buffer usage!
         }
-        else if (config->Project.selectedSource == 1) // Using advance template (multiple files)
+        else if (config->Project.selectedTemplate == 1) // Using advance template (multiple files)
         {
             fileTextUpdated[0] = TextReplace(fileText, "project_name.c", TextFormat("%s.c", config->Project.internalName));
             fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "<!--Additional Compile Items-->",
@@ -1854,7 +1854,7 @@ static void SetupProject(rpcProjectConfig *config)
          <ClCompile Include=\"..\\..\\..\\src\\screen_gameplay.c\" />\n    \
          <ClCompile Include=\"..\\..\\..\\src\\screen_ending.c\" />\n");
         }
-        else if (config->Project.selectedSource == 2) // Using custom provided source files
+        else if (config->Project.selectedTemplate == 2) // Using custom provided source files
         {
             char **srcFileNames = (char **)RL_CALLOC(256, sizeof(char *)); // Max number of input source files supported
             for (int i = 0; i < 256; i++) srcFileNames[i] = (char *)RL_CALLOC(256, sizeof(char));

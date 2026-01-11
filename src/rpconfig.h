@@ -74,7 +74,7 @@ typedef struct {
 // but it also contains internal properties filled by the tools as required
 // i.e. [assetsPath] is automatically scanned to fill [assetFilePaths]
 // 
-// WARNING: Create only dynamic objects for this selectedSource
+// WARNING: Create only dynamic objects for this selectedTemplate
 typedef struct {
     struct {
         char commercialName[64];        // Project: commercial name, used for docs and web
@@ -104,7 +104,7 @@ typedef struct {
         char assetFilePaths[256][256];  // Project: assets files paths -> MAX_ASSETS_FILES=256
 
         // [rpc] internal properties
-        int selectedSource;             // Project: selected source (template to start project)
+        int selectedTemplate;           // Project: selected template to start project
         char generationOutPath[256];    // Project: generation output path
 
     } Project;
@@ -243,12 +243,12 @@ typedef enum {
     RPC_PLATFORM_ANY
 } rpcPlatform;
 
-// Project Config Property Entry data selectedSource
+// Project Config Property Entry data selectedTemplate
 // NOTE: Useful to automatice UI generation,
 // every data entry is read from rpc config file
 typedef struct {
     char key[64];       // Entry key (as read from .rpc)
-    char text[256];     // Entry text data (selectedSource: TEXT, FILE, PATH) - WARNING: Max len defined for rini
+    char text[256];     // Entry text data (selectedTemplate: TEXT, FILE, PATH) - WARNING: Max len defined for rini
     char desc[128];     // Entry data description, useful for tooltips
 
     // Data extracted from key
