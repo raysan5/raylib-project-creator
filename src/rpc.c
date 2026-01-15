@@ -1391,7 +1391,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 
     if (argc == 1) showUsageInfo = true;
 
-    char *rpcFileName[256] = { 0 }; // Provided input rpc config file, overwrites any other property
+    char rpcFileName[256] = { 0 }; // Provided input rpc config file, overwrites any other property
     rpcProjectConfig *config = (rpcProjectConfig *)RL_CALLOC(1, sizeof(rpcProjectConfig));
 
     // Process command line arguments
