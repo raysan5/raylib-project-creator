@@ -969,10 +969,10 @@ static void UpdateDrawFrame(void)
     GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
     //----------------------------------------------------------------------------------
 
-    // NOTE: If some overlap window is open and main window is locked, we draw a background rectangle
+    // NOTE: If some overlap window is open and main window is locked, draw a background rectangle
     if (lockBackground) DrawRectangle(0, 0, screenWidth, screenHeight, Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), 0.85f));
 
-    // WARNING: Before drawing the windows, we unlock them
+    // WARNING: Before drawing the windows, unlock them
     GuiUnlock();
 
     // GUI: Show info message panel
