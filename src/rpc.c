@@ -437,7 +437,7 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
-#endif  // PLATFORM_DESKTOP
+#endif // PLATFORM_DESKTOP
 #if (!defined(_DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
     // WARNING (Windows): If program is compiled as Window application (instead of console),
     // no console is available to show output info... solution is compiling a console application
@@ -583,7 +583,7 @@ int main(int argc, char *argv[])
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
-#endif  // !COMMAND_LINE_ONLY
+#endif // !COMMAND_LINE_ONLY
     return 0;
 }
 
@@ -1538,7 +1538,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 
     if (showUsageInfo) ShowCommandLineInfo();
 }
-#endif      // PLATFORM_DESKTOP
+#endif // PLATFORM_DESKTOP
 
 //--------------------------------------------------------------------------------------------
 // Load/Save/Export functions
