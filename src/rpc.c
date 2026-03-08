@@ -30,8 +30,8 @@
 *       1.0  (26-Sep-2024)  First release
 *
 *   DEPENDENCIES:
-*       raylib 5.6-dev          - Windowing/input management and drawing
-*       raygui 4.5-dev          - Immediate-mode GUI controls with custom styling and icons
+*       raylib 6.0              - Windowing/input management and drawing
+*       raygui 5.0              - Immediate-mode GUI controls with custom styling and icons
 *       tinyfiledialogs 3.20.0  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *       miniz 2.2.0             - Save .zip package file (required for multiple images export)
 *
@@ -174,68 +174,59 @@ static const int screenWidth = 1280;        // Default screen width (at initiali
 static const int screenHeight = 720;        // Default screen height (at initialization)
 
 // NOTE: Max length depends on OS, in Windows MAX_PATH = 256
-static char inFileName[256] = { 0 };        // Input file name (required in case of drag & drop over executable)
-static char outFileName[256] = { 0 };       // Output file name (required for file save/export)
+static char inFileName[256] = { 0 };            // Input file name (required in case of drag & drop over executable)
+static char outFileName[256] = { 0 };           // Output file name (required for file save/export)
 
-static char inDirectoryPath[256] = { 0 };   // Input directory path
-static char outProjectPath[256] = { 0 };    // Output project path, initializeed to working directory
+static char inDirectoryPath[256] = { 0 };       // Input directory path
+static char outProjectPath[256] = { 0 };        // Output project path, initializeed to working directory
 
-static int framesCounter = 0;               // General pourpose frames counter (not used)
-static Vector2 mousePoint = { 0 };          // Mouse position
-static bool lockBackground = false;         // Toggle lock background (controls locked)
-static bool saveChangesRequired = false;    // Flag to notice save changes are required
+static int framesCounter = 0;                   // General pourpose frames counter (not used)
+static Vector2 mousePoint = { 0 };              // Mouse position
+static bool lockBackground = false;             // Toggle lock background (controls locked)
+static bool saveChangesRequired = false;        // Flag to notice save changes are required
 
-static RenderTexture2D screenTarget = { 0 }; // Render texture to render the tool (if required)
+static RenderTexture2D screenTarget = { 0 };    // Render texture to render the tool (if required)
 
-static Vector2 panelScroll = { 0, -10 };    // Project properties panel scroll offset
-static Rectangle panelView = { 0 };         // Project properties panel view (for scissoring)
+static Vector2 panelScroll = { 0, -10 };        // Project properties panel scroll offset
+static Rectangle panelView = { 0 };             // Project properties panel view (for scissoring)
 
 // Info panel customizable variables
-static bool showInfoMessagePanel = false;   // Flag: request info message panel
-static const char *infoTitle = NULL;        // Info panel: title
-static const char *infoMessage = NULL;      // Info panel: message
-static const char *infoButton = NULL;       // Info panel: button text
+static bool showInfoMessagePanel = false;       // Flag: request info message panel
+static const char *infoTitle = NULL;            // Info panel: title
+static const char *infoMessage = NULL;          // Info panel: message
+static const char *infoButton = NULL;           // Info panel: button text
 
 // Screen scaling variables
-static int monitorWidth = 0;                // Monitor width
-static int monitorHeight = 0;               // Monitor height
-static bool screenSizeDouble = false;       // Flag to screen size x2, in case of HighDPI
+static int monitorWidth = 0;                    // Monitor width
+static int monitorHeight = 0;                   // Monitor height
+static bool screenSizeDouble = false;           // Flag to screen size x2, in case of HighDPI
 
-static bool showMessageReset = false;       // Show message: reset
-static bool showMessageExit = false;        // Show message: exit (quit)
+static bool showMessageReset = false;           // Show message: reset
+static bool showMessageExit = false;            // Show message: exit (quit)
+static bool showGenProjectProgress = false;     // Show project generation progress bar
+static float generateProjectProgress = 0.0f;    // Project export progress bar (fake)
 
-static double baseTime = 0;                 // Base time in seconds to start counting
-static double currentTime = 0;              // Current time counter in seconds
+static double baseTime = 0;                     // Base time in seconds to start counting
+static double currentTime = 0;                  // Current time counter in seconds
 
-static int currentYear = 2025;              // Current year for project, retrieved at init
+static int currentYear = 2026;                  // Current year for project, retrieved at init
+
+static char **srcFilePaths = NULL;              // Project source files paths
+static char **assetFilePaths = NULL;            // Project assets files paths
 
 // Project variables
-static rpcProjectConfig *project = NULL;
-static rpcProjectConfigRaw projectraw = { 0 };
+//static rpcProjectConfig *project = NULL;      // Project configuration (formated structure)
+static rpcProjectConfigRaw projectraw = { 0 };  // Project configuration (generic-raw structure)
 
-static char **srcFileNameList = NULL;
+static int selectedTemplate = 0;                // Project: selected template to start project
+static char generationOutPath[256] = { 0 };     // Project: generation output path
 
-static bool showGenerateProjectProgress = false;
-static float generateProjectProgress = 0.0f;  // Project export progress bar (fake)
+// [rpc] scanned from source/assets paths provided
+static int sourceFileCount = 0;                 // Project: source files count
+static char sourceFilePaths[64][256] = { 0 };   // Project: source files path(s) -> MAX_SOURCE_FILES=64
+static int assetFileCount = 0;                  // Project: assets files count
+//static char assetFilePaths[256][256] = { 0 };   // Project: assets files paths -> MAX_ASSETS_FILES=256
 //-----------------------------------------------------------------------------------
-
-/*
-// GUI: Main Layout
-//-----------------------------------------------------------------------------------
-static Vector2 anchorProject = { 12, 104 };
-static Vector2 anchorBuilding = { 12, 298 };
-
-static bool projectNameEditMode = false;
-static bool productNameEditMode = false;
-static bool projectDeveloperEditMode = false;
-static bool projectDeveloperWebEditMode = false;
-static bool projectDescriptionEditMode = false;
-static bool projectSourceFilePathEditMode = false;
-static bool projectResourcePathEditMode = false;
-static bool buildingRaylibPathEditMode = false;
-static bool buildingCompilerPathEditMode = false;
-//-----------------------------------------------------------------------------------
-*/
 
 // GUI: Custom file dialogs
 //-----------------------------------------------------------------------------------
@@ -400,16 +391,16 @@ int main(int argc, char *argv[])
             {
                 // Load .rpc config file and open tool UI
                 projectraw = LoadProjectConfigRaw(argv[1]);
-                project = (rpcProjectConfig *)RL_CALLOC(1, sizeof(rpcProjectConfig));
-                SyncProjectConfig(project, projectraw);
+                //project = (rpcProjectConfig *)RL_CALLOC(1, sizeof(rpcProjectConfig));
+                //SyncProjectConfig(project, projectraw);
             }
             else if (IsFileExtension(argv[1], ".c"))
             {
-                // Process automatically the c file and setup a project
-                // TODO: Really? Is this thee desired behaviour?
+                // Process automatically the C file and setup a project
+                // TODO: Really? Is this the desired behaviour?
                 rpcProjectConfig *config = (rpcProjectConfig *)RL_CALLOC(1, sizeof(rpcProjectConfig));
 
-                config->Project.selectedTemplate = 0;  // Custom files
+                selectedTemplate = 0;  // Custom files
                 strncpy(config->Project.internalName, GetFileNameWithoutExt(argv[1]), 64 - 1);
                 strncpy(config->Project.commercialName, GetFileNameWithoutExt(argv[1]), 64 - 1);
                 strcpy(config->Project.description, "My cool project");
@@ -456,36 +447,43 @@ int main(int argc, char *argv[])
     screenTarget = LoadRenderTexture(screenWidth, screenHeight);
     SetTextureFilter(screenTarget.texture, TEXTURE_FILTER_POINT);
 
-    if (project == NULL)
+    projectraw = LoadProjectConfigRaw("template/project_name.rpc");
+
+    //if (project == NULL)
     {
         // Initialize project config default
-        project = (rpcProjectConfig *)RL_CALLOC(1, sizeof(rpcProjectConfig));
-        project->Project.selectedTemplate = 0;  // Custom files
-        strcpy(project->Project.internalName, "cool_project");
-        strcpy(project->Project.commercialName, "Cool Project");
-        strcpy(project->Project.description, "my new cool project");
-        strcpy(project->Project.developerName, "raylib technologies");
-        strcpy(project->Project.developerUrl, "www.raylibtech.com");
+        selectedTemplate = 0;  // Custom files
+
+        rpcSetText(projectraw, "PROJECT_INTERNAL_NAME", "cool_project");
+        rpcSetText(projectraw, "PROJECT_REPO_NAME", "cool_project");
+        rpcSetText(projectraw, "PROJECT_COMMERCIAL_NAME", "Cool Project");
+        rpcSetText(projectraw, "PROJECT_SHORT_NAME", "CoolProject");
+        rpcSetText(projectraw, "PROJECT_VERSION","1.0");
+        rpcSetText(projectraw, "PROJECT_DESCRIPTION","A very cool project");
+        rpcSetText(projectraw, "PROJECT_PUBLISHER_NAME", "raylib technologies");
+        rpcSetText(projectraw, "PROJECT_DEVELOPER_NAME", "Ramon Santamaria");
+        rpcSetText(projectraw, "PROJECT_DEVELOPER_URL", "www.raylibtech.com");
+        rpcSetText(projectraw, "PROJECT_DEVELOPER_EMAIL", "ray@raylibtech.com");
         //strcpy(config->Project.sourceFilePaths[0], argv[1]);
         //config->Project.sourceFileCount = 1;
-        strcpy(project->Project.generationOutPath, ".");
-        project->Project.year = currentYear;
+        rpcSetText(projectraw, "PLATFORM_WINDOWS_W64DEVKIT_PATH", "C:\\raylib\\w64devkit\\bin");
+        rpcSetText(projectraw, "RAYLIB_SRC_PATH", "C:\\raylib\\raylib\\src");
+        
+        //project->Build.requestedBuildSystems[1] = true;
+        //project->Build.requestedBuildSystems[3] = true;
 
-        strcpy(project->Platform.Windows.w64devkitPath, "C:\\raylib\\w64devkit\\bin");
-        strcpy(project->raylib.srcPath, "C:\\raylib\\raylib\\src");
-        project->Build.requestedBuildSystems[1] = true;
-        project->Build.requestedBuildSystems[3] = true;
+        strcpy(generationOutPath, ".");
 
         // Load project default raw data from template and
         // sync with already defined project config data
         // TODO: Why not load everything from template directly?
-        projectraw = LoadProjectConfigRaw("template/project_name.rpc"); // WARNING: Requires finding this file!
-        SyncProjectConfigRaw(projectraw, project);
+        //projectraw = LoadProjectConfigRaw("template/project_name.rpc"); // WARNING: Requires finding this file!
+        //SyncProjectConfigRaw(projectraw, project);
     }
 
     // Source file names (without path) are used for display on source textbox
-    srcFileNameList = (char **)RL_CALLOC(256, sizeof(char *)); // Max number of input source files supported
-    for (int i = 0; i < 256; i++) srcFileNameList[i] = (char *)RL_CALLOC(256, sizeof(char));
+    srcFilePaths = (char **)RL_CALLOC(256, sizeof(char *)); // Max number of input source files supported
+    for (int i = 0; i < 256; i++) srcFilePaths[i] = (char *)RL_CALLOC(256, sizeof(char));
 
 #if !defined(PLATFORM_WEB)
     monitorWidth = GetMonitorWidth(GetCurrentMonitor());
@@ -509,7 +507,7 @@ int main(int argc, char *argv[])
     infoButton = "Sure! Let's start!";
     showInfoMessagePanel = true;
 
-    strcpy(outFileName, TextFormat("%s/%s", GetWorkingDirectory(), project->Project.internalName));
+    strcpy(outFileName, TextFormat("%s/%s", GetWorkingDirectory(), rpcGetText(projectraw, "PROJECT_INTERNAL_NAME")));
 
     LOG("INIT: Ready to show project generation info...\n");
     //-----------------------------------------------------------------------------------
@@ -571,7 +569,7 @@ int main(int argc, char *argv[])
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    UnloadProjectConfig(project);
+    //UnloadProjectConfig(project);
 
     UnloadRenderTexture(screenTarget); // Unload render texture
 
@@ -603,23 +601,25 @@ static void UpdateDrawFrame(void)
     {
         FilePathList droppedFiles = LoadDroppedFiles();
 
-        for (int i = 0; i < droppedFiles.count; i++)
-        {
-            if (IsFileExtension(droppedFiles.paths[i], ".c;.h"))
-            {
-                // Add files to source list
-                strcpy(project->Project.sourceFilePaths[project->Project.sourceFileCount], droppedFiles.paths[i]);
-                strcpy(srcFileNameList[project->Project.sourceFileCount], GetFileName(droppedFiles.paths[i]));
-                project->Project.sourceFileCount++;
-            }
-        }
-
         if ((droppedFiles.count == 1) && IsFileExtension(droppedFiles.paths[0], ".rgs"))
         {
             // Reset to default internal style
             // NOTE: Required to unload any previously loaded font texture
             GuiLoadStyleDefault();
             GuiLoadStyle(droppedFiles.paths[0]);
+        }
+        else
+        {
+            for (int i = 0; i < droppedFiles.count; i++)
+            {
+                if (IsFileExtension(droppedFiles.paths[i], ".c;.h"))
+                {
+                    // TODO: Add files to source list
+                    //strcpy(project->Project.sourceFilePaths[project->Project.sourceFileCount], droppedFiles.paths[i]);
+                    //strcpy(srcFilePaths[project->Project.sourceFileCount], GetFileName(droppedFiles.paths[i]));
+                    //project->Project.sourceFileCount++;
+                }
+            }
         }
 
         UnloadDroppedFiles(droppedFiles);    // Unload filepaths from memory
@@ -631,24 +631,20 @@ static void UpdateDrawFrame(void)
     // New style file, previous in/out files registeres are reseted
     if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_N)) || mainToolbarState.btnNewFilePressed)
     {
-        memset(project, 0, sizeof(rpcProjectConfig));
-        project->Project.selectedTemplate = 0;  // Custom files
-        strcpy(project->Project.internalName, "cool_project");
-        strcpy(project->Project.commercialName, "Cool Project");
-        strcpy(project->Project.description, "my new cool project");
-        strcpy(project->Project.developerName, "raylib technologies");
-        strcpy(project->Project.developerUrl, "www.raylibtech.com");
-        strcpy(project->Project.generationOutPath, ".");
-
-        strcpy(project->Platform.Windows.w64devkitPath, "C:\\raylib\\w64devkit\\bin");
-        strcpy(project->raylib.srcPath, "C:\\raylib\\raylib\\src");
-        project->Project.year = currentYear;
-        project->Build.requestedBuildSystems[1] = true;
-        project->Build.requestedBuildSystems[3] = true;
-
-        UnloadProjectConfigRaw(projectraw);
-        projectraw = LoadProjectConfigRaw("template/project_name.rpc");
-        SyncProjectConfigRaw(projectraw, project);
+        rpcSetText(projectraw, "PROJECT_INTERNAL_NAME", "cool_project");
+        rpcSetText(projectraw, "PROJECT_REPO_NAME", "cool_project");
+        rpcSetText(projectraw, "PROJECT_COMMERCIAL_NAME", "Cool Project");
+        rpcSetText(projectraw, "PROJECT_SHORT_NAME", "CoolProject");
+        rpcSetText(projectraw, "PROJECT_VERSION","1.0");
+        rpcSetText(projectraw, "PROJECT_DESCRIPTION","A very cool project");
+        rpcSetText(projectraw, "PROJECT_PUBLISHER_NAME", "raylib technologies");
+        rpcSetText(projectraw, "PROJECT_DEVELOPER_NAME", "Ramon Santamaria");
+        rpcSetText(projectraw, "PROJECT_DEVELOPER_URL", "www.raylibtech.com");
+        rpcSetText(projectraw, "PROJECT_DEVELOPER_EMAIL", "ray@raylibtech.com");
+        //strcpy(config->Project.sourceFilePaths[0], argv[1]);
+        //config->Project.sourceFileCount = 1;
+        rpcSetText(projectraw, "PLATFORM_WINDOWS_W64DEVKIT_PATH", "C:\\raylib\\w64devkit\\bin");
+        rpcSetText(projectraw, "RAYLIB_SRC_PATH", "C:\\raylib\\raylib\\src");
     }
 
     // Show dialog: load project config file (.rpc)
@@ -683,7 +679,7 @@ static void UpdateDrawFrame(void)
         else if (showLoadProjectDialog) showLoadProjectDialog = false;
         else if (showSaveProjectDialog) showLoadProjectDialog = false;
         else if (showProjectGenPathDialog) showProjectGenPathDialog = false;
-        else if (showGenerateProjectProgress) showGenerateProjectProgress = false;
+        else if (showGenProjectProgress) showGenProjectProgress = false;
         else if (showLoadFileDialog) showLoadFileDialog = false;
         else if (showLoadDirectoryDialog) showLoadDirectoryDialog = false;
         else if (showLoadSourceFilesDialog) showLoadSourceFilesDialog = false;
@@ -701,7 +697,7 @@ static void UpdateDrawFrame(void)
     else if (mainToolbarState.btnSaveFilePressed)
     {
         memset(outFileName, 0, 256);
-        strcpy(outFileName, TextFormat("%s.rpc", project->Project.internalName));
+        strcpy(outFileName, TextFormat("%s.rpc", rpcGetText(projectraw, "PROJECT_INTERNAL_NAME")));
         showSaveProjectDialog = true;
     }
 
@@ -714,12 +710,12 @@ static void UpdateDrawFrame(void)
 
         switch (mainToolbarState.visualStyleActive)
         {
-        case 0: GuiLoadStyleGenesis(); break;
-        case 1: GuiLoadStyleCyber(); break;
-        case 2: GuiLoadStyleLavanda(); break;
-        case 3: GuiLoadStyleTerminal(); break;
-        case 4: GuiLoadStyleAmber(); break;
-        default: break;
+            case 0: GuiLoadStyleGenesis(); break;
+            case 1: GuiLoadStyleCyber(); break;
+            case 2: GuiLoadStyleLavanda(); break;
+            case 3: GuiLoadStyleTerminal(); break;
+            case 4: GuiLoadStyleAmber(); break;
+            default: break;
         }
 
         mainToolbarState.prevVisualStyleActive = mainToolbarState.visualStyleActive;
@@ -777,7 +773,7 @@ static void UpdateDrawFrame(void)
         showLoadFileDialog ||
         showLoadDirectoryDialog ||
         showProjectGenPathDialog ||
-        showGenerateProjectProgress ||
+        showGenProjectProgress ||
         showLoadSourceFilesDialog) lockBackground = true;
     else lockBackground = false;
 
@@ -792,38 +788,44 @@ static void UpdateDrawFrame(void)
 
     // GUI: Main Window
     //----------------------------------------------------------------------------------
-    int prevProjectType = project->Project.selectedTemplate;
+    int prevProjectType = selectedTemplate;
 
     GuiLabel((Rectangle){ 16, 44, 200, 24 }, "CHOOSE PROJECT TEMPLATE:");
     //GuiSetTooltip("Choose from a default project template or custom source files");
-    GuiToggleGroup((Rectangle){ 16, 72, 206, 100 }, "Custom;Basic Window;Screen Manager;Platform 2D;First Person 3D;Puzzle Game", &project->Project.selectedTemplate);
+    GuiToggleGroup((Rectangle){ 16, 72, 206, 100 }, "Custom;Basic Window;Screen Manager;Platform 2D;First Person 3D;Puzzle Game", &selectedTemplate);
     GuiSetTooltip(NULL);
 
-    if (project->Project.selectedTemplate != prevProjectType)
+    // Update project data required files depending on selected template
+    if (selectedTemplate != prevProjectType)
     {
-        if (project->Project.selectedTemplate == 0)
+        if (selectedTemplate == 0)
         {
-            strcpy(srcFileNameList[0], TextFormat("%s.c", TextToLower(project->Project.internalName)));
-            project->Project.sourceFileCount = 1;
+            strcpy(srcFilePaths[0], TextFormat("%s.c", rpcGetText(projectraw, "PROJECT_INTERNAL_NAME")));
+            sourceFileCount = 1;
         }
-        else if (project->Project.selectedTemplate == 1)
+        else if (selectedTemplate == 1)
         {
-            strcpy(srcFileNameList[0], TextFormat("%s.c", TextToLower(project->Project.internalName)));
-            strcpy(srcFileNameList[1], "screens.h");
-            strcpy(srcFileNameList[2], "screen_logo.c");
-            strcpy(srcFileNameList[3], "screen_title.c");
-            strcpy(srcFileNameList[4], "screen_options.c");
-            strcpy(srcFileNameList[5], "screen_gameplay.c");
-            strcpy(srcFileNameList[6], "screen_ending.c");
-            project->Project.sourceFileCount = 7;
+            strcpy(srcFilePaths[0], TextFormat("%s.c", rpcGetText(projectraw, "PROJECT_INTERNAL_NAME")));
+            strcpy(srcFilePaths[1], "screens.h");
+            strcpy(srcFilePaths[2], "screen_logo.c");
+            strcpy(srcFilePaths[3], "screen_title.c");
+            strcpy(srcFilePaths[4], "screen_options.c");
+            strcpy(srcFilePaths[5], "screen_gameplay.c");
+            strcpy(srcFilePaths[6], "screen_ending.c");
+            sourceFileCount = 7;
         }
-        else if (project->Project.selectedTemplate == 2)
+        else if (selectedTemplate == 2)
         {
-            project->Project.sourceFileCount = 0;
+            sourceFileCount = 0;
         }
     }
 
+    //if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*0 + panelScroll.y, GetScreenWidth() - (24 + 180 + 12 + 460 + 24), 24 },
+    //    rpcGetText(projectraw, "PROJECT_INTERNAL_NAME"), 255, rpcGetPropertyEntry(projectraw, "PROJECT_INTERNAL_NAME")->editMode)) 
+    //    rpcGetPropertyEntry(projectraw, "PROJECT_INTERNAL_NAME")->editMode = !rpcGetPropertyEntry(projectraw, "PROJECT_INTERNAL_NAME")->editMode;
+
     // Draw project configuration fields
+    // TODO: Refactor it in a more readable way?
     for (int i = 0, k = 0; i < projectraw.entryCount; i++)
     {
         if (projectraw.entries[i].category == RPC_CAT_PROJECT) // Only project category
@@ -837,43 +839,43 @@ static void UpdateDrawFrame(void)
             GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             switch (projectraw.entries[i].type)
             {
-            case RPC_TYPE_BOOL:
-            {
-                bool checked = (bool)projectraw.entries[i].value;
-                GuiCheckBox((Rectangle){ 24 + 2, 52 + 96 + 12 + 36 + (24 + 8)*k + 2 + panelScroll.y, 20, 20 }, projectraw.entries[i].name + 5, &checked);
-                projectraw.entries[i].value = (checked? 1 : 0);
-            } break;
-            case RPC_TYPE_VALUE:
-            {
-                if (GuiValueBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, 180, 24 },
-                    NULL, &projectraw.entries[i].value, 0, 1024, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
-            } break;
-            case RPC_TYPE_TEXT:
-            {
-                if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth, 24 },
-                    projectraw.entries[i].text, 255, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
-            } break;
-            case RPC_TYPE_TEXT_FILE:
-            {
-                if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth - 90, 24 },
-                    projectraw.entries[i].text, 255, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
-                if (GuiButton((Rectangle){ 24 + 180 + textWidth - 86, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, 86, 24 }, "#6#Browse"))
+                case RPC_TYPE_BOOL:
                 {
-                    showLoadFileDialog = true;
-                    projectEditProperty = i;
-                }
-            } break;
-            case RPC_TYPE_TEXT_PATH:
-            {
-                if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth - 90, 24 },
-                    projectraw.entries[i].text, 255, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
-                if (GuiButton((Rectangle){ 24 + 180 + textWidth - 86, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, 86, 24 }, "#173#Browse"))
+                    bool checked = (bool)projectraw.entries[i].value;
+                    GuiCheckBox((Rectangle){ 24 + 2, 52 + 96 + 12 + 36 + (24 + 8)*k + 2 + panelScroll.y, 20, 20 }, projectraw.entries[i].name + 5, &checked);
+                    projectraw.entries[i].value = (checked? 1 : 0);
+                } break;
+                case RPC_TYPE_VALUE:
                 {
-                    showLoadDirectoryDialog = true;
-                    projectEditProperty = i;
-                }
-            } break;
-            default: break;
+                    if (GuiValueBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, 180, 24 },
+                        NULL, &projectraw.entries[i].value, 0, 1024, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
+                } break;
+                case RPC_TYPE_TEXT:
+                {
+                    if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth, 24 },
+                        projectraw.entries[i].text, 255, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
+                } break;
+                case RPC_TYPE_TEXT_FILE:
+                {
+                    if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth - 90, 24 },
+                        projectraw.entries[i].text, 255, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
+                    if (GuiButton((Rectangle){ 24 + 180 + textWidth - 86, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, 86, 24 }, "#6#Browse"))
+                    {
+                        showLoadFileDialog = true;
+                        projectEditProperty = i;
+                    }
+                } break;
+                case RPC_TYPE_TEXT_PATH:
+                {
+                    if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, textWidth - 90, 24 },
+                        projectraw.entries[i].text, 255, projectraw.entries[i].editMode)) projectraw.entries[i].editMode = !projectraw.entries[i].editMode;
+                    if (GuiButton((Rectangle){ 24 + 180 + textWidth - 86, 52 + 96 + 12 + 36 + (24 + 8)*k + panelScroll.y, 86, 24 }, "#173#Browse"))
+                    {
+                        showLoadDirectoryDialog = true;
+                        projectEditProperty = i;
+                    }
+                } break;
+                default: break;
             }
             GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
 
@@ -886,67 +888,11 @@ static void UpdateDrawFrame(void)
         }
     }
 
-    /*
-    GuiGroupBox((Rectangle){ anchorProject.x + 0, anchorProject.y + 0, GetScreenWidth() - 24, 172 }, "PROJECT SETTINGS");
-    GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 24, 104, 24 }, "PROJECT NAME:");
-    //GuiSetTooltip("Define project name, note that every project\nblablablaballsadlksad");
-    if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 24, 280, 24 }, project->Project.internalName, 128, projectNameEditMode)) projectNameEditMode = !projectNameEditMode;
-    GuiLabel((Rectangle){ anchorProject.x + 408, anchorProject.y + 24, 120, 24 }, "PRODUCT NAME:");
-    if (GuiTextBox((Rectangle){ anchorProject.x + 496, anchorProject.y + 24, 280, 24 }, project->Project.commercialName, 128, productNameEditMode)) productNameEditMode = !productNameEditMode;
-    GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 56, 104, 24 }, "DESCRIPTION:");
-    if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 56, 664, 24 }, project->Project.description, 128, projectDescriptionEditMode)) projectDescriptionEditMode = !projectDescriptionEditMode;
-    GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 88, 104, 24 }, "DEVELOPER:");
-    if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 88, 280, 24 }, project->Project.developerName, 128, projectDeveloperEditMode)) projectDeveloperEditMode = !projectDeveloperEditMode;
-    GuiLabel((Rectangle){ anchorProject.x + 408, anchorProject.y + 88, 120, 24 }, "DEV. WEBPAGE:");
-    if (GuiTextBox((Rectangle){ anchorProject.x + 496, anchorProject.y + 88, 280, 24 }, project->Project.developerUrl, 128, projectDeveloperWebEditMode)) projectDeveloperWebEditMode = !projectDeveloperWebEditMode;
-
-    if (project->Project.selectedTemplate != 2) GuiDisable();
-    GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 128, 104, 24 }, "SOURCE FILES:");
-    GuiSetStyle(TEXTBOX, TEXT_READONLY, 1);
-    GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 128, 536, 24 }, TextJoin(srcFileNameList, project->Project.sourceFileCount, ";"), 256, projectSourceFilePathEditMode);//) projectSourceFilePathEditMode = !projectSourceFilePathEditMode;
-    GuiSetStyle(TEXTBOX, TEXT_READONLY, 0);
-    if (GuiButton((Rectangle){ anchorProject.x + 656, anchorProject.y + 128, 120, 24 }, "Browse")) showLoadSourceFilesDialog = true;
-    //GuiLabel((Rectangle){ anchorProject.x + 8, anchorProject.y + 160, 104, 24 }, "RESOURCE PATH:");
-    //if (GuiTextBox((Rectangle){ anchorProject.x + 112, anchorProject.y + 160, 536, 24 }, config->Project.resBasePath, 128, projectResourcePathEditMode)) projectResourcePathEditMode = !projectResourcePathEditMode;
-#if defined(PLATFORM_WEB)
-    //GuiDisable();
-#endif
-    //if (GuiButton((Rectangle){ anchorProject.x + 656, anchorProject.y + 160, 120, 24 }, "Browse")) showLoadResourcePathDialog = true;
-    GuiEnable();
-
-    GuiGroupBox((Rectangle){ anchorBuilding.x + 0, anchorBuilding.y + 0, 784, 136 }, "BUILD SETTINGS");
-    GuiLabel((Rectangle){ anchorBuilding.x + 8, anchorBuilding.y + 16, 104, 24 }, "raylib SRC PATH:");
-    if (GuiTextBox((Rectangle){ anchorBuilding.x + 112, anchorBuilding.y + 16, 536, 24 }, project->raylib.srcPath, 256, buildingRaylibPathEditMode)) buildingRaylibPathEditMode = !buildingRaylibPathEditMode;
 #if defined(PLATFORM_WEB)
     GuiDisable();
 #endif
-    if (GuiButton((Rectangle){ anchorBuilding.x + 656, anchorBuilding.y + 16, 120, 24 }, "Browse")) showLoadRaylibSourcePathDialog = true;
-    GuiEnable();
 
-#if !defined(PLATFORM_WEB) && (defined(__linux__) || defined(__FreeBSD__))
-    GuiDisable();
-#endif
-    GuiLabel((Rectangle){ anchorBuilding.x + 8, anchorBuilding.y + 48, 104, 24 }, "COMPILER PATH:");
-    if (GuiTextBox((Rectangle){ anchorBuilding.x + 112, anchorBuilding.y + 48, 536, 24 }, project->Platform.Windows.w64devkitPath, 256, buildingCompilerPathEditMode)) buildingCompilerPathEditMode = !buildingCompilerPathEditMode;
-    GuiEnable();
-
-#if defined(PLATFORM_WEB)
-    GuiDisable();
-#endif
-    if (GuiButton((Rectangle){ anchorBuilding.x + 656, anchorBuilding.y + 48, 120, 24 }, "Browse")) showLoadCompilerPathDialog = true;
-    GuiEnable();
-    GuiLabel((Rectangle){ anchorBuilding.x + 8, anchorBuilding.y + 88, 104, 32 }, "BUILD SYSTEMS:");
-
-    GuiToggle((Rectangle){ anchorBuilding.x + 112, anchorBuilding.y + 88, 164, 32 }, "Script", &project->Build.requestedBuildSystems[0]);
-    GuiToggle((Rectangle){ anchorBuilding.x + 112 + 166, anchorBuilding.y + 88, 164, 32 }, "Makefile", &project->Build.requestedBuildSystems[1]);
-    GuiToggle((Rectangle){ anchorBuilding.x + 112 + 166*2, anchorBuilding.y + 88, 164, 32 }, "VSCode", &project->Build.requestedBuildSystems[2]);
-    GuiToggle((Rectangle){ anchorBuilding.x + 112 + 166*3, anchorBuilding.y + 88, 164, 32 }, "VS2022", &project->Build.requestedBuildSystems[3]);
-    */
-
-#if defined(PLATFORM_WEB)
-    GuiDisable();
-#endif
-    if (project->Project.sourceFileCount == 0) GuiDisable();
+    if (sourceFileCount == 0) GuiDisable();
     if (GuiButton((Rectangle){ 8, GetScreenHeight() - 24 - 8 - 40, GetScreenWidth() - 16, 40 }, "GENERATE PROJECT STRUCTURE")) showProjectGenPathDialog = true;
     GuiEnable();
 
@@ -1078,8 +1024,9 @@ static void UpdateDrawFrame(void)
 
             if ((projectraw.entryCount > 0) && (projectraw.entries != NULL))
             {
-                memset(project, 0, sizeof(rpcProjectConfig));
-                SyncProjectConfig(project, projectraw);
+                // TODO: Load projectconfigraw
+                //memset(project, 0, sizeof(rpcProjectConfig));
+                //SyncProjectConfig(project, projectraw);
 
                 SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
             }
@@ -1089,7 +1036,7 @@ static void UpdateDrawFrame(void)
                 // Load project default raw data from template and
                 // sync with already defined project config data
                 projectraw = LoadProjectConfigRaw("template/project_name.rpc");
-                SyncProjectConfigRaw(projectraw, project);
+                //SyncProjectConfigRaw(projectraw, project);
             }
         }
 
@@ -1113,7 +1060,7 @@ static void UpdateDrawFrame(void)
             if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".rpc")) strcat(outFileName, ".rpc\0");
 
             //SyncProjectConfig(project, projectraw); // TODO: Currently UI modifies [project], review if changed to projectraw
-            SaveProjectConfig(project, outFileName);
+            SaveProjectConfigRaw(projectraw, outFileName, 0);
 
 #if defined(PLATFORM_WEB)
             // Download file from MEMFS (emscripten memory filesystem)
@@ -1164,14 +1111,14 @@ static void UpdateDrawFrame(void)
 
             for (int i = 0; i < multiFileCount; i++)
             {
-                if (IsFileExtension(multiFileList[i], ".c;.h") && (project->Project.sourceFileCount < 256))
+                if (IsFileExtension(multiFileList[i], ".c;.h") && (sourceFileCount < 256))
                 {
                     // Add files to source list
-                    strcpy(project->Project.sourceFilePaths[project->Project.sourceFileCount], multiFileList[i]);
-                    strcpy(srcFileNameList[project->Project.sourceFileCount], GetFileName(multiFileList[i]));
-                    project->Project.sourceFileCount++;
+                    strcpy(sourceFilePaths[sourceFileCount], multiFileList[i]);
+                    strcpy(srcFilePaths[sourceFileCount], GetFileName(multiFileList[i]));
+                    sourceFileCount++;
 
-                    if (project->Project.sourceFileCount >= 256) break;
+                    if (sourceFileCount >= 256) break;
                 }
             }
         }
@@ -1249,9 +1196,9 @@ static void UpdateDrawFrame(void)
 #endif
         if (result == 1)
         {
-            strcpy(project->Project.generationOutPath, outProjectPath);
-            SetupProject(project);
-            showGenerateProjectProgress = true;
+            strcpy(generationOutPath, outProjectPath);
+            //SetupProject(project); // TODO: Use projectraw
+            showGenProjectProgress = true;
         }
 
         if (result >= 0) showProjectGenPathDialog = false;
@@ -1260,7 +1207,7 @@ static void UpdateDrawFrame(void)
 
     // GUI: Export Project Dialog (and saving logic)
     //----------------------------------------------------------------------------------------
-    if (showGenerateProjectProgress)
+    if (showGenProjectProgress)
     {
         GuiPanel((Rectangle){ -10, screenHeight/2 - 100, screenWidth + 20, 200 }, NULL);
 
@@ -1277,14 +1224,14 @@ static void UpdateDrawFrame(void)
         GuiProgressBar((Rectangle){ 12, screenHeight/2, screenWidth - 24, 20 }, NULL, NULL, &generateProjectProgress, 0, 100);
 
         if (generateProjectProgress < 100.0f) GuiDisable();
-        if (GuiButton((Rectangle){ screenWidth/4, screenHeight/2 + 40, screenWidth/2, 40 }, "GREAT!")) showGenerateProjectProgress = false;
+        if (GuiButton((Rectangle){ screenWidth/4, screenHeight/2 + 40, screenWidth/2, 40 }, "GREAT!")) showGenProjectProgress = false;
         GuiEnable();
 
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
         GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize);
         GuiSetStyle(DEFAULT, TEXT_SPACING, textSpacing);
 
-        if (!showGenerateProjectProgress)
+        if (!showGenProjectProgress)
         {
 #if defined(PLATFORM_WEB)
             strcpy(outFileName, TextFormat("%s/%s", project->Project.generationOutPath, TextToLower(project->Project.repoName)));
@@ -1330,11 +1277,16 @@ static void UpdateDrawFrame(void)
     EndTextureMode();
 
     BeginDrawing();
-    ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+        ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
-    // Draw render texture to screen
-    if (screenSizeDouble) DrawTexturePro(screenTarget.texture, (Rectangle){ 0, 0, (float)screenTarget.texture.width, -(float)screenTarget.texture.height }, (Rectangle){ 0, 0, (float)screenTarget.texture.width*2, (float)screenTarget.texture.height*2 }, (Vector2){ 0, 0 }, 0.0f, WHITE);
-    else DrawTextureRec(screenTarget.texture, (Rectangle){ 0, 0, (float)screenTarget.texture.width, -(float)screenTarget.texture.height }, (Vector2){ 0, 0 }, WHITE);
+        // Draw render texture to screen
+        if (screenSizeDouble) DrawTexturePro(screenTarget.texture, 
+            (Rectangle){ 0, 0, (float)screenTarget.texture.width, -(float)screenTarget.texture.height }, 
+            (Rectangle){ 0, 0, (float)screenTarget.texture.width*2, (float)screenTarget.texture.height*2 }, 
+            (Vector2){ 0, 0 }, 0.0f, WHITE);
+        else DrawTextureRec(screenTarget.texture, 
+            (Rectangle){ 0, 0, (float)screenTarget.texture.width, -(float)screenTarget.texture.height }, 
+            (Vector2){ 0, 0 }, WHITE);
     EndDrawing();
     //----------------------------------------------------------------------------------
 }
@@ -1655,7 +1607,7 @@ static void SetupProject(rpcProjectConfig *config)
     PROJECT_ASSETS_OUTPUT_PATH              "$(repo-name)/release/resources"    # Project assets destination path
     */
     fileText = LoadFileText(TextFormat("%s/project_name.rpc", templatePath));
-    fileTextUpdated[0] = TextReplace(fileText, "$(project_name)", config->Project.internalName); // GetProjectConfigText(projectraw, "PROJECT_INTERNAL_NAME")
+    fileTextUpdated[0] = TextReplace(fileText, "$(project_name)", config->Project.internalName); // rpcGetText(pc, "PROJECT_INTERNAL_NAME")
     fileTextUpdated[1] = TextReplace(fileTextUpdated[0], "$(repo-name)", config->Project.repoName);
     fileTextUpdated[2] = TextReplace(fileTextUpdated[1], "$(CommercialName)", config->Project.commercialName);
     fileTextUpdated[3] = TextReplace(fileTextUpdated[2], "$(ShortName)", config->Project.shortName);

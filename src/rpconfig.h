@@ -280,15 +280,18 @@ RPCAPI rpcProjectConfigRaw LoadProjectConfigRaw(const char *fileName); // Load p
 RPCAPI void UnloadProjectConfigRaw(rpcProjectConfigRaw raw); // Unload project config raw data
 RPCAPI void SaveProjectConfigRaw(rpcProjectConfigRaw raw, const char *fileName, int flags); // Save project config raw data to .rpc file
 
-RPCAPI char *GetProjectConfigText(rpcProjectConfigRaw raw, const char *key); // Get project config text by key
-RPCAPI int *GetProjectConfigValue(rpcProjectConfigRaw raw, const char *key); // Get project config value by key
-
 RPCAPI rpcProjectConfig *LoadProjectConfig(rpcProjectConfigRaw raw); // Load project config data from raw project config
 RPCAPI void UnloadProjectConfig(rpcProjectConfig *config);  // Unload project data
 RPCAPI void SaveProjectConfig(rpcProjectConfig *config, const char *fileName); // Save project config data to .rpc file
 
 RPCAPI void SyncProjectConfig(rpcProjectConfig *dst, rpcProjectConfigRaw src); // Sync ProjectConfigRaw data --> ProjectConfig data
 RPCAPI void SyncProjectConfigRaw(rpcProjectConfigRaw dst, rpcProjectConfig *src); // Sync ProjectConfig data --> ProjectConfigRaw data
+
+RPCAPI char *rpcGetText(rpcProjectConfigRaw raw, const char *key); // Get project config text by key
+RPCAPI int *rpcGetValue(rpcProjectConfigRaw raw, const char *key); // Get project config pointer to value by key
+RPCAPI rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfigRaw raw, const char *key);
+RPCAPI int rpcSetText(rpcProjectConfigRaw raw, const char *key, const char *text); // Set project config text by key
+RPCAPI int rpcSetValue(rpcProjectConfigRaw raw, const char *key, int value); // Set project config value by key
 
 #if defined(__cplusplus)
 }               // Prevents name mangling of functions
@@ -790,7 +793,7 @@ void SyncProjectConfigRaw(rpcProjectConfigRaw dst, rpcProjectConfig *src)
 
 // Get project config text by key
 // NOTE: A pointer to the text is returned to allow modifying it
-char *GetProjectConfigText(rpcProjectConfigRaw raw, const char *key)
+char *rpcGetText(rpcProjectConfigRaw raw, const char *key)
 {
     for (int i = 0; i < raw.entryCount; i++)
     {
@@ -802,7 +805,7 @@ char *GetProjectConfigText(rpcProjectConfigRaw raw, const char *key)
 
 // Get project config value by key
 // NOTE: A pointer to the value is returned to allow modifying it
-int *GetProjectConfigValue(rpcProjectConfigRaw raw, const char *key)
+int *rpcGetValue(rpcProjectConfigRaw raw, const char *key)
 {
     for (int i = 0; i < raw.entryCount; i++)
     {
@@ -811,5 +814,38 @@ int *GetProjectConfigValue(rpcProjectConfigRaw raw, const char *key)
 
     return NULL;
 }
+
+rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfigRaw raw, const char *key)
+{
+    for (int i = 0; i < raw.entryCount; i++)
+    {
+        if (TextIsEqual(raw.entries[i].key, key)) return &raw.entries[i];
+    }
+
+    return NULL;
+}
+
+// Set project config text by key
+int rpcSetText(rpcProjectConfigRaw raw, const char *key, const char *text)
+{
+    for (int i = 0; i < raw.entryCount; i++)
+    {
+        if (TextIsEqual(raw.entries[i].key, key)) strcpy(raw.entries[i].text, text);
+    }
+}
+
+// Set project config value by key
+int rpcSetValue(rpcProjectConfigRaw raw, const char *key, int value)
+{
+    for (int i = 0; i < raw.entryCount; i++)
+    {
+        if (TextIsEqual(raw.entries[i].key, key))
+        {
+            raw.entries[i].value = value;
+            strcpy(raw.entries[i].text, TextFormat("%i", value));
+        }
+    }
+}
+
 
 #endif // RPCDATA_IMPLEMENTATION
