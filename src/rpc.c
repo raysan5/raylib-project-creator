@@ -468,7 +468,7 @@ int main(int argc, char *argv[])
         //config->Project.sourceFileCount = 1;
         rpcSetText(projectraw, "PLATFORM_WINDOWS_W64DEVKIT_PATH", "C:\\raylib\\w64devkit\\bin");
         rpcSetText(projectraw, "RAYLIB_SRC_PATH", "C:\\raylib\\raylib\\src");
-        
+
         //project->Build.requestedBuildSystems[1] = true;
         //project->Build.requestedBuildSystems[3] = true;
 
@@ -821,7 +821,7 @@ static void UpdateDrawFrame(void)
     }
 
     //if (GuiTextBox((Rectangle){ 24 + 180, 52 + 96 + 12 + 36 + (24 + 8)*0 + panelScroll.y, GetScreenWidth() - (24 + 180 + 12 + 460 + 24), 24 },
-    //    rpcGetText(projectraw, "PROJECT_INTERNAL_NAME"), 255, rpcGetPropertyEntry(projectraw, "PROJECT_INTERNAL_NAME")->editMode)) 
+    //    rpcGetText(projectraw, "PROJECT_INTERNAL_NAME"), 255, rpcGetPropertyEntry(projectraw, "PROJECT_INTERNAL_NAME")->editMode))
     //    rpcGetPropertyEntry(projectraw, "PROJECT_INTERNAL_NAME")->editMode = !rpcGetPropertyEntry(projectraw, "PROJECT_INTERNAL_NAME")->editMode;
 
     // Draw project configuration fields
@@ -1280,12 +1280,12 @@ static void UpdateDrawFrame(void)
         ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
         // Draw render texture to screen
-        if (screenSizeDouble) DrawTexturePro(screenTarget.texture, 
-            (Rectangle){ 0, 0, (float)screenTarget.texture.width, -(float)screenTarget.texture.height }, 
-            (Rectangle){ 0, 0, (float)screenTarget.texture.width*2, (float)screenTarget.texture.height*2 }, 
+        if (screenSizeDouble) DrawTexturePro(screenTarget.texture,
+            (Rectangle){ 0, 0, (float)screenTarget.texture.width, -(float)screenTarget.texture.height },
+            (Rectangle){ 0, 0, (float)screenTarget.texture.width*2, (float)screenTarget.texture.height*2 },
             (Vector2){ 0, 0 }, 0.0f, WHITE);
-        else DrawTextureRec(screenTarget.texture, 
-            (Rectangle){ 0, 0, (float)screenTarget.texture.width, -(float)screenTarget.texture.height }, 
+        else DrawTextureRec(screenTarget.texture,
+            (Rectangle){ 0, 0, (float)screenTarget.texture.width, -(float)screenTarget.texture.height },
             (Vector2){ 0, 0 }, WHITE);
     EndDrawing();
     //----------------------------------------------------------------------------------
