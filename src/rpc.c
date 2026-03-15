@@ -1234,7 +1234,7 @@ static void UpdateDrawFrame(void)
         if (!showGenProjectProgress)
         {
 #if defined(PLATFORM_WEB)
-            strcpy(outFileName, TextFormat("%s/%s", project->Project.generationOutPath, TextToLower(project->Project.repoName)));
+            strcpy(outFileName, TextFormat("%s/%s", generationOutPath, TextToLower(rpcGetText(projectraw, "PROJECT_REPO_NAME"))));
 
             // Package all created files (in browser MEMFS) into a .zip to be exported
             mz_zip_archive zip = { 0 };
