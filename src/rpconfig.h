@@ -828,23 +828,38 @@ rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfigRaw raw, const char *key)
 // Set project config text by key
 int rpcSetText(rpcProjectConfigRaw raw, const char *key, const char *text)
 {
+    int result = -1;
+
     for (int i = 0; i < raw.entryCount; i++)
     {
-        if (TextIsEqual(raw.entries[i].key, key)) strcpy(raw.entries[i].text, text);
+        if (TextIsEqual(raw.entries[i].key, key))
+        {
+            strcpy(raw.entries[i].text, text);
+            result = i;
+            break;
+        }
     }
+
+    return result;
 }
 
 // Set project config value by key
 int rpcSetValue(rpcProjectConfigRaw raw, const char *key, int value)
 {
+    int result = -1;
+
     for (int i = 0; i < raw.entryCount; i++)
     {
         if (TextIsEqual(raw.entries[i].key, key))
         {
             raw.entries[i].value = value;
             strcpy(raw.entries[i].text, TextFormat("%i", value));
+            result = i;
+            break;
         }
     }
+
+    return result;
 }
 
 
