@@ -610,7 +610,7 @@ static void UpdateDrawFrame(void)
         }
         else
         {
-            for (int i = 0; i < droppedFiles.count; i++)
+            for (unsigned int i = 0; i < droppedFiles.count; i++)
             {
                 if (IsFileExtension(droppedFiles.paths[i], ".c;.h"))
                 {
@@ -925,7 +925,7 @@ static void UpdateDrawFrame(void)
     //----------------------------------------------------------------------------------------
     if (showInfoMessagePanel)
     {
-        Vector2 textSize = MeasureTextEx(GuiGetFont(), infoMessage, GuiGetFont().baseSize*2, 3);
+        Vector2 textSize = MeasureTextEx(GuiGetFont(), infoMessage, (float)GuiGetFont().baseSize*2, 3);
         GuiPanel((Rectangle){ -10, screenHeight/2 - 180, screenWidth + 20, 290 }, NULL);
 
         int textSpacing = GuiGetStyle(DEFAULT, TEXT_SPACING);

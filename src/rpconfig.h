@@ -325,7 +325,7 @@ rpcProjectConfigRaw LoadProjectConfigRaw(const char *fileName)
         raw.entries = (rpcPropertyEntry *)RL_CALLOC(RPC_MAX_PROPERTY_ENTRIES_RAW, sizeof(rpcPropertyEntry));
         raw.entryCount = RPC_MAX_PROPERTY_ENTRIES_RAW;
 
-        for (int i = 0; i < config.count; i++)
+        for (unsigned int i = 0; i < config.count; i++)
         {
             TextCopy(raw.entries[i].key, config.values[i].key);
             TextCopy(raw.entries[i].desc, config.values[i].desc);
@@ -368,7 +368,7 @@ rpcProjectConfigRaw LoadProjectConfigRaw(const char *fileName)
             else if (TextIsEqual(category, "RAYLIB")) raw.entries[i].category = RPC_CAT_RAYLIB;
         }
 
-        for (int i = 0; i < config.count; i++)
+        for (unsigned int i = 0; i < config.count; i++)
         {
             // Type is parsed from key and value
             if (!config.values[i].is_text)
