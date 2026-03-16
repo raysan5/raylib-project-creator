@@ -180,7 +180,7 @@
     #define RINI_MAX_DESC_SIZE              128
 #endif
 
-#ifndef RINI_MAX_VALUE_CAPACITY
+#if !defined(RINI_MAX_VALUE_CAPACITY)
     #define RINI_MAX_VALUE_CAPACITY         128
 #endif
 
