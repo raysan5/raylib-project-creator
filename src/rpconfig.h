@@ -97,16 +97,6 @@ typedef struct {
         char assetsPath[256];           // Project: assets files path, including all project resources
         char assetsOutPath[256];        // Project: assets output path (on project generation)
 
-        // [rpc] scanned from source/assets paths provided
-        int sourceFileCount;            // Project: source files count
-        char sourceFilePaths[64][256];  // Project: source files path(s) -> MAX_SOURCE_FILES=64
-        int assetFileCount;             // Project: assets files count
-        char assetFilePaths[256][256];  // Project: assets files paths -> MAX_ASSETS_FILES=256
-
-        // [rpc] internal properties
-        int selectedTemplate;           // Project: selected template to start project
-        char generationOutPath[256];    // Project: generation output path
-
     } Project;
     struct {
         char outputPath[256];           // Build: output path (for VS2022 defaults to 'build' directory)
@@ -114,9 +104,6 @@ typedef struct {
         bool assetsValidation;          // Build: Flag: request assets validation on building
         bool assetsPackaging;           // Build: Flag: request assets packaging on building (requires source code update)
         char rrpPackagerPath[256];      // Build: Path to [rrespacker] tool
-
-        // [rpc] project generation build system requested
-        bool requestedBuildSystems[6];  // Build: Flags: systems required: 0-Script, 1-Makefile, 2-VSCode, 3-VS2022, 4-CMake
 
         // [rpb] Properties for current automated build
         char targetPlatform[64];        // Build: target platform (Supported: Windows, Linux, macOS, Android, Web)
@@ -276,9 +263,16 @@ typedef struct {
 extern "C" {    // Prevents name mangling of functions
 #endif
 
-RPCAPI rpcProjectConfigRaw LoadProjectConfigRaw(const char *fileName); // Load project config data from .rpc file
-RPCAPI void UnloadProjectConfigRaw(rpcProjectConfigRaw raw); // Unload project config raw data
-RPCAPI void SaveProjectConfigRaw(rpcProjectConfigRaw raw, const char *fileName, int flags); // Save project config raw data to .rpc file
+RPCAPI rpcProjectConfigRaw rpcLoadProjectConfig(const char *fileName); // Load project config data from .rpc file
+RPCAPI void rpcUnloadProjectConfig(rpcProjectConfigRaw raw); // Unload project config raw data
+RPCAPI void rpcSaveProjectConfig(rpcProjectConfigRaw raw, const char *fileName, int flags); // Save project config raw data to .rpc file
+
+RPCAPI char *rpcGetText(rpcProjectConfigRaw raw, const char *key); // Get project config text by key
+RPCAPI int *rpcGetValue(rpcProjectConfigRaw raw, const char *key); // Get project config pointer to value by key
+RPCAPI rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfigRaw raw, const char *key);
+RPCAPI int rpcSetText(rpcProjectConfigRaw raw, const char *key, const char *text); // Set project config text by key
+RPCAPI int rpcSetValue(rpcProjectConfigRaw raw, const char *key, int value); // Set project config value by key
+
 
 RPCAPI rpcProjectConfig *LoadProjectConfig(rpcProjectConfigRaw raw); // Load project config data from raw project config
 RPCAPI void UnloadProjectConfig(rpcProjectConfig *config);  // Unload project data
@@ -287,11 +281,6 @@ RPCAPI void SaveProjectConfig(rpcProjectConfig *config, const char *fileName); /
 RPCAPI void SyncProjectConfig(rpcProjectConfig *dst, rpcProjectConfigRaw src); // Sync ProjectConfigRaw data --> ProjectConfig data
 RPCAPI void SyncProjectConfigRaw(rpcProjectConfigRaw dst, rpcProjectConfig *src); // Sync ProjectConfig data --> ProjectConfigRaw data
 
-RPCAPI char *rpcGetText(rpcProjectConfigRaw raw, const char *key); // Get project config text by key
-RPCAPI int *rpcGetValue(rpcProjectConfigRaw raw, const char *key); // Get project config pointer to value by key
-RPCAPI rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfigRaw raw, const char *key);
-RPCAPI int rpcSetText(rpcProjectConfigRaw raw, const char *key, const char *text); // Set project config text by key
-RPCAPI int rpcSetValue(rpcProjectConfigRaw raw, const char *key, int value); // Set project config value by key
 
 #if defined(__cplusplus)
 }               // Prevents name mangling of functions
@@ -313,7 +302,7 @@ RPCAPI int rpcSetValue(rpcProjectConfigRaw raw, const char *key, int value); // 
 #include <stdlib.h>     // Required for: calloc(), free()
 
 // Load project config raw data from .rpc file
-rpcProjectConfigRaw LoadProjectConfigRaw(const char *fileName)
+rpcProjectConfigRaw rpcLoadProjectConfig(const char *fileName)
 {
     rpcProjectConfigRaw raw = { 0 };
 
@@ -405,14 +394,14 @@ rpcProjectConfigRaw LoadProjectConfigRaw(const char *fileName)
 }
 
 // Unload project data
-void UnloadProjectConfigRaw(rpcProjectConfigRaw raw)
+void rpcUnloadProjectConfig(rpcProjectConfigRaw raw)
 {
     RL_FREE(raw.entries);
 }
 
 // Save project config data to .rpc file
 // NOTE: Same function as [rpc] tool but but adding more data
-void SaveProjectConfigRaw(rpcProjectConfigRaw raw, const char *fileName, int flags)
+void rpcSaveProjectConfig(rpcProjectConfigRaw raw, const char *fileName, int flags)
 {
     rini_data config = rini_load(NULL);   // Create empty config with 32 entries (RINI_MAX_CONFIG_CAPACITY)
 
@@ -604,6 +593,78 @@ void SaveProjectConfigRaw(rpcProjectConfigRaw raw, const char *fileName, int fla
     rini_unload(&config);
 }
 
+// Get project config text by key
+// NOTE: A pointer to the text is returned to allow modifying it
+char *rpcGetText(rpcProjectConfigRaw raw, const char *key)
+{
+    for (int i = 0; i < raw.entryCount; i++)
+    {
+        if (TextIsEqual(raw.entries[i].key, key)) return raw.entries[i].text;
+    }
+
+    return NULL;
+}
+
+// Get project config value by key
+// NOTE: A pointer to the value is returned to allow modifying it
+int *rpcGetValue(rpcProjectConfigRaw raw, const char *key)
+{
+    for (int i = 0; i < raw.entryCount; i++)
+    {
+        if (TextIsEqual(raw.entries[i].key, key)) return &raw.entries[i].value;
+    }
+
+    return NULL;
+}
+
+// Get project property entry
+rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfigRaw raw, const char *key)
+{
+    for (int i = 0; i < raw.entryCount; i++)
+    {
+        if (TextIsEqual(raw.entries[i].key, key)) return &raw.entries[i];
+    }
+
+    return NULL;
+}
+
+// Set project config text by key
+int rpcSetText(rpcProjectConfigRaw raw, const char *key, const char *text)
+{
+    int result = -1;
+
+    for (int i = 0; i < raw.entryCount; i++)
+    {
+        if (TextIsEqual(raw.entries[i].key, key))
+        {
+            strcpy(raw.entries[i].text, text);
+            result = i;
+            break;
+        }
+    }
+
+    return result;
+}
+
+// Set project config value by key
+int rpcSetValue(rpcProjectConfigRaw raw, const char *key, int value)
+{
+    int result = -1;
+
+    for (int i = 0; i < raw.entryCount; i++)
+    {
+        if (TextIsEqual(raw.entries[i].key, key))
+        {
+            raw.entries[i].value = value;
+            strcpy(raw.entries[i].text, TextFormat("%i", value));
+            result = i;
+            break;
+        }
+    }
+
+    return result;
+}
+
 // Load project config data data from .rpc file
 rpcProjectConfig *LoadProjectConfig(rpcProjectConfigRaw raw)
 {
@@ -627,13 +688,13 @@ void SaveProjectConfig(rpcProjectConfig *config, const char *fileName)
 
     // Load base data to be filled from provided template
     // TODO: Add the template data directly into source code to avoid external file?
-    rpcProjectConfigRaw raw = LoadProjectConfigRaw("template/project_name.rpc");
+    rpcProjectConfigRaw raw = rpcLoadProjectConfig("template/project_name.rpc");
 
     SyncProjectConfigRaw(raw, config);
 
-    SaveProjectConfigRaw(raw, fileName, flags);
+    rpcSaveProjectConfig(raw, fileName, flags);
 
-    UnloadProjectConfigRaw(raw);
+    rpcUnloadProjectConfig(raw);
 }
 
 // Sync ProjectConfigRaw data --> ProjectConfig data
@@ -790,77 +851,5 @@ void SyncProjectConfigRaw(rpcProjectConfigRaw dst, rpcProjectConfig *src)
         else if (TextIsEqual(dst.entries[i].key, "IMAGERY_FLAG_GENERATE")) UpdateEntryValue(&dst.entries[i], src->Imagery.genImageryAuto); // Flag: request project imagery generation: Social Cards, itchio, Steam...
     }
 }
-
-// Get project config text by key
-// NOTE: A pointer to the text is returned to allow modifying it
-char *rpcGetText(rpcProjectConfigRaw raw, const char *key)
-{
-    for (int i = 0; i < raw.entryCount; i++)
-    {
-        if (TextIsEqual(raw.entries[i].key, key)) return raw.entries[i].text;
-    }
-
-    return NULL;
-}
-
-// Get project config value by key
-// NOTE: A pointer to the value is returned to allow modifying it
-int *rpcGetValue(rpcProjectConfigRaw raw, const char *key)
-{
-    for (int i = 0; i < raw.entryCount; i++)
-    {
-        if (TextIsEqual(raw.entries[i].key, key)) return &raw.entries[i].value;
-    }
-
-    return NULL;
-}
-
-rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfigRaw raw, const char *key)
-{
-    for (int i = 0; i < raw.entryCount; i++)
-    {
-        if (TextIsEqual(raw.entries[i].key, key)) return &raw.entries[i];
-    }
-
-    return NULL;
-}
-
-// Set project config text by key
-int rpcSetText(rpcProjectConfigRaw raw, const char *key, const char *text)
-{
-    int result = -1;
-
-    for (int i = 0; i < raw.entryCount; i++)
-    {
-        if (TextIsEqual(raw.entries[i].key, key))
-        {
-            strcpy(raw.entries[i].text, text);
-            result = i;
-            break;
-        }
-    }
-
-    return result;
-}
-
-// Set project config value by key
-int rpcSetValue(rpcProjectConfigRaw raw, const char *key, int value)
-{
-    int result = -1;
-
-    for (int i = 0; i < raw.entryCount; i++)
-    {
-        if (TextIsEqual(raw.entries[i].key, key))
-        {
-            raw.entries[i].value = value;
-            strcpy(raw.entries[i].text, TextFormat("%i", value));
-            result = i;
-            break;
-        }
-    }
-
-    return result;
-}
-
 
 #endif // RPCDATA_IMPLEMENTATION
