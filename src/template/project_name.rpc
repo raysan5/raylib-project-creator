@@ -43,6 +43,16 @@ PROJECT_ICON_FILE                       "$(repo-name)/src/$(project_name).ico" #
 PROJECT_SOURCE_PATH                     "$(repo-name)/src"                  # Project source directory, including all required code files (C/C++)
 PROJECT_ASSETS_PATH                     "$(repo-name)/src/resources"        # Project assets directory, including all required assets
 
+#PROJECT_SOURCE_FILE01
+#PROJECT_SOURCE_FILE02
+#PROJECT_SOURCE_FILE03
+#PROJECT_SOURCE_FILE04
+#PROJECT_SOURCE_FILE05
+
+#PROJECT_ASSET_FILE01
+#PROJECT_ASSET_FILE02
+#PROJECT_ASSET_FILE03
+
 PROJECT_ASSETS_OUTPUT_PATH              "$(repo-name)/release/resources"    # Project assets destination path
 #------------------------------------------------------------------------------------
 
