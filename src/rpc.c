@@ -170,8 +170,8 @@ static const char *toolDescription = TOOL_DESCRIPTION;
 
 // Basic program variables
 //----------------------------------------------------------------------------------
-static const int screenWidth = 1280;        // Default screen width (at initialization)
-static const int screenHeight = 720;        // Default screen height (at initialization)
+static const int screenWidth = 1070;        // Default screen width (at initialization)
+static const int screenHeight = 820;        // Default screen height (at initialization)
 
 // NOTE: Max length depends on OS, in Windows MAX_PATH = 256
 static char inFileName[256] = { 0 };            // Input file name (required in case of drag & drop over executable)
@@ -187,8 +187,10 @@ static bool saveChangesRequired = false;        // Flag to notice save changes a
 
 static RenderTexture2D screenTarget = { 0 };    // Render texture to render the tool (if required)
 
-static Vector2 panelScroll = { 0, -10 };        // Project properties panel scroll offset
-static Rectangle panelView = { 0 };             // Project properties panel view (for scissoring)
+static Vector2 propPanelScroll = { 0, -10 };    // Project properties panel scroll offset
+static Rectangle propPanelView = { 0 };         // Project properties panel view (for scissoring)
+static Vector2 filesPanelScroll = { 0 };
+static Rectangle filesPanelView = { 0 };
 
 // Info panel customizable variables
 static bool showInfoMessagePanel = false;       // Flag: request info message panel
@@ -208,7 +210,6 @@ static float generateProjectProgress = 0.0f;    // Project export progress bar (
 
 static double baseTime = 0;                     // Base time in seconds to start counting
 static double currentTime = 0;                  // Current time counter in seconds
-
 static int currentYear = 2026;                  // Current year for project, retrieved at init
 
 static char **srcFilePaths = NULL;              // Project source files paths
