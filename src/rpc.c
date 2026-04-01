@@ -2006,10 +2006,10 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         char *dstFilePath = TextFormat("%s/%s/src/%s", outPath, config->Project.repoName, GetFileName(input.srcFilePaths[i]));
 
         // Check if source file name contains "project_name"
-        if (TextFindIndex(GetFileName(input.srcFilePaths[i]), "project_name") > 0)
+        if (TextFindIndex(input.srcFilePaths[i], "project_name") > 0)
         {
             // Update project name for destination file to project internal name defined
-            FileCopy(input.srcFilePaths[i], TextReplace(input.srcFilePaths[i], "project_name", config->Project.internalName)); // Copy with new name
+            FileCopy(input.srcFilePaths[i], TextReplace(dstFilePath, "project_name", config->Project.internalName)); // Copy with new name
         }
         else FileCopy(input.srcFilePaths[i], dstFilePath); // Copy with original name
     }
@@ -2063,7 +2063,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     fileTextUpdated[7] = TextReplaceAlloc(fileTextUpdated[6], "$(ProjectDeveloper)", config->Project.developerName);
     fileTextUpdated[8] = TextReplaceAlloc(fileTextUpdated[7], "$(DeveloperUrl)", config->Project.developerUrl);
     fileTextUpdated[9] = TextReplaceAlloc(fileTextUpdated[8], "$(DeveloperEmail)", config->Project.developerUrl);
-    SaveFileText(TextFormat("%s/%s.rpc", outPath, config->Project.internalName), fileTextUpdated[9]);
+    SaveFileText(TextFormat("%s/%s/%s.rpc", outPath, config->Project.repoName, config->Project.internalName), fileTextUpdated[9]);
     for (int i = 0; i < 10; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
     //-------------------------------------------------------------------------------------
