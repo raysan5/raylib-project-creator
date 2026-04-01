@@ -52,6 +52,10 @@ typedef struct {
     bool btnSaveFilePressed;
     bool btnExportFilePressed;
 
+    bool btnAddInputFolderPressed;
+    bool btnAddInputFilePressed;
+    bool btnClearFilesPressed;
+
     // Visual options
     int visualStyleActive;
     int prevVisualStyleActive;
@@ -119,7 +123,7 @@ GuiMainToolbarState InitGuiMainToolbar(void)
     // Anchors for panels
     state.anchorFile = (Vector2){ 0, 0 };
     //state.anchorEdit = (Vector2){ state.anchorFile.x + 132 - 1, 0 };
-    state.anchorTools = (Vector2){ state.anchorFile.x + 132 - 1, 0 };
+    state.anchorTools = (Vector2){ state.anchorFile.x + 220 - 1, 0 };
     state.anchorVisuals = (Vector2){ 0, 0 };    // Anchor right, depends on screen width
     state.anchorRight = (Vector2){ 0, 0 };      // Anchor right, depends on screen width
 
@@ -128,6 +132,10 @@ GuiMainToolbarState InitGuiMainToolbar(void)
     state.btnLoadFilePressed = false;
     state.btnSaveFilePressed = false;
     state.btnExportFilePressed = false;
+
+    state.btnAddInputFilePressed = false;
+    state.btnAddInputFolderPressed = false;
+    state.btnClearFilesPressed = false;
 
     // Edit options
 
@@ -156,29 +164,32 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     state->anchorRight.x = (float)GetScreenWidth() - 104;       // Update right-anchor panel
     state->anchorVisuals.x = state->anchorRight.x - 192 + 1;    // Update right-anchor panel
 
-    GuiPanel((Rectangle){ state->anchorFile.x, state->anchorFile.y, 132, 40 }, NULL);
+    GuiPanel((Rectangle){ state->anchorFile.x, state->anchorFile.y, 220, 40 }, NULL);
     //GuiPanel((Rectangle){ state->anchorEdit.x, state->anchorEdit.y, 188, 40 }, NULL);
     GuiPanel((Rectangle){ state->anchorTools.x, state->anchorTools.y, state->anchorVisuals.x - state->anchorTools.x + 1, 40 }, NULL);
     GuiPanel((Rectangle){ state->anchorVisuals.x, state->anchorVisuals.y, 192, 40 }, NULL);
     GuiPanel((Rectangle){ state->anchorRight.x, state->anchorRight.y, 104, 40 }, NULL);
 
     // Project/File options
-    GuiSetTooltip("Create new project (LCTRL+N)");
-    state->btnNewFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12, state->anchorFile.y + 8, 24, 24 }, "#8#");
-    GuiSetTooltip("Load project file (LCTRL+O)");
-    state->btnLoadFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 24 + 4, state->anchorFile.y + 8, 24, 24 }, "#5#");
-    GuiSetTooltip("Save project file (LCTRL+S)");
-    state->btnSaveFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 48 + 8, state->anchorFile.y + 8, 24, 24 }, "#6#");
-    GuiSetTooltip("Export project (LCTRL+E)");
-    state->btnExportFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 72 + 12, state->anchorFile.y + 8, 24, 24 }, "#7#");
+    GuiSetTooltip("Create new rpc project (LCTRL+N)");
+    state->btnNewFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12, state->anchorFile.y + 8, 24, 24 }, "#203#");
+    GuiSetTooltip("Load rpc project file (LCTRL+O)");
+    state->btnLoadFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 24 + 4, state->anchorFile.y + 8, 24, 24 }, "#1#");
+    GuiSetTooltip("Save rpc project file (LCTRL+S)");
+    state->btnSaveFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 48 + 8, state->anchorFile.y + 8, 24, 24 }, "#2#");
+    //GuiSetTooltip("Export project (LCTRL+E)");
+    //state->btnExportFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 72 + 12, state->anchorFile.y + 8, 24, 24 }, "#7#");
+
+    GuiSetTooltip("Add source/assets file to project (LCTRL+LSHIFT+A)");
+    state->btnAddInputFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 84 + 4, state->anchorFile.y + 8, 24, 24 }, "#8#");
+    GuiSetTooltip("Add source/assets directory to project (LCTRL+A)");
+    state->btnAddInputFolderPressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 108 + 8, state->anchorFile.y + 8, 24, 24 }, "#204#");
+    GuiSetTooltip("Clear project files");
+    state->btnClearFilesPressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 132 + 12, state->anchorFile.y + 8, 24, 24 }, "#143#");
 
     // Edit options
 
     // Tool options
-    //GuiSetTooltip("Show style table image (F5)");
-    //GuiToggle((Rectangle){ state->anchorTools.x + 14, 8, 24, 24 }, "#101#", &state->viewStyleTableActive);
-    //GuiSetTooltip("Show font atlas window (F6)");
-    //state->btnFontAtlasPressed = GuiButton((Rectangle){ state->anchorTools.x + 14, 8, 52, 24 }, "#30#");
 
     // Visuals options
     GuiLabel((Rectangle){ state->anchorVisuals.x + 10, state->anchorVisuals.y + 8, 60, 24 }, "Style:");

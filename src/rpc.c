@@ -164,6 +164,7 @@ typedef struct rpcProjectInput {
     char **srcFilePaths;            // Project: source files path(s) -> RPC_MAX_SOURCE_FILES
     int assetFileCount;             // Project: assets files count
     char **assetFilePaths;          // Project: assets files paths -> RPC_MAX_ASSET_FILES
+
     bool requestedBuildSystems[6];  // Build: Flags: systems required: 0-Script, 1-Makefile, 2-VSCode, 3-VS2022, 4-CMake
 } rpcProjectInput;
 
@@ -227,11 +228,15 @@ static double currentTime = 0;                  // Current time counter in secon
 static int currentYear = 2026;                  // Current year for project, retrieved at init
 
 // Project variables
-static rpcProjectConfigRaw project = { 0 };     // Project configuration (generic-raw structure)
+static rpcProjectConfig project = { 0 };     // Project configuration (generic-raw structure)
 static rpcProjectInput input = { 0 };           // Project input data (requried for generation)
 
 static int selectedTemplate = 0;                // Project selected template, defines input data
 static char generationOutPath[256] = { 0 };     // Project generation output path
+
+// TODO: Support icons images viewing
+static Texture2D *texProjectIcons = { 0 };      // Project icon textures
+static int projectIconCount = 0;
 //-----------------------------------------------------------------------------------
 
 // GUI: Custom file dialogs
@@ -239,11 +244,16 @@ static char generationOutPath[256] = { 0 };     // Project generation output pat
 static bool showLoadProjectDialog = false;
 static bool showSaveProjectDialog = false;
 
+static bool showAddInputFilesDialog = false;
+static bool showAddInputDirectoryDialog = false;
+
 static bool showProjectGenPathDialog = false;
 
 static bool showLoadFileDialog = false;
 static bool showLoadDirectoryDialog = false;
 static int projectEditProperty = -1;
+
+static bool showLoadIconDialog = false;
 
 static bool showLoadSourceFilesDialog = false;
 //-----------------------------------------------------------------------------------
@@ -314,7 +324,7 @@ static char **LoadSourceAssetPaths(const char *filePath, int *assetPathCount); /
 static void UnloadSourceAssetPaths(char **assetPaths);      // Unload resource paths scanned
 
 // Generate output project structure
-static void GenerateProject(rpcProjectConfigRaw project, rpcProjectInput input, const char *outPath);
+static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, const char *outPath);
 
 // Packing and unpacking of template files (NOT USED)
 static char *PackDirectoryData(const char *baseDirPath, int *packSize);
@@ -576,7 +586,7 @@ int main(int argc, char *argv[])
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    //UnloadProjectConfig(project);
+    //rpcUnloadProjectConfigTyped(project);
 
     UnloadRenderTexture(screenTarget); // Unload render texture
 
@@ -619,12 +629,42 @@ static void UpdateDrawFrame(void)
         {
             for (unsigned int i = 0; i < droppedFiles.count; i++)
             {
-                if (IsFileExtension(droppedFiles.paths[i], ".c;.h"))
+                if (IsPathFile(droppedFiles.count))
                 {
-                    // TODO: Add files to source list
-                    //strcpy(project->Project.sourceFilePaths[project->Project.srcFileCount], droppedFiles.paths[i]);
-                    //strcpy(srcFilePaths[project->Project.srcFileCount], GetFileName(droppedFiles.paths[i]));
-                    //project->Project.srcFileCount++;
+                    if (IsFileExtension(droppedFiles.paths[i], ".c;.h;.cpp;.hpp"))
+                    {
+                        // Add files to source list
+                        strcpy(input.srcFilePaths[input.srcFileCount], droppedFiles.paths[i]);
+                        input.srcFileCount++;
+                    }
+                    else if (IsFileExtension(droppedFiles.paths[i], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
+                    {
+                        // Add assets to assets list
+                        // TODO: Filtering for recognized assets extensions but, really required?
+                        strcpy(input.assetFilePaths[input.assetFileCount], droppedFiles.paths[i]);
+                        input.assetFileCount++;
+                    }
+                }
+                else // Path is a directory
+                {
+                    FilePathList list = LoadDirectoryFilesEx(droppedFiles.count, "FILES*", true);
+
+                    for (int i = 0; i < list.count; i++)
+                    {
+                        if (IsFileExtension(droppedFiles.paths[i], ".c;.h;.cpp;.hpp"))
+                        {
+                            // Add files to source list
+                            strcpy(input.srcFilePaths[input.srcFileCount], droppedFiles.paths[i]);
+                            input.srcFileCount++;
+                        }
+                        else if (IsFileExtension(droppedFiles.paths[i], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
+                        {
+                            // Add assets to assets list
+                            // TODO: Filtering for recognized assets extensions but, really required?
+                            strcpy(input.assetFilePaths[input.assetFileCount], droppedFiles.paths[i]);
+                            input.assetFileCount++;
+                        }
+                    }
                 }
             }
         }
@@ -707,6 +747,14 @@ static void UpdateDrawFrame(void)
         memset(outFileName, 0, 256);
         strcpy(outFileName, TextFormat("%s.rpc", rpcGetText(project, "PROJECT_INTERNAL_NAME")));
         showSaveProjectDialog = true;
+    }
+    else if (mainToolbarState.btnAddInputFilePressed) showAddInputFilesDialog = true;
+    else if (mainToolbarState.btnAddInputFolderPressed) showAddInputDirectoryDialog = true;
+    else if (mainToolbarState.btnClearFilesPressed)
+    {
+        rpcUnloadProjectInput(input);
+        input = rpcLoadProjectInput();
+        selectedTemplate = 0;
     }
 
     // Visual options logic
@@ -845,13 +893,25 @@ static void UpdateDrawFrame(void)
                 } break;
                 case RPC_TYPE_TEXT_FILE:
                 {
-                    if (GuiTextBox((Rectangle){ 24 + 160, 180 + (24 + 8)*k + propPanelScroll.y, textWidth - 90, 24 },
-                        project.entries[i].text, 255, project.entries[i].editMode)) project.entries[i].editMode = !project.entries[i].editMode;
-                    if (GuiButton((Rectangle){ 24 + 160 + textWidth - 86, 180 + (24 + 8)*k + propPanelScroll.y, 86, 24 }, "#6#Browse"))
+                    if (TextIsEqual(project.entries[i].key, "PROJECT_ICON_FILE"))
                     {
-                        showLoadFileDialog = true;
-                        projectEditProperty = i;
+                        GuiTextBox((Rectangle){ 24 + 160, 180 + (24 + 8)*k + propPanelScroll.y, textWidth - 90, 24 },
+                            TextReplace(project.entries[i].text, "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME")), 255, false);
+                        if (GuiButton((Rectangle){ 24 + 160 + textWidth - 86, 180 + (24 + 8)*k + propPanelScroll.y, 86, 24 }, "#6#Browse")) showLoadIconDialog = true;
                     }
+                    else
+                    {
+                        // Generic solution
+                        // TODO: Requires file loading dialog filters and text
+                        if (GuiTextBox((Rectangle){ 24 + 160, 180 + (24 + 8)*k + propPanelScroll.y, textWidth - 90, 24 },
+                            project.entries[i].text, 255, project.entries[i].editMode)) project.entries[i].editMode = !project.entries[i].editMode;
+                        if (GuiButton((Rectangle){ 24 + 160 + textWidth - 86, 180 + (24 + 8)*k + propPanelScroll.y, 86, 24 }, "#6#Browse"))
+                        {
+                            showLoadFileDialog = true;
+                            projectEditProperty = i;
+                        }
+                    }
+
                 } break;
                 case RPC_TYPE_TEXT_PATH:
                 {
@@ -876,35 +936,57 @@ static void UpdateDrawFrame(void)
         }
     }
 
-    GuiScrollPanel((Rectangle){ 12, 536, GetScreenWidth() - 24, 200 }, "#10#PROJECT INPUTS: SOURCE FILES",
-        (Rectangle){ 0, 0, GetScreenWidth() - 24 - 20, 4 + input.srcFileCount*(28 + 2) }, &filesPanelScroll, &filesPanelView);
+    GuiScrollPanel((Rectangle){ 12, 536, GetScreenWidth() - 24, 200 }, TextFormat("#16#PROJECT INPUT FILES: SOURCE (%i) + ASSETS (%i)", input.srcFileCount, input.assetFileCount),
+        (Rectangle){ 0, 0, GetScreenWidth() - 24 - 20, 4 + (input.srcFileCount + input.assetFileCount)*(28 + 2) }, &filesPanelScroll, &filesPanelView);
 
     if ((input.srcFileCount == 0) && (selectedTemplate == 0))
     {
+        GuiSetIconScale(2);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-        GuiLabel((Rectangle){ 12, 536, GetScreenWidth() - 24, 200 }, "#144#Drag & Drop you code files here!");
+        GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize*2);
+        GuiLabel((Rectangle){ 12, 536, GetScreenWidth() - 24, 200 }, "#10#Drag & Drop you code files here!");
+        GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+        GuiSetIconScale(1);
     }
 
     BeginScissorMode(filesPanelView.x, filesPanelView.y, filesPanelView.width, filesPanelView.height);
         for (int i = 0; i < input.srcFileCount; i++)
         {
-            
+            /*
             DrawRectangleLinesEx((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
                 1.0f, GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL)));
             GuiSetStyle(LABEL, TEXT_PADDING, 8);
             GuiLabel((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
-                TextFormat("#200#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))));
+                TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))));
             GuiSetStyle(LABEL, TEXT_PADDING, 0);
+            */
             
-            /*
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
             GuiToggle((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
-                TextFormat("#200#%s", input.srcFilePaths[i]), false);
+                TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))), false);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 0);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+        }
+        for (int i = 0; i < input.assetFileCount; i++)
+        {
+            /*
+            DrawRectangleLinesEx((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
+            1.0f, GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL)));
+            GuiSetStyle(LABEL, TEXT_PADDING, 8);
+            GuiLabel((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
+                TextFormat("#200#%s", input.assetFilePaths[i]))));
+            GuiSetStyle(LABEL, TEXT_PADDING, 0);
             */
+
+            GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+            GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
+            GuiToggle((Rectangle){ 16, 536 + 26 + (28 + 2)*(i + input.srcFileCount) + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
+                TextFormat("#200#%s", input.assetFilePaths[i]), false);
+            GuiSetStyle(TOGGLE, TEXT_PADDING, 0);
+            GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+
         }
     EndScissorMode();
 
@@ -1007,15 +1089,9 @@ static void UpdateDrawFrame(void)
     if (windowExportActive)
     {
         Rectangle messageBox = { (float)screenWidth/2 - 248/2, (float)screenHeight/2 - 200/2, 248, 112 };
-        int result = GuiMessageBox(messageBox, "#7#Export Icon File", " ", "#7#Export Icon");
+        int result = GuiMessageBox(messageBox, "#7#Export File", " ", "#7#Export File");
 
-        //GuiLabel((Rectangle){ messageBox.x + 12, messageBox.y + 12 + 24, 106, 24 }, "Icon Format:");
-
-        // NOTE: If current platform is macOS, we support .icns file export
-        //GuiComboBox((Rectangle){ messageBox.x + 12 + 88, messageBox.y + 12 + 24, 136, 24 }, (mainToolbarState.platformActive == 1)? "Icon (.ico);Images (.png);Icns (.icns)" : "Icon (.ico);Images (.png)", &exportFormatActive);
-
-        // WARNING: exportTextChunkChecked is used as a global variable required by SaveICO() and SaveICNS() functions
-        //GuiCheckBox((Rectangle){ messageBox.x + 20, messageBox.y + 48 + 24, 16, 16 }, "Export text poem with icon", &exportTextChunkChecked);
+        // TODO: Fill export window data if required
 
         if (result == 1)    // Export button pressed
         {
@@ -1037,24 +1113,18 @@ static void UpdateDrawFrame(void)
 #endif
         if (result == 1)
         {
-            rpcUnloadProjectConfig(project);
-            project = rpcLoadProjectConfig(inFileName);
+            // WARNING: Maybe not all data required is provided by custom .rpc project
+            // TODO: Load project default data from template and sync with loaded project data
+            //rpcProjectConfig template = rpcLoadProjectConfig("template/project_name.rpc");
 
-            if ((project.entryCount > 0) && (project.entries != NULL))
+            rpcProjectConfig temp = rpcLoadProjectConfig(inFileName);
+
+            if ((temp.entryCount > 0) && (temp.entries != NULL))
             {
-                // TODO: Load projectconfigraw
-                //memset(project, 0, sizeof(rpcProjectConfig));
-                //SyncProjectConfig(project, project);
+                rpcUnloadProjectConfig(project);
+                project = temp;
 
                 SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
-            }
-            else
-            {
-                // Revert loading in case of issues
-                // Load project default raw data from template and
-                // sync with already defined project config data
-                project = rpcLoadProjectConfig("template/project_name.rpc");
-                //SyncProjectConfigRaw(project, project);
             }
         }
 
@@ -1077,7 +1147,7 @@ static void UpdateDrawFrame(void)
             // Check for valid extension and make sure it is
             if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".rpc")) strcat(outFileName, ".rpc\0");
 
-            //SyncProjectConfig(project, project); // TODO: Currently UI modifies [project], review if changed to project
+            //rpcSyncProjectConfigTyped(project, project); // TODO: Currently UI modifies [project], review if changed to project
             rpcSaveProjectConfig(project, outFileName, 0);
 
 #if defined(PLATFORM_WEB)
@@ -1103,9 +1173,9 @@ static void UpdateDrawFrame(void)
     }
     //----------------------------------------------------------------------------------------
 
-    // GUI: Load Source Files Dialog
+    // GUI: Add Input Files Dialog
     //----------------------------------------------------------------------------------------
-    if (showLoadSourceFilesDialog)
+    if (showAddInputFilesDialog)
     {
         // Multiple files selected are supported, tinyfiledialogs returns them as: path01|path02|path03|path04
         // We must reserve enough memory to deal with the maximum amount of data that tinyfiledialogs can provide
@@ -1118,34 +1188,145 @@ static void UpdateDrawFrame(void)
         char *multiFileNames = (char *)RL_CALLOC(1024*256, 1); // Let's reserve for 1024 paths, 256 bytes each
 #endif
 #if defined(CUSTOM_MODAL_DIALOGS)
-        int result = GuiFileDialog(DIALOG_MESSAGE, "Load source file(s)...", inFileName, "Ok", "Just drag and drop your code file(s)!");
+        int result = GuiFileDialog(DIALOG_MESSAGE, "Load input file(s)...", inFileName, "Ok", "Just drag and drop your file(s)!");
 #else
-        int result = GuiFileDialog(DIALOG_OPEN_FILE_MULTI, "Load source file(s)...", multiFileNames, "*.c;*.h", "Code Files (*.c,*.h)");
+        int result = GuiFileDialog(DIALOG_OPEN_FILE_MULTI, "Load input file(s)...", multiFileNames, "", "Code/Asset Files");
 #endif
         if (result == 1)
         {
             int multiFileCount = 0;
             const char **multiFileList = GetSubtextPtrs(multiFileNames, '|', &multiFileCount); // Split text into multiple strings
 
+            // Temp project input paths for scanned assets
+            // WARNING: Storing in srcFilePaths the source path for every asset added,
+            // so the asset can be related to equivalent source path
+            rpcProjectInput temp = rpcLoadProjectInput();
+
             for (int i = 0; i < multiFileCount; i++)
             {
-                if (IsFileExtension(multiFileList[i], ".c;.h") && (input.srcFileCount < RPC_MAX_SOURCE_FILES))
+                if (IsFileExtension(multiFileList[i], ".c;.h;.cpp;.hpp"))
                 {
+                    // Scan code file looking for assets
+                    int assetCount = 0;
+                    const char **assetPaths = LoadSourceAssetPaths(multiFileList[i], &assetCount);
+
+                    for (int a = 0; a < assetCount; a++)
+                    {
+                        // NOTE: Not verifying at the moment if asset exist, just adding it to assets list
+                        // const char *fullPath = TextFormat("%s/%s", GetDirectoryPath(multiFileList[i]), assetPaths[a]);
+                        //if (FileExists(TextFormat(fullPath))) { }
+
+                        strcpy(temp.srcFilePaths[temp.srcFileCount], multiFileList[i]);
+                        strcpy(temp.assetFilePaths[temp.assetFileCount], assetPaths[a]);
+                        temp.srcFileCount++;
+                        temp.assetFileCount++;
+                    }
+
                     // Add files to source list
                     strcpy(input.srcFilePaths[input.srcFileCount], multiFileList[i]);
-                    strcpy(input.srcFilePaths[input.srcFileCount], GetFileName(multiFileList[i]));
                     input.srcFileCount++;
 
                     if (input.srcFileCount >= RPC_MAX_SOURCE_FILES) break;
                 }
+                else if (IsFileExtension(multiFileList[i], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
+                {
+                    // Add assets to assets list
+                    // TODO: Filtering for recognized assets extensions but, really required?
+                    strcpy(input.assetFilePaths[input.assetFileCount], multiFileList[i]);
+                    input.assetFileCount++;
+
+                    if (input.assetFileCount >= RPC_MAX_ASSET_FILES) break;
+                }
             }
+
+            // TODO: What should be done with temp assets scanned?
+            // It should probably be validated that they exist and there are no dups on the list
+
+            rpcUnloadProjectInput(temp);
         }
 
-        if (result >= 0) showLoadSourceFilesDialog = false;
+        if (result >= 0) showAddInputFilesDialog = false;
     }
     //----------------------------------------------------------------------------------------
 
-    // GUI: Load File Dialog (and loading logic)
+    // GUI: Add Input Directory Dialog
+    //----------------------------------------------------------------------------------------
+    if (showAddInputDirectoryDialog)
+    {
+#if defined(CUSTOM_MODAL_DIALOGS)
+        int result = GuiFileDialog(DIALOG_MESSAGE, "Load path...", inDirectoryPath, "Ok", "Drag and drop your files");
+#else
+        int result = GuiFileDialog(DIALOG_OPEN_DIRECTORY, "Load path...", inDirectoryPath, "", "");
+#endif
+        if (result == 1)
+        {
+            if (DirectoryExists(inDirectoryPath))
+            {
+                FilePathList pathList = LoadDirectoryFilesEx(inDirectoryPath, "FILES*", true);
+
+                // Temp project input paths for scanned assets
+                // WARNING: Storing in srcFilePaths the source path for every asset added,
+                // so the asset can be related to equivalent source path
+                rpcProjectInput temp = rpcLoadProjectInput();
+
+                for (int i = 0; i < pathList.count; i++)
+                {
+                    if (IsFileExtension(pathList.paths[i], ".c;.h;.cpp;.hpp"))
+                    {
+                        // Scan code file looking for assets
+                        int assetCount = 0;
+                        const char **assetPaths = LoadSourceAssetPaths(pathList.paths[i], &assetCount);
+
+                        for (int a = 0; a < assetCount; a++)
+                        {
+                            // NOTE: Not verifying at the moment if asset exist, just adding it to assets list
+                            // const char *fullPath = TextFormat("%s/%s", GetDirectoryPath(pathList.paths[i]), assetPaths[a]);
+                            //if (FileExists(TextFormat(fullPath))) { }
+
+                            strcpy(temp.srcFilePaths[temp.srcFileCount], pathList.paths[i]);
+                            strcpy(temp.assetFilePaths[temp.assetFileCount], assetPaths[a]);
+                            temp.srcFileCount++;
+                            temp.assetFileCount++;
+                        }
+
+                        // Add files to source list
+                        strcpy(input.srcFilePaths[input.srcFileCount], pathList.paths[i]);
+                        input.srcFileCount++;
+
+                        if (input.srcFileCount >= RPC_MAX_SOURCE_FILES) break;
+                    }
+                    else if (IsFileExtension(pathList.paths[i], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
+                    {
+                        // Add assets to assets list
+                        // TODO: Filtering for recognized assets extensions but, really required?
+                        strcpy(input.assetFilePaths[input.assetFileCount], pathList.paths[i]);
+                        input.assetFileCount++;
+
+                        if (input.assetFileCount >= RPC_MAX_ASSET_FILES) break;
+                    }
+                }
+
+                // TODO: What should be done with temp assets scanned?
+                // It should probably be validated that they exist and there are no dups on the list
+
+                rpcUnloadProjectInput(temp);
+
+                UnloadDirectoryFiles(pathList);
+            }
+            else
+            {
+                // TODO: Show right message depending on projectEditProperty
+                infoMessage = "Provided resource path does not exist!";
+                showInfoMessagePanel = true;
+            }
+        }
+
+        if (result >= 0) showAddInputDirectoryDialog = false;
+    }
+    //----------------------------------------------------------------------------------------
+
+
+    // GUI: Load File Dialog (and loading logic) - GENERIC
     //----------------------------------------------------------------------------------------
     if (showLoadFileDialog && !showLoadDirectoryDialog)
     {
@@ -1174,7 +1355,7 @@ static void UpdateDrawFrame(void)
     }
     //----------------------------------------------------------------------------------------
 
-    // GUI: Load Directory Dialog (and loading logic)
+    // GUI: Load Directory Dialog (and loading logic) - GENERIC
     //----------------------------------------------------------------------------------------
     if (showLoadDirectoryDialog && !showLoadFileDialog)
     {
@@ -1200,6 +1381,24 @@ static void UpdateDrawFrame(void)
         }
 
         if (result >= 0) showLoadDirectoryDialog = false;
+    }
+    //----------------------------------------------------------------------------------------
+
+    // GUI: Load Icon Dialog (and loading logic)
+    //----------------------------------------------------------------------------------------
+    if (showLoadIconDialog)
+    {
+#if defined(CUSTOM_MODAL_DIALOGS)
+        int result = GuiFileDialog(DIALOG_MESSAGE, "Load icon file...", inFileName, "Ok", "Just drag and drop your .ico file!");
+#else
+        int result = GuiFileDialog(DIALOG_OPEN_FILE, "Load icon file...", inFileName, "*.png;*.ico", "File Type (*.ico)");
+#endif
+        if (result == 1)
+        {
+            if (FileExists(inFileName)) rpcSetText(project, "PROJECT_ICON_FILE", inFileName);
+        }
+
+        if (result >= 0) showLoadIconDialog = false;
     }
     //----------------------------------------------------------------------------------------
 
@@ -1365,7 +1564,7 @@ static void ProcessCommandLine(int argc, char *argv[])
     // Load default project config file
     // NOTE 1: If a different .rpc is provided, defined properties will be overriden
     // NOTE 2: Properties defined on command-line will also override default ones
-    rpcProjectConfigRaw config = rpcLoadProjectConfig("template/project_name.rpc");
+    rpcProjectConfig config = rpcLoadProjectConfig("template/project_name.rpc");
     rpcProjectInput input = rpcLoadProjectInput();
 
     // Process command line arguments
@@ -1402,11 +1601,11 @@ static void ProcessCommandLine(int argc, char *argv[])
             {
                 if (FileExists(argv[i + 1]) && IsFileExtension(argv[i + 1], ".rpc"))
                 {
-                    rpcProjectConfigRaw tempConfig = rpcLoadProjectConfig(argv[i + 1]);
+                    rpcProjectConfig tempConfig = rpcLoadProjectConfig(argv[i + 1]);
 
                     // TODO: WARNING: Provided .rpc could not have all required fields defined,
                     // so it's better to sync available ones with already loaded config from template
-                    //SyncProjectConfig(config, raw);
+                    //rpcSyncProjectConfigTyped(config, raw);
 
                     rpcUnloadProjectConfig(tempConfig);
                 }
@@ -1766,7 +1965,7 @@ static void UnloadSourceAssetPaths(char **assetPaths)
 //  - projects/VSCode/*
 //  - README.md
 //  - LICENSE
-static void GenerateProject(rpcProjectConfigRaw project, rpcProjectInput input, const char *outPath)
+static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, const char *outPath)
 {
     char *fileText = NULL;
     char *fileTextUpdated[10] = { 0 };
@@ -1787,7 +1986,7 @@ static void GenerateProject(rpcProjectConfigRaw project, rpcProjectInput input, 
         return;
     }
 
-    rpcProjectConfig *config = LoadProjectConfig(project);
+    rpcProjectConfigTyped *config = rpcLoadProjectConfigTyped(project);
 
     //mz_bool mz_zip_reader_init_mem(mz_zip_archive *pZip, const void *pMem, size_t size, mz_uint flags); // Read file from memory zip data
     // TODO: Replace LoadFileText(), from template path, by reading text file from zip data, decompressing it...
@@ -2182,7 +2381,7 @@ static void GenerateProject(rpcProjectConfigRaw project, rpcProjectInput input, 
 
     LOG("INFO: GitHub %s project generated successfully!\n", config->Project.internalName);
 
-    UnloadProjectConfig(config);
+    rpcUnloadProjectConfigTyped(config);
 }
 
 // Packing of directory files into a binary blob
