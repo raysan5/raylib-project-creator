@@ -69,8 +69,8 @@ typedef struct {
 //  - IMAGERY: Support imagery required on deployment and stores distribution 
 //  - raylib: raylib configuration options, for library customization (if desired)
 //
-// NOTE 2: This structure differs from [rpcProjectConfigRaw] because it not only
-// contains all the required properties organized with names (vs raw list of generic properties)
+// NOTE 2: This structure differs from [rpcProjectConfig] because it not only
+// contains all the required properties organized with names (vs config list of generic properties)
 // but it also contains internal properties filled by the tools as required
 // i.e. [assetsPath] is automatically scanned to fill [assetFilePaths]
 // 
@@ -194,7 +194,7 @@ typedef struct {
         // TODO: raylib config.h options to expose
 
     } raylib;
-} rpcProjectConfig;
+} rpcProjectConfigTyped;
 
 // Property category type
 typedef enum {
@@ -253,7 +253,7 @@ typedef struct {
 typedef struct {
     int entryCount;     // Number of entries
     rpcPropertyEntry *entries;  // Entries
-} rpcProjectConfigRaw;
+} rpcProjectConfig;
 
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
@@ -263,23 +263,23 @@ typedef struct {
 extern "C" {    // Prevents name mangling of functions
 #endif
 
-RPCAPI rpcProjectConfigRaw rpcLoadProjectConfig(const char *fileName); // Load project config data from .rpc file
-RPCAPI void rpcUnloadProjectConfig(rpcProjectConfigRaw raw); // Unload project config raw data
-RPCAPI void rpcSaveProjectConfig(rpcProjectConfigRaw raw, const char *fileName, int flags); // Save project config raw data to .rpc file
+RPCAPI rpcProjectConfig rpcLoadProjectConfig(const char *fileName); // Load project config data from .rpc file
+RPCAPI void rpcUnloadProjectConfig(rpcProjectConfig config); // Unload project config config data
+RPCAPI void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, int flags); // Save project config config data to .rpc file
 
-RPCAPI char *rpcGetText(rpcProjectConfigRaw raw, const char *key); // Get project config text by key
-RPCAPI int *rpcGetValue(rpcProjectConfigRaw raw, const char *key); // Get project config pointer to value by key
-RPCAPI rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfigRaw raw, const char *key);
-RPCAPI int rpcSetText(rpcProjectConfigRaw raw, const char *key, const char *text); // Set project config text by key
-RPCAPI int rpcSetValue(rpcProjectConfigRaw raw, const char *key, int value); // Set project config value by key
+RPCAPI char *rpcGetText(rpcProjectConfig config, const char *key); // Get project config text by key
+RPCAPI int *rpcGetValue(rpcProjectConfig config, const char *key); // Get project config pointer to value by key
+RPCAPI rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfig raw, const char *key);
+RPCAPI int rpcSetText(rpcProjectConfig config, const char *key, const char *text); // Set project config text by key
+RPCAPI int rpcSetValue(rpcProjectConfig config, const char *key, int value); // Set project config value by key
 
 
-RPCAPI rpcProjectConfig *LoadProjectConfig(rpcProjectConfigRaw raw); // Load project config data from raw project config
-RPCAPI void UnloadProjectConfig(rpcProjectConfig *config);  // Unload project data
-RPCAPI void SaveProjectConfig(rpcProjectConfig *config, const char *fileName); // Save project config data to .rpc file
+RPCAPI rpcProjectConfigTyped *rpcLoadProjectConfigTyped(rpcProjectConfig raw); // Load project config data from config project config
+RPCAPI void rpcUnloadProjectConfigTyped(rpcProjectConfigTyped *config);  // Unload project data
+RPCAPI void rpcSaveProjectConfigTyped(rpcProjectConfigTyped *config, const char *fileName); // Save project config data to .rpc file
 
-RPCAPI void SyncProjectConfig(rpcProjectConfig *dst, rpcProjectConfigRaw src); // Sync ProjectConfigRaw data --> ProjectConfig data
-RPCAPI void SyncProjectConfigRaw(rpcProjectConfigRaw dst, rpcProjectConfig *src); // Sync ProjectConfig data --> ProjectConfigRaw data
+RPCAPI void rpcSyncProjectConfigTyped(rpcProjectConfigTyped *dst, rpcProjectConfig src); // Sync ProjectConfigRaw data --> ProjectConfig data
+RPCAPI void rpcSyncProjectConfig(rpcProjectConfig dst, rpcProjectConfigTyped *src); // Sync ProjectConfig data --> ProjectConfigRaw data
 
 
 #if defined(__cplusplus)
@@ -301,37 +301,37 @@ RPCAPI void SyncProjectConfigRaw(rpcProjectConfigRaw dst, rpcProjectConfig *src)
 #include <string.h>     // Required for: strncpy()
 #include <stdlib.h>     // Required for: calloc(), free()
 
-// Load project config raw data from .rpc file
-rpcProjectConfigRaw rpcLoadProjectConfig(const char *fileName)
+// Load project config config data from .rpc file
+rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
 {
-    rpcProjectConfigRaw raw = { 0 };
+    rpcProjectConfig project = { 0 };
 
     if (FileExists(fileName))
     {
         rini_data config = { 0 };
         config = rini_load(fileName);
 
-        raw.entries = (rpcPropertyEntry *)RL_CALLOC(RPC_MAX_PROPERTY_ENTRIES_RAW, sizeof(rpcPropertyEntry));
-        raw.entryCount = RPC_MAX_PROPERTY_ENTRIES_RAW;
+        project.entries = (rpcPropertyEntry *)RL_CALLOC(RPC_MAX_PROPERTY_ENTRIES_RAW, sizeof(rpcPropertyEntry));
+        project.entryCount = RPC_MAX_PROPERTY_ENTRIES_RAW;
 
         for (unsigned int i = 0; i < config.count; i++)
         {
-            TextCopy(raw.entries[i].key, config.values[i].key);
-            TextCopy(raw.entries[i].desc, config.values[i].desc);
-            raw.entries[i].platform = RPC_PLATFORM_ANY;
+            TextCopy(project.entries[i].key, config.values[i].key);
+            TextCopy(project.entries[i].desc, config.values[i].desc);
+            project.entries[i].platform = RPC_PLATFORM_ANY;
 
             // Category is parsed from first word on key
             char category[32] = { 0 };
             int categoryLen = 0; //TextFindIndex(config.values[i].key, "_");
             for (int c = 0; c < 128; c++) { if (config.values[i].key[c] != '_') categoryLen++; else break; }
             strncpy(category, config.values[i].key, categoryLen);
-            TextCopy(raw.entries[i].name, TextReplace(config.values[i].key + categoryLen + 1, "_", " "));
+            TextCopy(project.entries[i].name, TextReplace(config.values[i].key + categoryLen + 1, "_", " "));
 
-            if (TextIsEqual(category, "PROJECT")) raw.entries[i].category = RPC_CAT_PROJECT;
-            else if (TextIsEqual(category, "BUILD")) raw.entries[i].category = RPC_CAT_BUILD;
+            if (TextIsEqual(category, "PROJECT")) project.entries[i].category = RPC_CAT_PROJECT;
+            else if (TextIsEqual(category, "BUILD")) project.entries[i].category = RPC_CAT_BUILD;
             else if (TextIsEqual(category, "PLATFORM"))
             {
-                raw.entries[i].category = RPC_CAT_PLATFORM;
+                project.entries[i].category = RPC_CAT_PLATFORM;
 
                 // Get platform from key
                 char platform[32] = { 0 };
@@ -339,22 +339,22 @@ rpcProjectConfigRaw rpcLoadProjectConfig(const char *fileName)
                 for (int c = 0; c < 128; c++) { if (config.values[i].key[c + categoryLen + 1] != '_') platformLen++; else break; }
                 memcpy(platform, config.values[i].key + categoryLen + 1, platformLen);
 
-                if (TextIsEqual(platform, "WINDOWS")) raw.entries[i].platform = RPC_PLATFORM_WINDOWS;
-                else if (TextIsEqual(platform, "LINUX")) raw.entries[i].platform = RPC_PLATFORM_LINUX;
-                else if (TextIsEqual(platform, "MACOS")) raw.entries[i].platform = RPC_PLATFORM_MACOS;
-                else if (TextIsEqual(platform, "HTML5")) raw.entries[i].platform = RPC_PLATFORM_HTML5;
-                else if (TextIsEqual(platform, "ANDROID")) raw.entries[i].platform = RPC_PLATFORM_ANDROID;
-                else if (TextIsEqual(platform, "DRM")) raw.entries[i].platform = RPC_PLATFORM_DRM;
-                else if (TextIsEqual(platform, "SWITCH")) raw.entries[i].platform = RPC_PLATFORM_SWITCH;
-                else if (TextIsEqual(platform, "DREAMCAST")) raw.entries[i].platform = RPC_PLATFORM_DREAMCAST;
-                else if (TextIsEqual(platform, "FREEBSD")) raw.entries[i].platform = RPC_PLATFORM_FREEBSD;
+                if (TextIsEqual(platform, "WINDOWS")) project.entries[i].platform = RPC_PLATFORM_WINDOWS;
+                else if (TextIsEqual(platform, "LINUX")) project.entries[i].platform = RPC_PLATFORM_LINUX;
+                else if (TextIsEqual(platform, "MACOS")) project.entries[i].platform = RPC_PLATFORM_MACOS;
+                else if (TextIsEqual(platform, "HTML5")) project.entries[i].platform = RPC_PLATFORM_HTML5;
+                else if (TextIsEqual(platform, "ANDROID")) project.entries[i].platform = RPC_PLATFORM_ANDROID;
+                else if (TextIsEqual(platform, "DRM")) project.entries[i].platform = RPC_PLATFORM_DRM;
+                else if (TextIsEqual(platform, "SWITCH")) project.entries[i].platform = RPC_PLATFORM_SWITCH;
+                else if (TextIsEqual(platform, "DREAMCAST")) project.entries[i].platform = RPC_PLATFORM_DREAMCAST;
+                else if (TextIsEqual(platform, "FREEBSD")) project.entries[i].platform = RPC_PLATFORM_FREEBSD;
 
-                memset(raw.entries[i].name, 0, 64);
-                TextCopy(raw.entries[i].name, config.values[i].key + categoryLen + platformLen + 2);
+                memset(project.entries[i].name, 0, 64);
+                TextCopy(project.entries[i].name, config.values[i].key + categoryLen + platformLen + 2);
             }
-            else if (TextIsEqual(category, "DEPLOY")) raw.entries[i].category = RPC_CAT_DEPLOY;
-            else if (TextIsEqual(category, "IMAGERY")) raw.entries[i].category = RPC_CAT_IMAGERY;
-            else if (TextIsEqual(category, "RAYLIB")) raw.entries[i].category = RPC_CAT_RAYLIB;
+            else if (TextIsEqual(category, "DEPLOY")) project.entries[i].category = RPC_CAT_DEPLOY;
+            else if (TextIsEqual(category, "IMAGERY")) project.entries[i].category = RPC_CAT_IMAGERY;
+            else if (TextIsEqual(category, "RAYLIB")) project.entries[i].category = RPC_CAT_RAYLIB;
         }
 
         for (unsigned int i = 0; i < config.count; i++)
@@ -362,76 +362,76 @@ rpcProjectConfigRaw rpcLoadProjectConfig(const char *fileName)
             // Type is parsed from key and value
             if (!config.values[i].is_text)
             {
-                if (TextFindIndex(raw.entries[i].key, "_FLAG")) raw.entries[i].type = RPC_TYPE_BOOL;
-                else raw.entries[i].type = RPC_TYPE_VALUE;
+                if (TextFindIndex(project.entries[i].key, "_FLAG")) project.entries[i].type = RPC_TYPE_BOOL;
+                else project.entries[i].type = RPC_TYPE_VALUE;
 
                 // Get the value
-                raw.entries[i].value = TextToInteger(config.values[i].text);
+                project.entries[i].value = TextToInteger(config.values[i].text);
             }
             else // Value is text
             {
-                if (TextFindIndex(raw.entries[i].key, "_FILES") > 0)
+                if (TextFindIndex(project.entries[i].key, "_FILES") > 0)
                 {
                     // TODO: How we check if files list includes multiple files,
                     // checking for ';' separator???
-                    raw.entries[i].type = RPC_TYPE_TEXT_FILE;
+                    project.entries[i].type = RPC_TYPE_TEXT_FILE;
                 }
-                else if (TextFindIndex(raw.entries[i].key, "_FILE")  > 0) raw.entries[i].type = RPC_TYPE_TEXT_FILE;
-                else if (TextFindIndex(raw.entries[i].key, "_PATH")  > 0) raw.entries[i].type = RPC_TYPE_TEXT_PATH;
+                else if (TextFindIndex(project.entries[i].key, "_FILE")  > 0) project.entries[i].type = RPC_TYPE_TEXT_FILE;
+                else if (TextFindIndex(project.entries[i].key, "_PATH")  > 0) project.entries[i].type = RPC_TYPE_TEXT_PATH;
                 else
                 {
-                    raw.entries[i].type = RPC_TYPE_TEXT;
+                    project.entries[i].type = RPC_TYPE_TEXT;
                 }
 
-                TextCopy(raw.entries[i].text, config.values[i].text);
+                TextCopy(project.entries[i].text, config.values[i].text);
             }
         }
 
         rini_unload(&config);
     }
 
-    return raw;
+    return project;
 }
 
 // Unload project data
-void rpcUnloadProjectConfig(rpcProjectConfigRaw raw)
+void rpcUnloadProjectConfig(rpcProjectConfig config)
 {
-    RL_FREE(raw.entries);
+    RL_FREE(config.entries);
 }
 
 // Save project config data to .rpc file
 // NOTE: Same function as [rpc] tool but but adding more data
-void rpcSaveProjectConfig(rpcProjectConfigRaw raw, const char *fileName, int flags)
+void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, int flags)
 {
-    rini_data config = rini_load(NULL);   // Create empty config with 32 entries (RINI_MAX_CONFIG_CAPACITY)
+    rini_data data = rini_load(NULL);   // Create empty config with 32 entries (RINI_MAX_CONFIG_CAPACITY)
 
     // Define header comment lines
-    rini_set_comment_line(&config, NULL);   // Empty comment line, but including comment prefix delimiter
-    rini_set_comment_line(&config, "raylib project configuration");
-    rini_set_comment_line(&config, NULL);
-    rini_set_comment_line(&config, "This file contains all required data to define a raylib C/C++ project");
-    rini_set_comment_line(&config, "and allow building it for multiple platforms using [rpb] tool");
-    rini_set_comment_line(&config, NULL);
-    rini_set_comment_line(&config, "Project configuration is organized in several categories, depending on usage requirements");
-    rini_set_comment_line(&config, "CATEGORIES:");
-    rini_set_comment_line(&config, "   - PROJECT: Project definition properties, required for project generation");
-    rini_set_comment_line(&config, "   - raylib: Library configuration properties, raylib customization for the project");
-    rini_set_comment_line(&config, "   - BUILD: Project build properties, required for project building, generic for all platforms");
-    rini_set_comment_line(&config, "   - PLATFORM: Platform-specific properies, required for building for that platform");
-    rini_set_comment_line(&config, "       Platform identifiers: WINDOWS, LINUX, MACOS, HTML5, ANDROID, DRM, FREEBSD, DREAMCAST");
-    rini_set_comment_line(&config, "   - DEPLOY: Deployment properties, required to distribute the generated build");
-    rini_set_comment_line(&config, "   - IMAGERY: Project imagery properties, required for distribution on some stores and marketing");
-    rini_set_comment_line(&config, NULL);
-    rini_set_comment_line(&config, "This file follow certain conventions to be able to display the information in");
-    rini_set_comment_line(&config, "an easy-configurable UI manner when loaded through [rpb - raylib project builder] tool");
-    rini_set_comment_line(&config, "CONVENTIONS:");
-    rini_set_comment_line(&config, "   - ID containing [_FLAG_]: Value is considered a boolean, it displays with a [GuiCheckBox]");
-    rini_set_comment_line(&config, "   - ID do not contain "": Value is considered as an integer, it displays as [GuiValueBox]");
-    rini_set_comment_line(&config, "   - ID ends with _FILE or _FILES: Value is considered as a text file path, it displays as [GuiTextBox] with a [BROWSE-File] button");
-    rini_set_comment_line(&config, "   - ID ends with _PATH: Value is considered as a text directory path, it displays as [GuiTextBox] with a [BROWSE-Dir] button");
-    rini_set_comment_line(&config, NULL);
-    rini_set_comment_line(&config, "NOTE: The comments/description for each entry is used as tooltip when editing the entry on [rpb]");
-    rini_set_comment_line(&config, "\n");
+    rini_set_comment_line(&data, NULL);   // Empty comment line, but including comment prefix delimiter
+    rini_set_comment_line(&data, "raylib project configuration");
+    rini_set_comment_line(&data, NULL);
+    rini_set_comment_line(&data, "This file contains all required data to define a raylib C/C++ project");
+    rini_set_comment_line(&data, "and allow building it for multiple platforms using [rpb] tool");
+    rini_set_comment_line(&data, NULL);
+    rini_set_comment_line(&data, "Project configuration is organized in several categories, depending on usage requirements");
+    rini_set_comment_line(&data, "CATEGORIES:");
+    rini_set_comment_line(&data, "   - PROJECT: Project definition properties, required for project generation");
+    rini_set_comment_line(&data, "   - raylib: Library configuration properties, raylib customization for the project");
+    rini_set_comment_line(&data, "   - BUILD: Project build properties, required for project building, generic for all platforms");
+    rini_set_comment_line(&data, "   - PLATFORM: Platform-specific properies, required for building for that platform");
+    rini_set_comment_line(&data, "       Platform identifiers: WINDOWS, LINUX, MACOS, HTML5, ANDROID, DRM, FREEBSD, DREAMCAST");
+    rini_set_comment_line(&data, "   - DEPLOY: Deployment properties, required to distribute the generated build");
+    rini_set_comment_line(&data, "   - IMAGERY: Project imagery properties, required for distribution on some stores and marketing");
+    rini_set_comment_line(&data, NULL);
+    rini_set_comment_line(&data, "This file follow certain conventions to be able to display the information in");
+    rini_set_comment_line(&data, "an easy-configurable UI manner when loaded through [rpb - raylib project builder] tool");
+    rini_set_comment_line(&data, "CONVENTIONS:");
+    rini_set_comment_line(&data, "   - ID containing [_FLAG_]: Value is considered a boolean, it displays with a [GuiCheckBox]");
+    rini_set_comment_line(&data, "   - ID do not contain "": Value is considered as an integer, it displays as [GuiValueBox]");
+    rini_set_comment_line(&data, "   - ID ends with _FILE or _FILES: Value is considered as a text file path, it displays as [GuiTextBox] with a [BROWSE-File] button");
+    rini_set_comment_line(&data, "   - ID ends with _PATH: Value is considered as a text directory path, it displays as [GuiTextBox] with a [BROWSE-Dir] button");
+    rini_set_comment_line(&data, NULL);
+    rini_set_comment_line(&data, "NOTE: The comments/description for each entry is used as tooltip when editing the entry on [rpb]");
+    rini_set_comment_line(&data, "\n");
 
     /*
     char key[64];       // Entry key (as read from .rpc)
@@ -449,77 +449,77 @@ void rpcSaveProjectConfig(rpcProjectConfigRaw raw, const char *fileName, int fla
     // independently of the format it was originally loaded (in case of manual edition)
 
     // Saving PROJECT category data
-    rini_set_comment_line(&config, "Project settings");
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------");
-    for (int i = 0; i < raw.entryCount; i++)
+    rini_set_comment_line(&data, "Project settings");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------");
+    for (int i = 0; i < config.entryCount; i++)
     {
-        rpcPropertyEntry *entry = &raw.entries[i];
+        rpcPropertyEntry *entry = &config.entries[i];
 
         if (entry->category == RPC_CAT_PROJECT)
         {
             switch (entry->type)
             {
                 case RPC_TYPE_BOOL:
-                case RPC_TYPE_VALUE: rini_set_value(&config, entry->key, entry->value, entry->desc); break;
+                case RPC_TYPE_VALUE: rini_set_value(&data, entry->key, entry->value, entry->desc); break;
                 case RPC_TYPE_TEXT:
                 case RPC_TYPE_TEXT_FILE:
-                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&config, entry->key, entry->text, entry->desc); break;
+                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&data, entry->key, entry->text, entry->desc); break;
                 default: break;
             }
         }
     }
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------\n");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------\n");
 
-    rini_set_comment_line(&config, "raylib config settings");
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------");
-    for (int i = 0; i < raw.entryCount; i++)
+    rini_set_comment_line(&data, "raylib config settings");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------");
+    for (int i = 0; i < config.entryCount; i++)
     {
-        rpcPropertyEntry *entry = &raw.entries[i];
+        rpcPropertyEntry *entry = &config.entries[i];
 
         if (entry->category == RPC_CAT_RAYLIB)
         {
             switch (entry->type)
             {
                 case RPC_TYPE_BOOL:
-                case RPC_TYPE_VALUE: rini_set_value(&config, entry->key, entry->value, entry->desc); break;
+                case RPC_TYPE_VALUE: rini_set_value(&data, entry->key, entry->value, entry->desc); break;
                 case RPC_TYPE_TEXT:
                 case RPC_TYPE_TEXT_FILE:
-                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&config, entry->key, entry->text, entry->desc); break;
+                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&data, entry->key, entry->text, entry->desc); break;
                 default: break;
             }
         }
     }
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------\n");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------\n");
 
     // Saving BUILD category data
-    rini_set_comment_line(&config, "Build settings");
-    rini_set_comment_line(&config, "NOTE: General settings, common to all platforms");
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------");
-    for (int i = 0; i < raw.entryCount; i++)
+    rini_set_comment_line(&data, "Build settings");
+    rini_set_comment_line(&data, "NOTE: General settings, common to all platforms");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------");
+    for (int i = 0; i < config.entryCount; i++)
     {
-        rpcPropertyEntry *entry = &raw.entries[i];
+        rpcPropertyEntry *entry = &config.entries[i];
 
         if (entry->category == RPC_CAT_BUILD)
         {
             switch (entry->type)
             {
                 case RPC_TYPE_BOOL:
-                case RPC_TYPE_VALUE: rini_set_value(&config, entry->key, entry->value, entry->desc); break;
+                case RPC_TYPE_VALUE: rini_set_value(&data, entry->key, entry->value, entry->desc); break;
                 case RPC_TYPE_TEXT:
                 case RPC_TYPE_TEXT_FILE:
-                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&config, entry->key, entry->text, entry->desc); break;
+                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&data, entry->key, entry->text, entry->desc); break;
                 default: break;
             }
         }
     }
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------\n");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------\n");
 
     // Saving PLATFORM category data
-    rini_set_comment_line(&config, "Platform-specific build settings");
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------");
-    for (int i = 0, prevPlatform = RPC_PLATFORM_WINDOWS; i < raw.entryCount; i++)
+    rini_set_comment_line(&data, "Platform-specific build settings");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------");
+    for (int i = 0, prevPlatform = RPC_PLATFORM_WINDOWS; i < config.entryCount; i++)
     {
-        rpcPropertyEntry *entry = &raw.entries[i];
+        rpcPropertyEntry *entry = &config.entries[i];
 
         if (entry->category == RPC_CAT_PLATFORM)
         {
@@ -527,79 +527,79 @@ void rpcSaveProjectConfig(rpcProjectConfigRaw raw, const char *fileName, int fla
             if ((entry->platform != RPC_PLATFORM_ANY) && 
                 (entry->platform != prevPlatform))
             {
-                rini_set_comment_line(&config, "");
+                rini_set_comment_line(&data, "");
                 prevPlatform = entry->platform;
             }
 
             switch (entry->type)
             {
                 case RPC_TYPE_BOOL:
-                case RPC_TYPE_VALUE: rini_set_value(&config, entry->key, entry->value, entry->desc); break;
+                case RPC_TYPE_VALUE: rini_set_value(&data, entry->key, entry->value, entry->desc); break;
                 case RPC_TYPE_TEXT:
                 case RPC_TYPE_TEXT_FILE:
-                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&config, entry->key, entry->text, entry->desc); break;
+                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&data, entry->key, entry->text, entry->desc); break;
                 default: break;
             }
         }
     }
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------\n");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------\n");
 
     // Saving DEPLOY category data
-    rini_set_comment_line(&config, "Deploy settings");
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------");
-    for (int i = 0; i < raw.entryCount; i++)
+    rini_set_comment_line(&data, "Deploy settings");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------");
+    for (int i = 0; i < config.entryCount; i++)
     {
-        rpcPropertyEntry *entry = &raw.entries[i];
+        rpcPropertyEntry *entry = &config.entries[i];
 
         if (entry->category == RPC_CAT_DEPLOY)
         {
             switch (entry->type)
             {
                 case RPC_TYPE_BOOL:
-                case RPC_TYPE_VALUE: rini_set_value(&config, entry->key, entry->value, entry->desc); break;
+                case RPC_TYPE_VALUE: rini_set_value(&data, entry->key, entry->value, entry->desc); break;
                 case RPC_TYPE_TEXT:
                 case RPC_TYPE_TEXT_FILE:
-                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&config, entry->key, entry->text, entry->desc); break;
+                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&data, entry->key, entry->text, entry->desc); break;
                 default: break;
             }
         }
     }
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------\n");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------\n");
 
     // Saving IMAGERY category data
-    rini_set_comment_line(&config, "Imagery settings");
-    rini_set_comment_line(&config, "NOTE: Useful for project distribution on several stores");
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------");
-    for (int i = 0; i < raw.entryCount; i++)
+    rini_set_comment_line(&data, "Imagery settings");
+    rini_set_comment_line(&data, "NOTE: Useful for project distribution on several stores");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------");
+    for (int i = 0; i < config.entryCount; i++)
     {
-        rpcPropertyEntry *entry = &raw.entries[i];
+        rpcPropertyEntry *entry = &config.entries[i];
 
         if (entry->category == RPC_CAT_IMAGERY)
         {
             switch (entry->type)
             {
                 case RPC_TYPE_BOOL:
-                case RPC_TYPE_VALUE: rini_set_value(&config, entry->key, entry->value, entry->desc); break;
+                case RPC_TYPE_VALUE: rini_set_value(&data, entry->key, entry->value, entry->desc); break;
                 case RPC_TYPE_TEXT:
                 case RPC_TYPE_TEXT_FILE:
-                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&config, entry->key, entry->text, entry->desc); break;
+                case RPC_TYPE_TEXT_PATH: rini_set_value_text(&data, entry->key, entry->text, entry->desc); break;
                 default: break;
             }
         }
     }
-    rini_set_comment_line(&config, "------------------------------------------------------------------------------------\n");
+    rini_set_comment_line(&data, "------------------------------------------------------------------------------------\n");
 
-    rini_save(config, fileName);
-    rini_unload(&config);
+    rini_save(data, fileName);
+    rini_unload(&data);
 }
 
 // Get project config text by key
 // NOTE: A pointer to the text is returned to allow modifying it
-char *rpcGetText(rpcProjectConfigRaw raw, const char *key)
+char *rpcGetText(rpcProjectConfig config, const char *key)
 {
-    for (int i = 0; i < raw.entryCount; i++)
+    for (int i = 0; i < config.entryCount; i++)
     {
-        if (TextIsEqual(raw.entries[i].key, key)) return raw.entries[i].text;
+        if (TextIsEqual(config.entries[i].key, key)) return config.entries[i].text;
     }
 
     return NULL;
@@ -607,37 +607,38 @@ char *rpcGetText(rpcProjectConfigRaw raw, const char *key)
 
 // Get project config value by key
 // NOTE: A pointer to the value is returned to allow modifying it
-int *rpcGetValue(rpcProjectConfigRaw raw, const char *key)
+int *rpcGetValue(rpcProjectConfig config, const char *key)
 {
-    for (int i = 0; i < raw.entryCount; i++)
+    for (int i = 0; i < config.entryCount; i++)
     {
-        if (TextIsEqual(raw.entries[i].key, key)) return &raw.entries[i].value;
+        if (TextIsEqual(config.entries[i].key, key)) return &config.entries[i].value;
     }
 
     return NULL;
 }
 
 // Get project property entry
-rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfigRaw raw, const char *key)
+rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfig config, const char *key)
 {
-    for (int i = 0; i < raw.entryCount; i++)
+    for (int i = 0; i < config.entryCount; i++)
     {
-        if (TextIsEqual(raw.entries[i].key, key)) return &raw.entries[i];
+        if (TextIsEqual(config.entries[i].key, key)) return &config.entries[i];
     }
 
     return NULL;
 }
 
 // Set project config text by key
-int rpcSetText(rpcProjectConfigRaw raw, const char *key, const char *text)
+int rpcSetText(rpcProjectConfig config, const char *key, const char *text)
 {
     int result = -1;
 
-    for (int i = 0; i < raw.entryCount; i++)
+    for (int i = 0; i < config.entryCount; i++)
     {
-        if (TextIsEqual(raw.entries[i].key, key))
+        if (TextIsEqual(config.entries[i].key, key))
         {
-            strcpy(raw.entries[i].text, text);
+            memset(config.entries[i].text, 0, 256);
+            strcpy(config.entries[i].text, text);
             result = i;
             break;
         }
@@ -647,16 +648,16 @@ int rpcSetText(rpcProjectConfigRaw raw, const char *key, const char *text)
 }
 
 // Set project config value by key
-int rpcSetValue(rpcProjectConfigRaw raw, const char *key, int value)
+int rpcSetValue(rpcProjectConfig config, const char *key, int value)
 {
     int result = -1;
 
-    for (int i = 0; i < raw.entryCount; i++)
+    for (int i = 0; i < config.entryCount; i++)
     {
-        if (TextIsEqual(raw.entries[i].key, key))
+        if (TextIsEqual(config.entries[i].key, key))
         {
-            raw.entries[i].value = value;
-            strcpy(raw.entries[i].text, TextFormat("%i", value));
+            config.entries[i].value = value;
+            strcpy(config.entries[i].text, TextFormat("%i", value));
             result = i;
             break;
         }
@@ -666,31 +667,31 @@ int rpcSetValue(rpcProjectConfigRaw raw, const char *key, int value)
 }
 
 // Load project config data data from .rpc file
-rpcProjectConfig *LoadProjectConfig(rpcProjectConfigRaw raw)
+rpcProjectConfigTyped *rpcLoadProjectConfigTyped(rpcProjectConfig raw)
 {
-    rpcProjectConfig *config = (rpcProjectConfig *)RL_CALLOC(1, sizeof(rpcProjectConfig));
+    rpcProjectConfigTyped *config = (rpcProjectConfigTyped *)RL_CALLOC(1, sizeof(rpcProjectConfigTyped));
 
-    SyncProjectConfig(config, raw);
+    rpcSyncProjectConfigTyped(config, raw);
 
     return config;
 }
 
 // Unload project data
-void UnloadProjectConfig(rpcProjectConfig *config)
+void rpcUnloadProjectConfigTyped(rpcProjectConfigTyped *config)
 {
     RL_FREE(config);
 }
 
 // Save project config data to .rpc file
-void SaveProjectConfig(rpcProjectConfig *config, const char *fileName)
+void rpcSaveProjectConfigTyped(rpcProjectConfigTyped *config, const char *fileName)
 {
     int flags = 0;
 
     // Load base data to be filled from provided template
     // TODO: Add the template data directly into source code to avoid external file?
-    rpcProjectConfigRaw raw = rpcLoadProjectConfig("template/project_name.rpc");
+    rpcProjectConfig raw = rpcLoadProjectConfig("template/project_name.rpc");
 
-    SyncProjectConfigRaw(raw, config);
+    rpcSyncProjectConfig(raw, config);
 
     rpcSaveProjectConfig(raw, fileName, flags);
 
@@ -698,7 +699,7 @@ void SaveProjectConfig(rpcProjectConfig *config, const char *fileName)
 }
 
 // Sync ProjectConfigRaw data --> ProjectConfig data
-void SyncProjectConfig(rpcProjectConfig *dst, rpcProjectConfigRaw src)
+void rpcSyncProjectConfigTyped(rpcProjectConfigTyped *dst, rpcProjectConfig src)
 {
     for (int i = 0; i < src.entryCount; i++)
     {
@@ -781,7 +782,7 @@ static void UpdateEntryText(rpcPropertyEntry *entry, const char *text)
 }
 
 // Sync ProjectConfig data --> ProjectConfigRaw data
-void SyncProjectConfigRaw(rpcProjectConfigRaw dst, rpcProjectConfig *src)
+void rpcSyncProjectConfig(rpcProjectConfig dst, rpcProjectConfigTyped *src)
 {
     // TODO: When updating dst.entries[i].value, should also update dst.entries[i].text?
     //TextCopy(dst.entries[i].text, TextFormat("%i", src->Build.assetsValidation));
