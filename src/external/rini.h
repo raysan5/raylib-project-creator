@@ -173,15 +173,15 @@
 #endif
 
 #if !defined(RINI_MAX_TEXT_SIZE)
-    #define RINI_MAX_TEXT_SIZE              128
+    #define RINI_MAX_TEXT_SIZE              256
 #endif
 
 #if !defined(RINI_MAX_DESC_SIZE)
-    #define RINI_MAX_DESC_SIZE              128
+    #define RINI_MAX_DESC_SIZE              256
 #endif
 
 #if !defined(RINI_MAX_VALUE_CAPACITY)
-    #define RINI_MAX_VALUE_CAPACITY         128
+    #define RINI_MAX_VALUE_CAPACITY         256
 #endif
 
 // Total space reserved for Key,
@@ -249,6 +249,7 @@ extern "C" {                    // Prevents name mangling of functions
 // Functions declaration
 //------------------------------------------------------------------------------------
 RINIAPI rini_data rini_load(const char *file_name);         // Load data from file (*.ini) or create a new rini object (pass NULL)
+RINIAPI rini_data rini_load_full(const char *file_name);    // Load data from file (*.ini) including full comment lines, useful for editing
 RINIAPI rini_data rini_load_from_memory(const char *text);  // Load data from text buffer
 RINIAPI void rini_save(rini_data data, const char *file_name); // Save data to file, with custom header
 RINIAPI char *rini_save_to_memory(rini_data data);          // Save data to text buffer ('\0' EOL)
@@ -365,6 +366,89 @@ rini_data rini_load(const char *file_name)
                         memset(data.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
                         rini_read_key(buffer, data.values[value_counter].key);
                         rini_read_value_text(buffer, data.values[value_counter].text, data.values[value_counter].desc, &data.values[value_counter].is_text);
+
+                        value_counter++;
+
+                        // Stop reading if first count reached to avoid overflow in case count == RINI_MAX_VALUE_CAPACITY
+                        if (value_counter >= data.count) break;
+                    }
+                }
+            }
+
+            fclose(rini_file);
+        }
+    }
+
+    return data;
+}
+
+// Load data from file (.ini) including all comment lines
+rini_data rini_load_full(const char *file_name)
+{
+    rini_data data = { 0 };
+    unsigned int value_counter = 0;
+
+    // Init data to max capacity
+    data.capacity = RINI_MAX_VALUE_CAPACITY;
+    data.values = (rini_value *)RINI_CALLOC(RINI_MAX_VALUE_CAPACITY, sizeof(rini_value));
+
+    if (file_name != NULL)
+    {
+        FILE *rini_file = fopen(file_name, "rt");
+
+        if (rini_file != NULL)
+        {
+            char buffer[RINI_MAX_LINE_SIZE] = { 0 };    // Buffer to read every text line
+
+            // First pass to count valid lines
+            while (fgets(buffer, RINI_MAX_LINE_SIZE, rini_file))
+            {
+                // WARNING: fgets() keeps line endings, doesn't have any special options for converting line endings,
+                // but on Windows, when reading file 'rt', line endings are converted from \r\n to just \n
+
+                // NOTE: Keeping all lines, including comments,
+                // useful for files editing without losing information
+                if (buffer[0] != '\0') value_counter++;
+            }
+
+            // WARNING: We can't store more values than its max capacity
+            data.count = (value_counter > RINI_MAX_VALUE_CAPACITY)? RINI_MAX_VALUE_CAPACITY : value_counter;
+
+            if (data.count > 0)
+            {
+                rewind(rini_file);
+                value_counter = 0;
+
+                // Second pass to read data
+                while (fgets(buffer, RINI_MAX_LINE_SIZE, rini_file))
+                {
+                    // WARNING: fgets() keeps line endings, doesn't have any special options for converting line endings,
+                    // but on Windows, when reading file 'rt', line endings are converted from \r\n to just \n
+
+                    // NOTE: Keeping all lines, including comments,
+                    // useful for files editing without losing information
+                    if (buffer[0] != '\0')
+                    {
+                        if (buffer[0] == RINI_LINE_COMMENT_DELIMITER)
+                        {
+                            // Read comment line
+                            char *buffer_ptr = (char *)buffer + 1;
+                            int len = 0;
+                            while ((buffer_ptr[len] != '\0') && (buffer_ptr[len] != '\r') && (buffer_ptr[len] != '\n')) len++;
+
+                            // Set value as comment
+                            memset(data.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
+                            char text[2] = { RINI_LINE_COMMENT_DELIMITER, '\0' };
+                            memcpy(data.values[value_counter].text, text, 2);
+                            if (len > 0) memcpy(data.values[value_counter].desc, buffer_ptr, len);
+                        }
+                        else
+                        {
+                            // Get key identifier string
+                            memset(data.values[value_counter].key, 0, RINI_MAX_KEY_SIZE);
+                            rini_read_key(buffer, data.values[value_counter].key);
+                            rini_read_value_text(buffer, data.values[value_counter].text, data.values[value_counter].desc, &data.values[value_counter].is_text);
+                        }
 
                         value_counter++;
 
@@ -596,7 +680,7 @@ const char *rini_get_value_text(rini_data data, const char *key)
 }
 
 // Get value text for provided key with fallback if not found or not valid
-RINIAPI const char *rini_get_value_text_fallback(rini_data data, const char *key, const char *fallback)
+const char *rini_get_value_text_fallback(rini_data data, const char *key, const char *fallback)
 {
     const char *text = fallback;
 
@@ -673,8 +757,13 @@ int rini_set_value_text(rini_data *data, const char *key, const char *text, cons
                 memset(data->values[i].text, 0, RINI_MAX_TEXT_SIZE);
                 memcpy(data->values[i].text, text, strlen(text));
 
-                memset(data->values[i].desc, 0, RINI_MAX_DESC_SIZE);
-                if (desc != NULL) memcpy(data->values[i].desc, desc, strlen(desc));
+                if (desc != NULL)
+                {
+                    // NOTE: Update description only if new one provided,
+                    // do not remove previous description
+                    memset(data->values[i].desc, 0, RINI_MAX_DESC_SIZE);
+                    memcpy(data->values[i].desc, desc, strlen(desc));
+                }
                 result = 0;
                 break;
             }

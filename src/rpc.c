@@ -440,8 +440,6 @@ int main(int argc, char *argv[])
                 strcpy(input.srcFilePaths[0], argv[1]);
                 strcpy(generationOutPath, ".");
 
-                for (int i = 0; i < 4; i++) input.requestedBuildSystems[i] = true;
-
                 // NOTE: Project requires input data to generate output .rpc file
                 GenerateProject(project, input, generationOutPath);
 
@@ -1738,6 +1736,13 @@ static rpcProjectInput rpcLoadProjectInput(void)
     for (int i = 0; i < RPC_MAX_SOURCE_FILES; i++) input.srcFilePaths[i] = (char *)RL_CALLOC(RPC_SOURCE_PATH_LENGTH, sizeof(char));
     for (int i = 0; i < RPC_MAX_ASSET_FILES; i++) input.assetFilePaths[i] = (char *)RL_CALLOC(RPC_ASSET_PATH_LENGTH, sizeof(char));
 
+    input.requestedBuildSystems[0] = true;  // Scripts
+    input.requestedBuildSystems[1] = true;  // Makefile
+    input.requestedBuildSystems[2] = true;  // VSCode
+    input.requestedBuildSystems[3] = true;  // VS2022
+    input.requestedBuildSystems[4] = false;  // CMake
+    input.requestedBuildSystems[5] = true;  // GitHub Actions
+
     return input;
 }
 
@@ -1973,8 +1978,10 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     // Get template directory
     // TODO: Use embedded template into executable?
     char templatePath[256] = { 0 };
+
     // NOTE: [template] directory must be in same directory as [rpc] tool
-    strcpy(templatePath, TextFormat("%s/template", GetApplicationDirectory()));
+    strcpy(templatePath, TextFormat("%s/template", GetWorkingDirectory()));
+    //strcpy(templatePath, TextFormat("%s/template", GetApplicationDirectory()));
 
     // Security check to validate required template
     if (!DirectoryExists(templatePath) ||
@@ -1987,6 +1994,8 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     }
 
     rpcProjectConfigTyped *config = rpcLoadProjectConfigTyped(project);
+    LOG("\nINFO: Starting project generation: %s\n", config->Project.repoName);
+    LOG("-----------------------------------------------------------------\n");
 
     //mz_bool mz_zip_reader_init_mem(mz_zip_archive *pZip, const void *pMem, size_t size, mz_uint flags); // Read file from memory zip data
     // TODO: Replace LoadFileText(), from template path, by reading text file from zip data, decompressing it...
@@ -1997,13 +2006,15 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 
     // Copy project source file(s) provided
     //--------------------------------------------------------------------------
-    // Create required output directories
-    MakeDirectory(TextFormat("%s/%s/src/external", outPath, config->Project.repoName));
+    LOG("INFO: Copying input source files to project sources path: %s/%s\n", config->Project.repoName, config->Project.sourcePath);
+
+    // Create required output directories (src/external)
+    MakeDirectory(TextFormat("%s/%s/%s/external", outPath, config->Project.repoName, config->Project.sourcePath));
 
     for (int i = 0; i < input.srcFileCount; i++)
     {
-        // Get expected destination file path
-        char *dstFilePath = TextFormat("%s/%s/src/%s", outPath, config->Project.repoName, GetFileName(input.srcFilePaths[i]));
+        // Get expected destination file path for source input files
+        char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, config->Project.repoName, config->Project.sourcePath, GetFileName(input.srcFilePaths[i]));
 
         // Check if source file name contains "project_name"
         if (TextFindIndex(input.srcFilePaths[i], "project_name") > 0)
@@ -2019,22 +2030,28 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 
     // Copy assets to output resource path (if required)
     //-------------------------------------------------------------------------------------
-    if (input.assetFileCount > 0) MakeDirectory(TextFormat("%s/%s/src/resources", outPath, config->Project.repoName));
-
-    for (int i = 0; i < input.assetFileCount; i++)
+    if (input.assetFileCount > 0)
     {
-        // Get expected destination file path
-        char *dstFilePath = TextFormat("%s/%s/src/%s", outPath, config->Project.repoName, GetFileName(input.assetFilePaths[i]));
-        FileCopy(input.assetFilePaths[i], dstFilePath); // Copy with original name
-    }
+        LOG("INFO: Copying input assets files to project resources path: %s/%s\n", config->Project.repoName, config->Project.assetsPath);
 
-    LOG("INFO: Copied project source files successfully\n");
+        MakeDirectory(TextFormat("%s/%s/%s", outPath, config->Project.repoName, config->Project.assetsPath));
+
+        for (int i = 0; i < input.assetFileCount; i++)
+        {
+            // Get expected destination file path
+            char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, config->Project.repoName, config->Project.assetsPath, GetFileName(input.assetFilePaths[i]));
+            FileCopy(input.assetFilePaths[i], dstFilePath); // Copy always with original name
+        }
+
+        LOG("INFO: Copied project asset files successfully\n");
+    }
     //-------------------------------------------------------------------------------------
 
 
     // Project configuration file (.rpc)
     // NOTE: This file can be used by [rpb] to build the project
     //-------------------------------------------------------------------------------------
+    LOG("INFO: Generating project config file (.rpc): %s/%s.rpc\n", config->Project.repoName, config->Project.internalName);
     // Update project configuration .rpc to defined values by [rpc] tool:
     /*
     PROJECT_INTERNAL_NAME                   "$(project_name)"                   # Project intenal name, used for executable and project files
@@ -2052,6 +2069,21 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     PROJECT_ASSETS_PATH                     "$(repo-name)/src/resources"        # Project assets directory, including all required assets
     PROJECT_ASSETS_OUTPUT_PATH              "$(repo-name)/release/resources"    # Project assets destination path
     */
+    rini_data data = rini_load_full(TextFormat("%s/project_name.rpc", templatePath));
+    rini_set_value_text(&data, "PROJECT_REPO_NAME", config->Project.repoName, NULL);
+    rini_set_value_text(&data, "PROJECT_INTERNAL_NAME", config->Project.internalName, NULL);
+    rini_set_value_text(&data, "PROJECT_COMMERCIAL_NAME", config->Project.commercialName, NULL);
+    rini_set_value_text(&data, "PROJECT_SHORT_NAME", config->Project.shortName, NULL);
+    rini_set_value_text(&data, "PROJECT_VERSION", config->Project.version, NULL);
+    rini_set_value_text(&data, "PROJECT_DESCRIPTION", config->Project.description, NULL);
+    rini_set_value_text(&data, "PROJECT_PUBLISHER_NAME", config->Project.publisherName, NULL);
+    rini_set_value_text(&data, "PROJECT_DEVELOPER_NAME", config->Project.developerName, NULL);
+    rini_set_value_text(&data, "PROJECT_DEVELOPER_URL", config->Project.developerUrl, NULL);
+    rini_set_value_text(&data, "PROJECT_DEVELOPER_EMAIL", config->Project.developerEmail, NULL);
+    rini_set_value_text(&data, "PROJECT_ICON_FILE", config->Project.iconFile, NULL);
+    rini_save(data, TextFormat("%s/%s/%s.rpc", outPath, config->Project.repoName, config->Project.internalName));
+
+    /*
     fileText = LoadFileText(TextFormat("%s/project_name.rpc", templatePath));
     fileTextUpdated[0] = TextReplaceAlloc(fileText, "$(project_name)", config->Project.internalName); // rpcGetText(pc, "PROJECT_INTERNAL_NAME")
     fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "$(repo-name)", config->Project.repoName);
@@ -2066,12 +2098,16 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     SaveFileText(TextFormat("%s/%s/%s.rpc", outPath, config->Project.repoName, config->Project.internalName), fileTextUpdated[9]);
     for (int i = 0; i < 10; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
+    */
+    LOG("INFO: Project config file (.rpc) generated successfully\n");
     //-------------------------------------------------------------------------------------
 
     // Project build system: Scripts
     //-------------------------------------------------------------------------------------
     if (input.requestedBuildSystems[0])
     {
+        LOG("INFO: Generating build system: scripts (.bat, .sh)\n");
+
         // Create required output directories
         MakeDirectory(TextFormat("%s/%s/projects/scripts", outPath, config->Project.internalName));
 
@@ -2085,7 +2121,9 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
 
-        LOG("INFO: Updated build system successfully: Script (src/build.bat)\n");
+        // TODO: Add .sh build script
+
+        LOG("INFO: Build system generated successfully: scripts (.bat, .sh)\n");
     }
     //-------------------------------------------------------------------------------------
 
@@ -2093,6 +2131,8 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     //-------------------------------------------------------------------------------------
     if (input.requestedBuildSystems[1])
     {
+        LOG("INFO: Generating build system: Makefile\n");
+
         // Update src/Makefile
         fileText = LoadFileText(TextFormat("%s/src/Makefile", templatePath));
 
@@ -2121,11 +2161,11 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         fileTextUpdated[1] = TextReplaceAlloc(fileText, "project_name", config->Project.internalName);
         fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[0], "C:\\raylib\\w64devkit\\bin", config->Platform.Windows.w64devkitPath);
         fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[1], "C:/raylib/raylib/src", config->raylib.srcPath);
-        SaveFileText(TextFormat("%s/%s/src/Makefile", outPath, config->Project.repoName), fileTextUpdated[3]);
+        SaveFileText(TextFormat("%s/%s/%s/Makefile", outPath, config->Project.repoName, config->Project.sourcePath), fileTextUpdated[3]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
 
-        LOG("INFO: Updated build system successfully: Makefile (src/Makefile)\n");
+        LOG("INFO: Build system generated successfully: Makefile\n");
     }
     //-------------------------------------------------------------------------------------
 
@@ -2133,6 +2173,8 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     //-------------------------------------------------------------------------------------
     if (input.requestedBuildSystems[2])
     {
+        LOG("INFO: Generating build system: VSCode\n");
+
         // Create required output directories
         MakeDirectory(TextFormat("%s/%s/projects/VSCode/.vscode", outPath, config->Project.repoName));
 
@@ -2197,7 +2239,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         FileCopy(TextFormat("%s/projects/VSCode/README.md", templatePath),
             TextFormat("%s/%s/projects/VSCode/README.md", outPath, config->Project.repoName));
 
-        LOG("INFO: Updated build system successfully: VSCode (projects/VSCode)\n");
+        LOG("INFO: Build system generated successfully: VSCode\n");
     }
     //-------------------------------------------------------------------------------------
 
@@ -2205,14 +2247,17 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     //-------------------------------------------------------------------------------------
     if (input.requestedBuildSystems[3])
     {
+        LOG("INFO: Generating build system: Visual Studio 2022\n");
+
         // Create required output directories
         MakeDirectory(TextFormat("%s/%s/projects/VS2022/raylib", outPath, config->Project.repoName));
         MakeDirectory(TextFormat("%s/%s/projects/VS2022/%s", outPath, config->Project.repoName, config->Project.internalName));
 
         // Copy projects/VS2022/raylib/raylib.vcxproj
         fileText = LoadFileText(TextFormat("%s/projects/VS2022/raylib/raylib.vcxproj", templatePath));
-        SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/raylib.vcxproj", outPath, config->Project.repoName, config->Project.internalName), 
-            TextReplace(fileText, "C:\\raylib\\raylib\\src", config->raylib.srcPath));
+        fileTextUpdated[0] = TextReplaceAlloc(fileText, "C:\\raylib\\raylib\\src", config->raylib.srcPath);
+        SaveFileText(TextFormat("%s/%s/projects/VS2022/raylib/raylib.vcxproj", outPath, config->Project.repoName, config->Project.internalName), fileTextUpdated[0]);
+        for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
 
         // Copy projects/VS2022/raylib/Directory.Build.props
@@ -2245,7 +2290,8 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         int nextPosition = 0;
         for (int k = 1; k < srcFileCount; k++)
         {
-            TextAppend(srcFilesBlock, TextFormat("<ClCompile Include=\"..\\..\\..\\src\\%s\" />\n    ", srcFileNames[k]), &nextPosition);
+            TextAppend(srcFilesBlock, TextFormat("<ClCompile Include=\"..\\..\\..\\%s\\%s\" />\n    ", 
+                config->Project.sourcePath, srcFileNames[k]), &nextPosition);
         }
 
         fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "<!--Additional Compile Items-->", srcFilesBlock);
@@ -2266,7 +2312,22 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
 
-        LOG("INFO: Updated build system successfully: VS2022 (projects/VS2022)\n");
+        LOG("INFO: Build system generated successfully: Visual Studio 2022\n");
+    }
+    //-------------------------------------------------------------------------------------
+
+    // Project build system: CMake
+    //-------------------------------------------------------------------------------------
+    if (input.requestedBuildSystems[4])
+    {
+        LOG("INFO: Generating build system: CMake\n");
+
+        // Create required output directories
+        MakeDirectory(TextFormat("%s/%s/projects/CMake", outPath, config->Project.internalName));
+
+        // TODO: Add CMake build system
+
+        LOG("INFO: Build system generated successfully: CMake\n");
     }
     //-------------------------------------------------------------------------------------
 
@@ -2275,24 +2336,25 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     // - Linux, macOS, WebAssembly: Uses Makefile project
     // WARNING: Expects the PROJECT_NAME to be the repository-name (as generated by default)
     //-------------------------------------------------------------------------------------
-    // Create required output directories
-    MakeDirectory(TextFormat("%s/%s/.github/workflows", outPath, config->Project.repoName));
+    if (input.requestedBuildSystems[5])
+    {
+        LOG("INFO: Generating build system: GitHub Actions (CI/CD workflows)\n");
 
-    // Copy GitHub workflows: linux.yml, webassembly.yml, windows.yml
-    fileText = LoadFileText(TextFormat("%s/.github/workflows/windows.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/windows.yml", outPath, config->Project.repoName), fileText);
-    UnloadFileText(fileText);
-    fileText = LoadFileText(TextFormat("%s/.github/workflows/linux.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/linux.yml", outPath, config->Project.repoName), fileText);
-    UnloadFileText(fileText);
-    fileText = LoadFileText(TextFormat("%s/.github/workflows/macos.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/macos.yml", outPath, config->Project.repoName), fileText);
-    UnloadFileText(fileText);
-    fileText = LoadFileText(TextFormat("%s/.github/workflows/webassembly.yml", templatePath));
-    SaveFileText(TextFormat("%s/%s/.github/workflows/webassembly.yml", outPath, config->Project.repoName), fileText);
-    UnloadFileText(fileText);
+        // Create required output directories
+        MakeDirectory(TextFormat("%s/%s/.github/workflows", outPath, config->Project.repoName));
 
-    LOG("INFO: Updated build system successfully: GitHub Actions CI/CD workflows (.github)\n");
+        // Copy GitHub workflows: Windows, Linux, macOS, Webassembly
+        FileCopy(TextFormat("%s/.github/workflows/build_windows.yml", templatePath),
+            TextFormat("%s/%s/.github/workflows/build_windows.yml", outPath, config->Project.repoName));
+        FileCopy(TextFormat("%s/.github/workflows/build_linux.yml", templatePath),
+            TextFormat("%s/%s/.github/workflows/build_linux.yml", outPath, config->Project.repoName));
+        FileCopy(TextFormat("%s/.github/workflows/build_macos.yml", templatePath),
+            TextFormat("%s/%s/.github/workflows/build_macos.yml", outPath, config->Project.repoName));
+        FileCopy(TextFormat("%s/.github/workflows/build_webassembly.yml", templatePath),
+            TextFormat("%s/%s/.github/workflows/build_webassembly.yml", outPath, config->Project.repoName));
+
+        LOG("INFO: Build system generated successfully: GitHub Actions (CI/CD workflows)\n");
+    }
     //-------------------------------------------------------------------------------------
 
     // Update additional files required for product building
@@ -2302,27 +2364,40 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     //  - src/Info.plist        -> macOS application resource file, includes .icns and metadata
     //  - src/minshell.html     -> Web: Html minimum shell for WebAssembly application, preconfigured
     //-------------------------------------------------------------------------------------
+    LOG("INFO: Generating additional files\n");
     // Update src/project_name.rc
     fileText = LoadFileText(TextFormat("%s/src/project_name.rc", templatePath));
+    // TODO: Replace "project_name.ico" by GetFileName(config->Project.iconFile) if possible
     fileTextUpdated[0] = TextReplaceAlloc(fileText, "CommercialName", config->Project.commercialName);
     fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "project_name", config->Project.internalName);
     fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "ProjectDescription", config->Project.description);
     fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "ProjectDeveloper", config->Project.developerName);
-    fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "ProjectYear", TextFormat("%i", config->Project.year));
-    SaveFileText(TextFormat("%s/%s/src/%s.rc", outPath, config->Project.repoName, config->Project.internalName), fileTextUpdated[4]);
+    fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "ProjectYear", TextFormat("%i", currentYear));
+    SaveFileText(TextFormat("%s/%s/%s/%s.rc", outPath, config->Project.repoName, config->Project.sourcePath, config->Project.internalName), fileTextUpdated[4]);
     for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
-    LOG("INFO: Updated src/%s.rc successfully\n", config->Project.internalName);
+    LOG("INFO: Updated Windows resource file successfully: %s/%s.rc\n", config->Project.sourcePath, config->Project.internalName);
 
     // Copy src/project_name.ico to src/project_name.ico
-    FileCopy(TextFormat("%s/src/project_name.ico", templatePath),
-        TextFormat("%s/%s/src/%s.ico", outPath, config->Project.repoName, config->Project.internalName));
-    LOG("INFO: Copied src/%s.ico successfully\n", config->Project.internalName);
+    // TODO: Generate .ico file from .png if required?
+    if (FileExists(config->Project.iconFile))
+    {
+        const char *iconFilePath = TextFormat("%s/%s/%s/%s", outPath, config->Project.repoName, config->Project.sourcePath, GetFileName(config->Project.iconFile));
+        FileCopy(config->Project.iconFile, TextReplace(iconFilePath, "project_name", config->Project.internalName));
+        LOG("INFO: Added icon file successfully: %s/%s\n", config->Project.sourcePath, TextReplace(iconFilePath, "project_name", config->Project.internalName));
+    }
+    else
+    {
+        FileCopy(TextFormat("%s/src/project_name.ico", templatePath),
+            TextFormat("%s/%s/%s/%s.ico", outPath, config->Project.repoName, config->Project.sourcePath, config->Project.internalName));
+        LOG("INFO: Added icon file successfully: %s/%s.ico\n", config->Project.sourcePath, config->Project.internalName);
+    }
 
     // Copy src/project_name.icns to src/project_name.icns
+    // TODO: Generate .icns from input .ico/.png
     FileCopy(TextFormat("%s/src/project_name.icns", templatePath),
-        TextFormat("%s/%s/src/%s.icns", outPath, config->Project.repoName, config->Project.internalName));
-    LOG("INFO: Copied src/%s.icns successfully\n", config->Project.internalName);
+        TextFormat("%s/%s/%s/%s.icns", outPath, config->Project.repoName, config->Project.sourcePath, config->Project.internalName));
+    LOG("INFO: Added icon file (.icns) successfully (macOS)\n", config->Project.internalName);
 
     // Update src/Info.plist
     fileText = LoadFileText(TextFormat("%s/src/Info.plist", templatePath));
@@ -2331,11 +2406,11 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "ProjectDescription", config->Project.description);
     fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "ProjectDeveloper", config->Project.developerName);
     fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "project_developer", TextToLower(config->Project.developerName));
-    fileTextUpdated[5] = TextReplaceAlloc(fileTextUpdated[4], "ProjectYear", TextFormat("%i", config->Project.year));
-    SaveFileText(TextFormat("%s/%s/src/Info.plist", outPath, config->Project.repoName), fileTextUpdated[5]);
+    fileTextUpdated[5] = TextReplaceAlloc(fileTextUpdated[4], "ProjectYear", TextFormat("%i", currentYear));
+    SaveFileText(TextFormat("%s/%s/%s/Info.plist", outPath, config->Project.repoName, config->Project.sourcePath), fileTextUpdated[5]);
     for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
-    LOG("INFO: Updated src/Info.plist successfully\n");
+    LOG("INFO: Generated Info.plist successfully (macOS)\n");
 
     // Update src/minshell.html
     // Review Webpage, links, OpenGraph/X card, keywords...
@@ -2349,7 +2424,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     SaveFileText(TextFormat("%s/%s/src/minshell.html", outPath, config->Project.repoName), fileTextUpdated[5]);
     for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
-    LOG("INFO: Updated src/minshell.html successfully\n");
+    LOG("INFO: Generated minshell.html successfully (WebAssembly)\n");
     //-------------------------------------------------------------------------------------
 
     // Update README.md
@@ -2358,28 +2433,31 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "project_name", config->Project.internalName);
     fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "ProjectDescription", config->Project.description);
     fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "ProjectDeveloper", config->Project.developerName);
-    fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "ProjectYear", TextFormat("%i", config->Project.year));
+    fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "ProjectYear", TextFormat("%i", currentYear));
     SaveFileText(TextFormat("%s/%s/README.md", outPath, config->Project.repoName), fileTextUpdated[4]);
     for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
-    LOG("INFO: Updated README.md successfully\n");
+    LOG("INFO: Generated README.md file successfully\n");
 
     // Update LICENSE, including ProjectDeveloper
     fileText = LoadFileText(TextFormat("%s/LICENSE", templatePath));
     fileTextUpdated[0] = TextReplaceAlloc(fileText, "ProjectDeveloper", config->Project.developerName);
-    fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "ProjectYear", TextFormat("%i", config->Project.year));
+    fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "ProjectYear", TextFormat("%i", currentYear));
     SaveFileText(TextFormat("%s/%s/LICENSE", outPath, config->Project.repoName), fileTextUpdated[1]);
     for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
-    LOG("INFO: Updated LICENSE successfully\n");
+    LOG("INFO: Generated LICENSE file successfully: zlib/libpng\n");
 
     // Copy from template files that do not require customization: CONVENTIONS.md, .gitignore
     FileCopy(TextFormat("%s/CONVENTIONS.md", templatePath),
         TextFormat("%s/%s/CONVENTIONS.md", outPath, config->Project.repoName));
+    LOG("INFO: Generated CONVENTIONS.md file successfully\n");
     FileCopy(TextFormat("%s/.gitignore", templatePath),
         TextFormat("%s/%s/.gitignore", outPath, config->Project.repoName));
+    LOG("INFO: Generated .gitignore file successfully\n\n");
 
-    LOG("INFO: GitHub %s project generated successfully!\n", config->Project.internalName);
+    LOG("INFO: Project generated successfully: %s\n", config->Project.internalName);
+    LOG("-----------------------------------------------------------------\n");
 
     rpcUnloadProjectConfigTyped(config);
 }
