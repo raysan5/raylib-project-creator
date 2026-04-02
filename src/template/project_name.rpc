@@ -27,8 +27,9 @@
 
 # Project settings
 #------------------------------------------------------------------------------------
-PROJECT_INTERNAL_NAME                   "$(project_name)"                   # Project intenal name, used for executable and project files
+# NOTE: Project repo name is the base path where all project data is created
 PROJECT_REPO_NAME                       "$(repo-name)"                      # Project repository name, used for VCS (GitHub, GitLab)
+PROJECT_INTERNAL_NAME                   "$(project_name)"                   # Project intenal name, used for executable and project files
 PROJECT_COMMERCIAL_NAME                 "$(CommercialName)"                 # Project commercial name, used for docs and web
 PROJECT_SHORT_NAME                      "$(ShortName)"                      # Project short name
 PROJECT_VERSION                         "$(ProjectVersion)"                 # Project version
@@ -38,10 +39,10 @@ PROJECT_DEVELOPER_NAME                  "$(ProjectDeveloper)"               # Pr
 PROJECT_DEVELOPER_URL                   "$(DeveloperUrl)"                   # Project developer webpage url
 PROJECT_DEVELOPER_EMAIL                 "$(DeveloperEmail)"                 # Project developer email
 
-PROJECT_ICON_FILE                       "$(repo-name)/src/$(project_name).ico" # Project icon file
+PROJECT_ICON_FILE                       "src/$(project_name).ico"           # Project icon file
 
-PROJECT_SOURCE_PATH                     "$(repo-name)/src"                  # Project source directory, including all required code files (C/C++)
-PROJECT_ASSETS_PATH                     "$(repo-name)/src/resources"        # Project assets directory, including all required assets
+PROJECT_SOURCE_PATH                     "src"                               # Project source directory, including all required code files (C/C++)
+PROJECT_ASSETS_PATH                     "src/resources"                     # Project assets directory, including all required assets
 
 #PROJECT_SOURCE_FILE01
 #PROJECT_SOURCE_FILE02
@@ -53,7 +54,7 @@ PROJECT_ASSETS_PATH                     "$(repo-name)/src/resources"        # Pr
 #PROJECT_ASSET_FILE02
 #PROJECT_ASSET_FILE03
 
-PROJECT_ASSETS_OUTPUT_PATH              "$(repo-name)/release/resources"    # Project assets destination path
+PROJECT_ASSETS_OUTPUT_PATH              "release/resources"                 # Project assets destination path
 #------------------------------------------------------------------------------------
 
 # raylib settings
@@ -65,7 +66,7 @@ RAYLIB_OPENGL_VERSION                   "3.3"                               # Op
 # Build settings
 # NOTE: General settings, common to all platforms
 #------------------------------------------------------------------------------------
-BUILD_OUTPUT_PATH                       "$(repo-name)/release"              # Build output path
+BUILD_OUTPUT_PATH                       "release"                           # Build output path
 
 BUILD_TARGET_PLATFORM                   "Windows"                           # Build target platform (Supported: Windows, Linux, macOS, Android, Web)
 BUILD_TARGET_ARCHITECTURE               "x86-64"                            # Build target architecture (Supported: x86-64, Win32, arm64)
@@ -87,12 +88,12 @@ PLATFORM_WINDOWS_SIGNCERT_FILE          "path/to/signcert"                  # Pa
 PLATFORM_LINUX_FLAG_CROSS_COMPILE       0                                   # Flag: request cross-compiler usage
 PLATFORM_LINUX_CROSS_COMPILER_PATH      ""                                  # Path to Linux cross-compiler for target ABI
 #
-PLATFORM_MACOS_BUNDLE_INFO_FILE         "$(repo-name)/src/Info.plist"       # Path to macOS bundle options (Info.plist)
+PLATFORM_MACOS_BUNDLE_INFO_FILE         "src/Info.plist"                    # Path to macOS bundle options (Info.plist)
 PLATFORM_MACOS_BUNDLE_NAME              "$(CommercialName)"                 # Bundle name (commercial product name)
 PLATFORM_MACOS_BUNDLE_VERSION           "1"                                 # Bundle version
 #
 PLATFORM_HTML5_EMSDK_PATH               "C:/raylib/emsdk"                   # Path to emsdk, required for Web building
-PLATFORM_HTML5_SHELL_FILE               "$(repo-name)/src/minshell.html"    # Path to shell file to be used by emscripten
+PLATFORM_HTML5_SHELL_FILE               "src/minshell.html"                 # Path to shell file to be used by emscripten
 PLATFORM_HTML5_HEAP_MEMORY_SIZE         128                                 # Required heap memory size in MB (required for assets loading)
 PLATFORM_HTML5_FLAG_USE_ASINCIFY        0                                   # Flag: use ASINCIFY mode on building
 PLATFORM_HTML5_FLAG_USE_WEBGL2          0                                   # Flag: use WebGL2 (OpenGL ES 3.1) instead of default WebGL1 (OpenGL ES 2.0)
@@ -101,7 +102,7 @@ PLATFORM_HTML5_FLAG_USE_WEBGL2          0                                   # Fl
 PLATFORM_ANDROID_SDK_PATH               "path/to/android-sdk"               # Path to Android SDK, required for Android App building and support tools
 PLATFORM_ANDROID_NDK_PATH               "path/to/android-ndk-r28"           # Path to Android NDK, required for C native building to Android
 PLATFORM_ANDROID_JAVA_SDK_PATH          "path/to/java"                      # Path to Java SDK, required for some tools
-PLATFORM_ANDROID_MANIFEST_FILE          "$(repo-name)/src/AndroidManifest.xml"  # Path to Android manifest, including build options
+PLATFORM_ANDROID_MANIFEST_FILE          "src/AndroidManifest.xml"           # Path to Android manifest, including build options
 PLATFORM_ANDROID_MIN_SDK_VERSION        19                                  # Minimum SDK version required
 PLATFORM_ANDROID_TARGET_SDK_VERSION     36                                  # Target SDK version
 
@@ -119,16 +120,16 @@ DEPLOY_FLAG_RIF_INSTALLER               0                                   # Fl
 DEPLOY_RIF_INSTALLER_PATH               "tools/rinstallfriendly.exe"        # Path to [rInstallFriendly] tool
 
 DEPLOY_FLAG_INCUDE_README               1                                   # Flag: request including README file on package
-DEPLOY_README_FILE                      "$(repo-name)/README.md"            # Project README file path, contains product information
+DEPLOY_README_FILE                      "README.md"                         # Project README file path, contains product information
 DEPLOY_FLAG_INCUDE_EULA                 1                                   # Flag: request including EULA file on package (vs LICENSE file for FOSS)
-DEPLOY_EULA_FILE                        "$(repo-name)/EULA.txt"             # Project EULA (End-User-License-Agreement) file path
+DEPLOY_EULA_FILE                        "EULA.txt"                          # Project EULA (End-User-License-Agreement) file path
 #------------------------------------------------------------------------------------
 
 # Imagery settings
 # NOTE: Useful for project distribution on several stores
 #------------------------------------------------------------------------------------
-IMAGERY_LOGO_FILE                       "$(repo-name)/images/logo.png"      # Project logo image, useful for imagery generation
-IMAGERY_SPLASH_FILE                     "$(repo-name)/images/splash.png"    # Project splash image, useful for imagery generation
+IMAGERY_LOGO_FILE                       "images/logo.png"                   # Project logo image, useful for imagery generation
+IMAGERY_SPLASH_FILE                     "images/splash.png"                 # Project splash image, useful for imagery generation
 
 IMAGERY_FLAG_GENERATE                   0                                   # Flag: request project imagery generation: Social Cards, itchio, Steam...
 IMAGERY_RIP_PACKER_PATH                 "tools/riconpacker.exe"             # Path to [rIconPacker] tool
