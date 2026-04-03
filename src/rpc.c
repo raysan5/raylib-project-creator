@@ -627,8 +627,9 @@ static void UpdateDrawFrame(void)
         {
             for (unsigned int i = 0; i < droppedFiles.count; i++)
             {
-                if (IsPathFile(droppedFiles.count))
+                if (IsPathFile(droppedFiles.paths[i]))
                 {
+                    
                     if (IsFileExtension(droppedFiles.paths[i], ".c;.h;.cpp;.hpp"))
                     {
                         // Add files to source list
@@ -645,7 +646,7 @@ static void UpdateDrawFrame(void)
                 }
                 else // Path is a directory
                 {
-                    FilePathList list = LoadDirectoryFilesEx(droppedFiles.count, "FILES*", true);
+                    FilePathList list = LoadDirectoryFilesEx(droppedFiles.paths[i], "FILES*", true);
 
                     for (int i = 0; i < list.count; i++)
                     {
@@ -963,7 +964,7 @@ static void UpdateDrawFrame(void)
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
             GuiToggle((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
-                TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))), false);
+                TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))), NULL);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 0);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
         }
@@ -981,7 +982,7 @@ static void UpdateDrawFrame(void)
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
             GuiToggle((Rectangle){ 16, 536 + 26 + (28 + 2)*(i + input.srcFileCount) + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
-                TextFormat("#200#%s", input.assetFilePaths[i]), false);
+                TextFormat("#200#%s", input.assetFilePaths[i]), NULL);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 0);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 
@@ -1206,7 +1207,7 @@ static void UpdateDrawFrame(void)
                 {
                     // Scan code file looking for assets
                     int assetCount = 0;
-                    const char **assetPaths = LoadSourceAssetPaths(multiFileList[i], &assetCount);
+                    char **assetPaths = LoadSourceAssetPaths(multiFileList[i], &assetCount);
 
                     for (int a = 0; a < assetCount; a++)
                     {
@@ -1267,13 +1268,13 @@ static void UpdateDrawFrame(void)
                 // so the asset can be related to equivalent source path
                 rpcProjectInput temp = rpcLoadProjectInput();
 
-                for (int i = 0; i < pathList.count; i++)
+                for (unsigned int i = 0; i < pathList.count; i++)
                 {
                     if (IsFileExtension(pathList.paths[i], ".c;.h;.cpp;.hpp"))
                     {
                         // Scan code file looking for assets
                         int assetCount = 0;
-                        const char **assetPaths = LoadSourceAssetPaths(pathList.paths[i], &assetCount);
+                        char **assetPaths = LoadSourceAssetPaths(pathList.paths[i], &assetCount);
 
                         for (int a = 0; a < assetCount; a++)
                         {
@@ -2014,7 +2015,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     for (int i = 0; i < input.srcFileCount; i++)
     {
         // Get expected destination file path for source input files
-        char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, config->Project.repoName, config->Project.sourcePath, GetFileName(input.srcFilePaths[i]));
+        const char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, config->Project.repoName, config->Project.sourcePath, GetFileName(input.srcFilePaths[i]));
 
         // Check if source file name contains "project_name"
         if (TextFindIndex(input.srcFilePaths[i], "project_name") > 0)
@@ -2039,7 +2040,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         for (int i = 0; i < input.assetFileCount; i++)
         {
             // Get expected destination file path
-            char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, config->Project.repoName, config->Project.assetsPath, GetFileName(input.assetFilePaths[i]));
+            const char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, config->Project.repoName, config->Project.assetsPath, GetFileName(input.assetFilePaths[i]));
             FileCopy(input.assetFilePaths[i], dstFilePath); // Copy always with original name
         }
 
@@ -2397,7 +2398,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     // TODO: Generate .icns from input .ico/.png
     FileCopy(TextFormat("%s/src/project_name.icns", templatePath),
         TextFormat("%s/%s/%s/%s.icns", outPath, config->Project.repoName, config->Project.sourcePath, config->Project.internalName));
-    LOG("INFO: Added icon file (.icns) successfully (macOS)\n", config->Project.internalName);
+    LOG("INFO: Added icon file (.icns) successfully (macOS)\n");
 
     // Update src/Info.plist
     fileText = LoadFileText(TextFormat("%s/src/Info.plist", templatePath));
