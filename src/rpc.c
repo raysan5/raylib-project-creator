@@ -631,7 +631,7 @@ static void UpdateDrawFrame(void)
             {
                 if (IsPathFile(droppedFiles.paths[i]))
                 {
-                    
+
                     if (IsFileExtension(droppedFiles.paths[i], ".c;.h;.cpp;.hpp"))
                     {
                         // Add files to source list
@@ -955,17 +955,17 @@ static void UpdateDrawFrame(void)
         for (int i = 0; i < input.srcFileCount; i++)
         {
             /*
-            DrawRectangleLinesEx((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
+            DrawRectangleLinesEx((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
                 1.0f, GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL)));
             GuiSetStyle(LABEL, TEXT_PADDING, 8);
-            GuiLabel((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
+            GuiLabel((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
                 TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))));
             GuiSetStyle(LABEL, TEXT_PADDING, 0);
             */
-            
+
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
-            GuiToggle((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
+            GuiToggle((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
                 TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))), NULL);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 0);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
@@ -973,17 +973,17 @@ static void UpdateDrawFrame(void)
         for (int i = 0; i < input.assetFileCount; i++)
         {
             /*
-            DrawRectangleLinesEx((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
+            DrawRectangleLinesEx((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
             1.0f, GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL)));
             GuiSetStyle(LABEL, TEXT_PADDING, 8);
-            GuiLabel((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
+            GuiLabel((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
                 TextFormat("#200#%s", input.assetFilePaths[i]))));
             GuiSetStyle(LABEL, TEXT_PADDING, 0);
             */
 
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
-            GuiToggle((Rectangle){ 16, 536 + 26 + (28 + 2)*(i + input.srcFileCount) + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 }, 
+            GuiToggle((Rectangle){ 16, 536 + 26 + (28 + 2)*(i + input.srcFileCount) + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
                 TextFormat("#200#%s", input.assetFilePaths[i]), NULL);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 0);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
@@ -1011,7 +1011,7 @@ static void UpdateDrawFrame(void)
     //----------------------------------------------------------------------------------
     int textPadding = GuiGetStyle(STATUSBAR, TEXT_PADDING);
     GuiSetStyle(STATUSBAR, TEXT_PADDING, 12);
-    GuiStatusBar((Rectangle){ 0, screenHeight - 24, screenWidth, 24 }, 
+    GuiStatusBar((Rectangle){ 0, screenHeight - 24, screenWidth, 24 },
         TextFormat("SOURCE FILES: %i  | ASSET FILES: %i", input.srcFileCount, input.assetFileCount));
     GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
     //----------------------------------------------------------------------------------
@@ -1771,7 +1771,7 @@ void rpcUpdateProjectInput(rpcProjectInput *input, int selTemplate)
     char templatePath[256] = { 0 };
     // NOTE: [template] directory must be in same directory as [rpc] tool
     //strcpy(templatePath, TextFormat("%s/template", GetApplicationDirectory()));
-    // WARNING: Instead of copying full template path, assume that the file can be 
+    // WARNING: Instead of copying full template path, assume that the file can be
     // located in [template] package (next to binary or internal), so no need to specify
     // a full path; full paths are only used for user-provided files
     strcpy(templatePath, "template");
@@ -2292,7 +2292,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         int nextPosition = 0;
         for (int k = 1; k < srcFileCount; k++)
         {
-            TextAppend(srcFilesBlock, TextFormat("<ClCompile Include=\"..\\..\\..\\%s\\%s\" />\n    ", 
+            TextAppend(srcFilesBlock, TextFormat("<ClCompile Include=\"..\\..\\..\\%s\\%s\" />\n    ",
                 config->Project.sourcePath, srcFileNames[k]), &nextPosition);
         }
 

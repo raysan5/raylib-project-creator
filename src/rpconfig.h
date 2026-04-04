@@ -60,20 +60,20 @@ typedef struct {
 } rpcProjectImagery;
 
 // Project Configuration
-// 
-// NOTE 1: It contains all project configurable properties, organized by supported categories: 
+//
+// NOTE 1: It contains all project configurable properties, organized by supported categories:
 //  - PROJECT: Project configuration, required to generate project structure
-//  - BUILD: Build configuration properties, generic for all platforms building 
+//  - BUILD: Build configuration properties, generic for all platforms building
 //  - PLATFORM: Platform-specific config properties, required to build project for that platform
 //  - DEPLOY: Project deployment options for packaging and project distribution
-//  - IMAGERY: Support imagery required on deployment and stores distribution 
+//  - IMAGERY: Support imagery required on deployment and stores distribution
 //  - raylib: raylib configuration options, for library customization (if desired)
 //
 // NOTE 2: This structure differs from [rpcProjectConfig] because it not only
 // contains all the required properties organized with names (vs config list of generic properties)
 // but it also contains internal properties filled by the tools as required
 // i.e. [assetsPath] is automatically scanned to fill [assetFilePaths]
-// 
+//
 // WARNING: Create only dynamic objects for this selectedTemplate
 typedef struct {
     struct {
@@ -181,7 +181,7 @@ typedef struct {
         char logoFile[256];             // Imagery: logo file path, for imagery (itchio/Steam)
         char splashFile[256];           // Imagery: splash image file path
 
-        // [rpb] Imagery generation internal variables 
+        // [rpb] Imagery generation internal variables
         bool genImageryAuto;            // Imagery: generate automatically
         rpcProjectImagery images;       // Imagery: image set for exporting
 
@@ -524,7 +524,7 @@ void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, int fla
         if (entry->category == RPC_CAT_PLATFORM)
         {
             // Add line separator beetween platforms
-            if ((entry->platform != RPC_PLATFORM_ANY) && 
+            if ((entry->platform != RPC_PLATFORM_ANY) &&
                 (entry->platform != prevPlatform))
             {
                 rini_set_comment_line(&data, "");
