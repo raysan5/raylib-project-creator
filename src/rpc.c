@@ -187,7 +187,7 @@ static const char *toolDescription = TOOL_DESCRIPTION;
 // Basic program variables
 //----------------------------------------------------------------------------------
 static const int screenWidth = 1070;        // Default screen width (at initialization)
-static const int screenHeight = 820;        // Default screen height (at initialization)
+static const int screenHeight = 900;        // Default screen height (at initialization)
 
 // NOTE: Max length depends on OS, in Windows MAX_PATH = 256
 static char inFileName[256] = { 0 };            // Input file name (required in case of drag & drop over executable)
@@ -990,6 +990,20 @@ static void UpdateDrawFrame(void)
 
         }
     EndScissorMode();
+
+    // Choose build system toggles
+    GuiLabel((Rectangle){ 12, 536 + 200 + 8, 170, 24}, "CHOOSE BUILD SYSTEMS:");
+    GuiSetStyle(TOGGLE, BORDER_WIDTH, 2);
+    GuiToggle((Rectangle){ 12, 536 + 200 + 36, 170, 40 }, "Scripts", &input.requestedBuildSystems[0]);
+    GuiToggle((Rectangle){ 12 + (175*1), 536 + 200 + 36, 170, 40 }, "Makefile", &input.requestedBuildSystems[1]);
+    GuiToggle((Rectangle){ 12 + (175*2), 536 + 200 + 36, 170, 40 }, "VSCode", &input.requestedBuildSystems[2]);
+    GuiToggle((Rectangle){ 12 + (175*3), 536 + 200 + 36, 170, 40 }, "Visual Studio 2022", &input.requestedBuildSystems[3]);
+    GuiDisable();
+    GuiToggle((Rectangle){ 12 + (175*4), 536 + 200 + 36, 170, 40 }, "CMake", &input.requestedBuildSystems[4]);
+    GuiEnable();
+    GuiToggle((Rectangle){ 12 + (175*5), 536 + 200 + 36, 170, 40 }, "GitHub Actions", &input.requestedBuildSystems[5]);
+
+    GuiSetStyle(TOGGLE, BORDER_WIDTH, 1);
 
 #if defined(PLATFORM_WEB)
     GuiDisable();
