@@ -296,7 +296,7 @@ RPCAPI void rpcSyncProjectConfig(rpcProjectConfig dst, rpcProjectConfigTyped *sr
 
 #if defined(RPCONFIG_IMPLEMENTATION)
 
-#include "rini.h"
+// NOTE: Requires rini.h being included before this header
 
 #include <string.h>     // Required for: strncpy()
 #include <stdlib.h>     // Required for: calloc(), free()
@@ -742,7 +742,7 @@ void rpcSyncProjectConfigTyped(rpcProjectConfigTyped *dst, rpcProjectConfig src)
         else if (TextIsEqual(src.entries[i].key, "PLATFORM_HTML5_SHELL_FILE")) TextCopy(dst->Platform.HTML5.shellFile, src.entries[i].text); // Path to shell file to be used by emscripten
         else if (TextIsEqual(src.entries[i].key, "PLATFORM_HTML5_HEAP_MEMORY_SIZE")) dst->Platform.HTML5.heapMemorySize = src.entries[i].value; // Required heap memory size in MB (required for assets loading)
         else if (TextIsEqual(src.entries[i].key, "PLATFORM_HTML5_FLAG_USE_ASINCIFY")) dst->Platform.HTML5.useAsincify = src.entries[i].value; // Flag: use ASINCIFY mode on building
-        else if (TextIsEqual(src.entries[i].key, "PLATFORM_HTML5_FLAG_USE_WEBGL2")) dst->Platform.HTML5.useWebGL2, src.entries[i].value; // Flag: use WebGL2 (OpenGL ES 3.1) instead of default WebGL1 (OpenGL ES 2.0)
+        else if (TextIsEqual(src.entries[i].key, "PLATFORM_HTML5_FLAG_USE_WEBGL2")) dst->Platform.HTML5.useWebGL2 = src.entries[i].value; // Flag: use WebGL2 (OpenGL ES 3.1) instead of default WebGL1 (OpenGL ES 2.0)
         else if (TextIsEqual(src.entries[i].key, "PLATFORM_ANDROID_SDK_PATH")) TextCopy(dst->Platform.Android.sdkPath, src.entries[i].text); // Path to Android SDK, required for Android App building and support tools
         else if (TextIsEqual(src.entries[i].key, "PLATFORM_ANDROID_NDK_PATH")) TextCopy(dst->Platform.Android.ndkPath, src.entries[i].text); // Path to Android NDK, required for C native building to Android
         else if (TextIsEqual(src.entries[i].key, "PLATFORM_ANDROID_JAVA_SDK_PATH")) TextCopy(dst->Platform.Android.javaSdkPath, src.entries[i].text); // Path to Java SDK, required for some tools
@@ -756,7 +756,7 @@ void rpcSyncProjectConfigTyped(rpcProjectConfigTyped *dst, rpcProjectConfig src)
         else if (TextIsEqual(src.entries[i].key, "DEPLOY_FLAG_ZIP_PACKAGE")) dst->Deploy.zipPackage = src.entries[i].value; // Flag: request package to be zipped for distribution
         else if (TextIsEqual(src.entries[i].key, "DEPLOY_FLAG_RIF_INSTALLER")) dst->Deploy.rifInstaller = src.entries[i].value; // Flag: request installer creation using rInstallFriendly tool
         else if (TextIsEqual(src.entries[i].key, "DEPLOY_RIF_INSTALLER_PATH")) TextCopy(dst->Deploy.rifInstallerPath, src.entries[i].text); // Path to [rInstallFriendly] tool
-        else if (TextIsEqual(src.entries[i].key, "DEPLOY_FLAG_INCUDE_README")) dst->Deploy.includeREADME, src.entries[i].value; // Flag: include EULA file on package (vs LICENSE file for FOSS)
+        else if (TextIsEqual(src.entries[i].key, "DEPLOY_FLAG_INCUDE_README")) dst->Deploy.includeREADME = src.entries[i].value; // Flag: include EULA file on package (vs LICENSE file for FOSS)
         else if (TextIsEqual(src.entries[i].key, "DEPLOY_README_FILE")) TextCopy(dst->Deploy.readmePath, src.entries[i].text); // Project README document, contains product information
         else if (TextIsEqual(src.entries[i].key, "DEPLOY_FLAG_INCUDE_EULA")) dst->Deploy.includeEULA = src.entries[i].value; // Flag: include EULA file on package (vs LICENSE file for FOSS)
         else if (TextIsEqual(src.entries[i].key, "DEPLOY_EULA_FILE")) TextCopy(dst->Deploy.eulaPath, src.entries[i].text); // Project End-User-License-Agreement

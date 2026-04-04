@@ -71,9 +71,6 @@
 
 #include "raylib.h"
 
-#define RPCONFIG_IMPLEMENTATION
-#include "rpconfig.h"                // Data types and functionality (shared by [rpc] and [rpb] tools)
-
 #if defined(PLATFORM_WEB)
     #define CUSTOM_MODAL_DIALOGS            // Force custom modal dialogs usage
     #include <emscripten/emscripten.h>      // Emscripten library - LLVM to JavaScript compiler
@@ -123,6 +120,10 @@
 #define RINI_VALUE_SPACING           35
 #define RINI_IMPLEMENTATION
 #include "external/rini.h"                  // Config file values reader/writer
+
+// WARNING: rini.h must be included before rpconfig to avoid re-definitions
+#define RPCONFIG_IMPLEMENTATION
+#include "rpconfig.h"                // Data types and functionality (shared by [rpc] and [rpb] tools)
 
 // Standard C libraries
 #include <stdio.h>                          // Required for: fopen(), fclose(), fread()...
@@ -329,6 +330,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 // Packing and unpacking of template files (NOT USED)
 static char *PackDirectoryData(const char *baseDirPath, int *packSize);
 static void UnpackDirectoryData(const char *outputDirPath, const unsigned char *data, int *dataSize, PackFileEntry *entries, int fileCount);
+static char *LoadFileTextPack(const char *fileName, const unsigned char *packData, PackFileEntry *entries, int fileCount);
 
 // Split string into multiple strings
 // NOTE: No memory is dynamically allocated
@@ -648,7 +650,7 @@ static void UpdateDrawFrame(void)
                 {
                     FilePathList list = LoadDirectoryFilesEx(droppedFiles.paths[i], "FILES*", true);
 
-                    for (int i = 0; i < list.count; i++)
+                    for (unsigned int i = 0; i < list.count; i++)
                     {
                         if (IsFileExtension(droppedFiles.paths[i], ".c;.h;.cpp;.hpp"))
                         {
@@ -2547,7 +2549,7 @@ static void UnpackDirectoryData(const char *outputDirPath, const unsigned char *
 }
 
 // Load a text file data from memory packed data
-char *LoadFileTextPack(const char *fileName, const char *packData, PackFileEntry *entries, int fileCount)
+static char *LoadFileTextPack(const char *fileName, const unsigned char *packData, PackFileEntry *entries, int fileCount)
 {
     int fileDataSize = 0;
     char *fileData = NULL;
