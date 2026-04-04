@@ -2019,13 +2019,10 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         // Get expected destination file path for source input files
         const char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, config->Project.repoName, config->Project.sourcePath, GetFileName(input.srcFilePaths[i]));
 
-        // Check if source file name contains "project_name"
-        if (TextFindIndex(input.srcFilePaths[i], "project_name") > 0)
-        {
-            // Update project name for destination file to project internal name defined
-            FileCopy(input.srcFilePaths[i], TextReplace(dstFilePath, "project_name", config->Project.internalName)); // Copy with new name
-        }
-        else FileCopy(input.srcFilePaths[i], dstFilePath); // Copy with original name
+        // NOTE: In case file name contains "project_name", replacing it by user defined project internal name
+        FileCopy(input.srcFilePaths[i], TextReplace(dstFilePath, "project_name", config->Project.internalName));
+
+        LOG("INFO: [%i/%i] Copying: %s\n", i + 1, input.srcFileCount, TextReplace(dstFilePath, "project_name", config->Project.internalName));
     }
 
     LOG("INFO: Copied project source files successfully\n");
@@ -2044,6 +2041,8 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
             // Get expected destination file path
             const char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, config->Project.repoName, config->Project.assetsPath, GetFileName(input.assetFilePaths[i]));
             FileCopy(input.assetFilePaths[i], dstFilePath); // Copy always with original name
+
+            LOG("INFO: [%i/%i] Copying: %s\n", i + 1, input.assetFileCount, dstFilePath);
         }
 
         LOG("INFO: Copied project asset files successfully\n");
@@ -2379,7 +2378,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     SaveFileText(TextFormat("%s/%s/%s/%s.rc", outPath, config->Project.repoName, config->Project.sourcePath, config->Project.internalName), fileTextUpdated[4]);
     for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
-    LOG("INFO: Updated Windows resource file successfully: %s/%s.rc\n", config->Project.sourcePath, config->Project.internalName);
+    LOG("INFO: Generated Windows resource file successfully: %s/%s.rc\n", config->Project.sourcePath, config->Project.internalName);
 
     // Copy src/project_name.ico to src/project_name.ico
     // TODO: Generate .ico file from .png if required?
@@ -2387,7 +2386,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     {
         const char *iconFilePath = TextFormat("%s/%s/%s/%s", outPath, config->Project.repoName, config->Project.sourcePath, GetFileName(config->Project.iconFile));
         FileCopy(config->Project.iconFile, TextReplace(iconFilePath, "project_name", config->Project.internalName));
-        LOG("INFO: Added icon file successfully: %s/%s\n", config->Project.sourcePath, TextReplace(iconFilePath, "project_name", config->Project.internalName));
+        LOG("INFO: Added icon file successfully: %s\n", TextReplace(iconFilePath, "project_name", config->Project.internalName));
     }
     else
     {
