@@ -2170,16 +2170,23 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 
         // Add all project required sources concatenated
         fileTextUpdated[0] = TextReplaceAlloc(fileText, "project_name.c", TextJoin(srcFileNames, srcFileCount, " "));
+        fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "project_name", config->Project.internalName);
+        fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "C:\\raylib\\w64devkit\\bin", config->Platform.Windows.w64devkitPath);
+        fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "C:/raylib/raylib/src", config->raylib.srcPath);
+        if (input.assetFileCount > 0)
+        {
+            // If project includes resources, update Makefile required lines
+            fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "BUILD_WEB_RESOURCES   ?= FALSE", "BUILD_WEB_RESOURCES   ?= TRUE");
+            // TODO: Update also resources path for building?: "BUILD_WEB_RESOURCES_PATH ?= resources"
+            SaveFileText(TextFormat("%s/%s/%s/Makefile", outPath, config->Project.repoName, config->Project.sourcePath), fileTextUpdated[4]);
+        }
+        else SaveFileText(TextFormat("%s/%s/%s/Makefile", outPath, config->Project.repoName, config->Project.sourcePath), fileTextUpdated[3]);
+
+        for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
+        UnloadFileText(fileText);
 
         for (int i = 0; i < RPC_MAX_SOURCE_FILES; i++) RL_FREE(srcFileNames[i]);
         RL_FREE(srcFileNames);
-
-        fileTextUpdated[1] = TextReplaceAlloc(fileText, "project_name", config->Project.internalName);
-        fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[0], "C:\\raylib\\w64devkit\\bin", config->Platform.Windows.w64devkitPath);
-        fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[1], "C:/raylib/raylib/src", config->raylib.srcPath);
-        SaveFileText(TextFormat("%s/%s/%s/Makefile", outPath, config->Project.repoName, config->Project.sourcePath), fileTextUpdated[3]);
-        for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
-        UnloadFileText(fileText);
 
         LOG("INFO: Build system generated successfully: Makefile\n");
     }
@@ -2235,7 +2242,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         for (int i = 0; i < RPC_MAX_SOURCE_FILES; i++) RL_FREE(srcFileNames[i]);
         RL_FREE(srcFileNames);
 
-        fileTextUpdated[1] = TextReplaceAlloc(fileText, "project_name", config->Project.internalName);
+        fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "project_name", config->Project.internalName);
         fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "C:/raylib/raylib/src", config->raylib.srcPath);
         fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "C:/raylib/w64devkit/bin", config->Platform.Windows.w64devkitPath);
 
