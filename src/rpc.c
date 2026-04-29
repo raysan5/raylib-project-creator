@@ -2099,22 +2099,6 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     rini_set_value_text(&data, "PROJECT_ICON_FILE", config->Project.iconFile, NULL);
     rini_save(data, TextFormat("%s/%s/%s.rpc", outPath, config->Project.repoName, config->Project.internalName));
 
-    /*
-    fileText = LoadFileText(TextFormat("%s/project_name.rpc", templatePath));
-    fileTextUpdated[0] = TextReplaceAlloc(fileText, "$(project_name)", config->Project.internalName); // rpcGetText(pc, "PROJECT_INTERNAL_NAME")
-    fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "$(repo-name)", config->Project.repoName);
-    fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "$(CommercialName)", config->Project.commercialName);
-    fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "$(ShortName)", config->Project.shortName);
-    fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "$(ProjectVersion)", config->Project.version);
-    fileTextUpdated[5] = TextReplaceAlloc(fileTextUpdated[4], "$(ProjectDescription)", config->Project.description);
-    fileTextUpdated[6] = TextReplaceAlloc(fileTextUpdated[5], "$(PublisherName)", config->Project.publisherName);
-    fileTextUpdated[7] = TextReplaceAlloc(fileTextUpdated[6], "$(ProjectDeveloper)", config->Project.developerName);
-    fileTextUpdated[8] = TextReplaceAlloc(fileTextUpdated[7], "$(DeveloperUrl)", config->Project.developerUrl);
-    fileTextUpdated[9] = TextReplaceAlloc(fileTextUpdated[8], "$(DeveloperEmail)", config->Project.developerUrl);
-    SaveFileText(TextFormat("%s/%s/%s.rpc", outPath, config->Project.repoName, config->Project.internalName), fileTextUpdated[9]);
-    for (int i = 0; i < 10; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
-    UnloadFileText(fileText);
-    */
     LOG("INFO: Project config file (.rpc) generated successfully\n");
     //-------------------------------------------------------------------------------------
 
