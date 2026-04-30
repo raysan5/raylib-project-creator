@@ -1,4 +1,4 @@
-![raylib project creator](screenshot/rpc_shot01.png)
+![raylib project creator](screenshot/rpc_v100_shot01.png)
 
 ## `raylib project creator` --> [USE IT ONLINE!](https://raysan5.itch.io/raylib-project-creator)
 
