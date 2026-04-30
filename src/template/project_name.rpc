@@ -28,18 +28,18 @@
 # Project settings
 #------------------------------------------------------------------------------------
 # NOTE: Project repo name is the base path where all project data is created
-PROJECT_REPO_NAME                       "$(repo-name)"                      # Project repository name, used for VCS (GitHub, GitLab)
-PROJECT_INTERNAL_NAME                   "$(project_name)"                   # Project intenal name, used for executable and project files
-PROJECT_COMMERCIAL_NAME                 "$(CommercialName)"                 # Project commercial name, used for docs and web
-PROJECT_SHORT_NAME                      "$(ShortName)"                      # Project short name
-PROJECT_VERSION                         "$(ProjectVersion)"                 # Project version
-PROJECT_DESCRIPTION                     "$(ProjectDescription)"             # Project description
-PROJECT_PUBLISHER_NAME                  "$(PublisherName)"                  # Project publisher name
-PROJECT_DEVELOPER_NAME                  "$(ProjectDeveloper)"               # Project developer name
-PROJECT_DEVELOPER_URL                   "$(DeveloperUrl)"                   # Project developer webpage url
-PROJECT_DEVELOPER_EMAIL                 "$(DeveloperEmail)"                 # Project developer email
+PROJECT_REPO_NAME                       "cool_project"                      # Project repository name, used for VCS (GitHub, GitLab)
+PROJECT_INTERNAL_NAME                   "cool_project"                      # Project intenal name, used for executable and project files
+PROJECT_COMMERCIAL_NAME                 "Cool Project"                      # Project commercial name, used for docs and web
+PROJECT_SHORT_NAME                      "CP"                                # Project short name
+PROJECT_VERSION                         "1.0"                               # Project version
+PROJECT_DESCRIPTION                     "A very cool project game"          # Project description
+PROJECT_PUBLISHER_NAME                  "raylib technologies"               # Project publisher name
+PROJECT_DEVELOPER_NAME                  "Ramon Santamaria"                  # Project developer name
+PROJECT_DEVELOPER_URL                   "www.raylib.com"                    # Project developer webpage url
+PROJECT_DEVELOPER_EMAIL                 "ray@raylib.com"                    # Project developer email
 
-PROJECT_ICON_FILE                       "src/$(project_name).ico"           # Project icon file
+PROJECT_ICON_FILE                       "src/cool_project.ico"              # Project icon file
 
 PROJECT_SOURCE_PATH                     "src"                               # Project source directory, including all required code files (C/C++)
 PROJECT_ASSETS_PATH                     "src/resources"                     # Project assets directory, including all required assets
@@ -89,7 +89,7 @@ PLATFORM_LINUX_FLAG_CROSS_COMPILE       0                                   # Fl
 PLATFORM_LINUX_CROSS_COMPILER_PATH      ""                                  # Path to Linux cross-compiler for target ABI
 #
 PLATFORM_MACOS_BUNDLE_INFO_FILE         "src/Info.plist"                    # Path to macOS bundle options (Info.plist)
-PLATFORM_MACOS_BUNDLE_NAME              "$(CommercialName)"                 # Bundle name (commercial product name)
+PLATFORM_MACOS_BUNDLE_NAME              "Cool Project"                      # Bundle name (commercial product name)
 PLATFORM_MACOS_BUNDLE_VERSION           "1"                                 # Bundle version
 #
 PLATFORM_HTML5_EMSDK_PATH               "C:/raylib/emsdk"                   # Path to emsdk, required for Web building
