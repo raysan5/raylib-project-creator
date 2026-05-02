@@ -769,9 +769,9 @@ static void UpdateDrawFrame(void)
         {
             case 0: GuiLoadStyleGenesis(); break;
             case 1: GuiLoadStyleCyber(); break;
-            case 2: GuiLoadStyleLavanda(); break;
+            case 2: GuiLoadStyleAmber(); break;
             case 3: GuiLoadStyleTerminal(); break;
-            case 4: GuiLoadStyleAmber(); break;
+            case 4: GuiLoadStyleLavanda(); break;
             default: break;
         }
 

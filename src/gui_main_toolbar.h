@@ -196,7 +196,7 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_WIDTH, 40);
     GuiSetTooltip("Select current UI style");
     GuiComboBox((Rectangle){ state->anchorVisuals.x + 8 + 48, state->anchorVisuals.y + 8, 120, 24 }, 
-        "Genesis;Dark;Amber;Terminal", &state->visualStyleActive);
+        "Genesis;Cyber;Amber;Terminal;Lavanda", &state->visualStyleActive);
 
     // Info options
     GuiSetTooltip("Show help window (F1)");
