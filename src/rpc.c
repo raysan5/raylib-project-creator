@@ -479,26 +479,14 @@ int main(int argc, char *argv[])
 
     if (project.entries == NULL)
     {
-        // Initialize project config default
+        // Initialize project config (with default values)
         selectedTemplate = 1;   // Basic window
         project = rpcLoadProjectConfig("template/project_name.rpc");
-        rpcSetText(project, "PROJECT_INTERNAL_NAME", "cool_project");
-        rpcSetText(project, "PROJECT_REPO_NAME", "cool_project");
-        rpcSetText(project, "PROJECT_COMMERCIAL_NAME", "Cool Project");
-        rpcSetText(project, "PROJECT_SHORT_NAME", "CoolProject");
-        rpcSetText(project, "PROJECT_VERSION", "1.0");
-        rpcSetText(project, "PROJECT_DESCRIPTION", "A very cool project");
-        rpcSetText(project, "PROJECT_PUBLISHER_NAME", "raylib technologies");
-        rpcSetText(project, "PROJECT_DEVELOPER_NAME", "Ramon Santamaria");
-        rpcSetText(project, "PROJECT_DEVELOPER_URL", "www.raylibtech.com");
-        rpcSetText(project, "PROJECT_DEVELOPER_EMAIL", "ray@raylibtech.com");
-        rpcSetText(project, "PROJECT_ICON_FILE", "template/src/project_name.ico");
-        rpcSetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH", "C:\\raylib\\w64devkit\\bin");
-        rpcSetText(project, "RAYLIB_SRC_PATH", "C:\\raylib\\raylib\\src");
 
-        // TODO: Using default template source file, it should be renamed on generation!
+        // Set default template input source file
+        // NOTE: "project_name" would be renamed to PROJECT_INTERNAL_NAME on generation
         input.srcFileCount = 1;
-        strcpy(input.srcFilePaths[0], TextFormat("template/src/project_name.c"));//, rpcGetText(project, "PROJECT_INTERNAL_NAME")));
+        strcpy(input.srcFilePaths[0], TextFormat("template/src/project_name.c"));
         strcpy(generationOutPath, ".");
     }
 
@@ -679,21 +667,17 @@ static void UpdateDrawFrame(void)
     // New style file, previous in/out files registeres are reseted
     if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_N)) || mainToolbarState.btnNewFilePressed)
     {
-        rpcSetText(project, "PROJECT_INTERNAL_NAME", "cool_project");
-        rpcSetText(project, "PROJECT_REPO_NAME", "cool_project");
-        rpcSetText(project, "PROJECT_COMMERCIAL_NAME", "Cool Project");
-        rpcSetText(project, "PROJECT_SHORT_NAME", "CoolProject");
-        rpcSetText(project, "PROJECT_VERSION","1.0");
-        rpcSetText(project, "PROJECT_DESCRIPTION","A very cool project");
-        rpcSetText(project, "PROJECT_PUBLISHER_NAME", "raylib technologies");
-        rpcSetText(project, "PROJECT_DEVELOPER_NAME", "Ramon Santamaria");
-        rpcSetText(project, "PROJECT_DEVELOPER_URL", "www.raylibtech.com");
-        rpcSetText(project, "PROJECT_DEVELOPER_EMAIL", "ray@raylibtech.com");
-        rpcSetText(project, "PROJECT_ICON_FILE", "template/src/project_name.ico");
-        //strcpy(config->Project.sourceFilePaths[0], argv[1]);
-        //config->Project.srcFileCount = 1;
-        rpcSetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH", "C:\\raylib\\w64devkit\\bin");
-        rpcSetText(project, "RAYLIB_SRC_PATH", "C:\\raylib\\raylib\\src");
+        // Initialize project config (with default values)
+        rpcUnloadProjectConfig(project);
+        project = rpcLoadProjectConfig("template/project_name.rpc");
+
+        selectedTemplate = 1;   // Basic window
+
+        // Set default template input source file
+        // NOTE: "project_name" would be renamed to PROJECT_INTERNAL_NAME on generation
+        input.srcFileCount = 1;
+        strcpy(input.srcFilePaths[0], TextFormat("template/src/project_name.c"));
+        strcpy(generationOutPath, ".");
     }
 
     // Show dialog: load project config file (.rpc)
