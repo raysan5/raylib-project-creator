@@ -41,15 +41,15 @@
 *
 *       #define RINI_MAX_TEXT_SIZE
 *           Defines the maximum size of value text
-*           Default value: 128 bytes
+*           Default value: 256 bytes
 *
 *       #define RINI_MAX_DESC_SIZE
 *           Defines the maximum size of value description
-*           Default value: 128 bytes
+*           Default value: 256 bytes
 *
 *       #define RINI_MAX_VALUE_CAPACITY
 *           Defines the maximum number of values supported
-*           Default value: 128 entries support
+*           Default value: 256 entries support
 *
 *       #define RINI_MAX_TEXT_FILE_SIZE
 *           Define the maximum size of the file that is saved in memory
@@ -137,9 +137,9 @@
 // NOTE: Microsoft specifiers to tell compiler that symbols are imported/exported from a .dll
 #if defined(_WIN32)
     #if defined(BUILD_LIBTYPE_SHARED)
-        #define RINIAPI __declspec(dllexport)     // We are building the library as a Win32 shared library (.dll)
+        #define RINIAPI __declspec(dllexport)     // Building the library as a Win32 shared library (.dll)
     #elif defined(USE_LIBTYPE_SHARED)
-        #define RINIAPI __declspec(dllimport)     // We are using the library as a Win32 shared library (.dll)
+        #define RINIAPI __declspec(dllimport)     // Using the library as a Win32 shared library (.dll)
     #endif
 #endif
 
@@ -349,13 +349,13 @@ rini_data rini_load(const char *file_name)
                 // but on Windows, when reading file 'rt', line endings are converted from \r\n to just \n
 
                 // Skip commented lines and empty lines
-                // NOTE: We are also skipping sections delimiters
+                // NOTE: Also skipping sections delimiters
                 if ((buffer[0] != RINI_LINE_COMMENT_DELIMITER) &&
                     (buffer[0] != RINI_LINE_SECTION_DELIMITER) &&
                     (buffer[0] != '\n') && (buffer[0] != '\r') && (buffer[0] != '\0')) value_counter++;
             }
 
-            // WARNING: We can't store more values than its max capacity
+            // WARNING: No more values can be stored than its max capacity
             data.count = (value_counter > RINI_MAX_VALUE_CAPACITY)? RINI_MAX_VALUE_CAPACITY : value_counter;
 
             if (data.count > 0)
@@ -423,7 +423,7 @@ rini_data rini_load_full(const char *file_name)
                 if (buffer[0] != '\0') value_counter++;
             }
 
-            // WARNING: We can't store more values than its max capacity
+            // WARNING: No more values can be stored than its max capacity
             data.count = (value_counter > RINI_MAX_VALUE_CAPACITY)? RINI_MAX_VALUE_CAPACITY : value_counter;
 
             if (data.count > 0)
@@ -529,13 +529,13 @@ rini_data rini_load_from_memory(const char *text)
         for (int l = 0; l < line_counter; l++)
         {
             // Skip commented lines and empty lines
-            // NOTE: We are also skipping sections delimiters
+            // NOTE: Also skipping sections delimiters
             if ((lines[l][0] != RINI_LINE_COMMENT_DELIMITER) &&
                 (lines[l][0] != RINI_LINE_SECTION_DELIMITER) &&
                 (lines[l][0] != '\n') && (lines[l][0] != '\r') && (lines[l][0] != '\0')) value_counter++;
         }
 
-        // WARNING: We can't store more values than its max capacity
+        // WARNING: No more values can be stored than its max capacity
         data.count = (value_counter > RINI_MAX_VALUE_CAPACITY)? RINI_MAX_VALUE_CAPACITY : value_counter;
 
         // Process lines to get keys and values
@@ -619,7 +619,7 @@ void rini_save(rini_data data, const char *file_name)
 char *rini_save_to_memory(rini_data data)
 {
     // Verify required data size is smaller than memory buffer size
-    // NOTE: We add 64 extra possible characters by entry line
+    // NOTE: Adding 64 extra possible characters by entry line
     int requiredSize = 0;
     for (unsigned int i = 0; i < data.count; i++) requiredSize += ((int)strlen(data.values[i].key) + (int)strlen(data.values[i].text) + (int)strlen(data.values[i].desc) + 64);
     if (requiredSize > RINI_MAX_TEXT_FILE_SIZE) RINI_LOG("WARNING: Required data.ini size is bigger than max supported memory size, increase RINI_MAX_TEXT_FILE_SIZE\n");
@@ -793,8 +793,6 @@ int rini_set_value_text(rini_data *data, const char *key, const char *text, cons
 {
     int result = -1;
 
-    //if ((text == NULL) || (text[0] == '\0')) return result; // WARNING: It avoids empty text
-
     if (key != NULL)
     {
         // Try to find key and update text and description
@@ -819,7 +817,7 @@ int rini_set_value_text(rini_data *data, const char *key, const char *text, cons
         }
     }
 
-    // Key not found, we add a new entry if possible
+    // Key not found, adding a new entry if possible
     if (result == -1)
     {
         if (data->count < data->capacity)
@@ -837,7 +835,7 @@ int rini_set_value_text(rini_data *data, const char *key, const char *text, cons
             }
             else
             {
-                // NOTE: We do a manual copy to avoid possible overflows on input data
+                // NOTE: Doing a manual copy to avoid possible overflows on input data
                 for (int i = 0; (i < RINI_MAX_KEY_SIZE) && (key[i] != '\0'); i++) data->values[data->count].key[i] = key[i];
                 for (int i = 0; (i < RINI_MAX_TEXT_SIZE) && (text[i] != '\0'); i++) data->values[data->count].text[i] = text[i];
                 if (desc != NULL) for (int i = 0; (i < RINI_MAX_DESC_SIZE) && (desc[i] != '\0'); i++) data->values[data->count].desc[i] = desc[i];
@@ -893,7 +891,7 @@ static int rini_read_value_text(const char *buffer, char *text, char *desc, bool
 
     // Expected line structure:
     // [key][spaces?][delimiter?][spaces?][quot-mark?][textValue][quot-mark?][spaces?][[;][#]description?]
-    // We need to skip spaces, check for delimiter (if required), skip spaces, and get text value
+    // NOTE: Processing requires skipping spaces, checking for delimiter (if required), skipping more spaces, and get text value
 
     while ((buffer_ptr[0] != '\0') && (buffer_ptr[0] != ' ')) buffer_ptr++; // Skip keyentifier
 
@@ -915,7 +913,7 @@ static int rini_read_value_text(const char *buffer, char *text, char *desc, bool
         (buffer_ptr[len] != '\r') &&
         (buffer_ptr[len] != '\n')) len++; // Get text-value and description length (to the end of line)
 
-    // Now we got the length from text-value start to end of line
+    // Now the length from text-value start to end of line is registered
 
     int value_len = len;
     int desc_pos = 0;
