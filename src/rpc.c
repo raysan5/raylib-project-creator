@@ -938,15 +938,6 @@ static void UpdateDrawFrame(void)
     BeginScissorMode(filesPanelView.x, filesPanelView.y, filesPanelView.width, filesPanelView.height);
         for (int i = 0; i < input.srcFileCount; i++)
         {
-            /*
-            DrawRectangleLinesEx((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
-                1.0f, GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL)));
-            GuiSetStyle(LABEL, TEXT_PADDING, 8);
-            GuiLabel((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
-                TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))));
-            GuiSetStyle(LABEL, TEXT_PADDING, 0);
-            */
-
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
             GuiToggle((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
@@ -1847,8 +1838,8 @@ void rpcUpdateProjectInput(rpcProjectInput *input, int selTemplate)
 // but new examples could require other file extensions to be added
 static char **LoadSourceAssetPaths(const char *srcFilePath, int *assetCount)
 {
-#define RPC_MAX_ASSET_FILES     256
-#define RPC_ASSET_PATH_LENGTH   256
+    #define RPC_MAX_ASSET_FILES     256
+    #define RPC_ASSET_PATH_LENGTH   256
 
     char **paths = (char **)RL_CALLOC(RPC_MAX_ASSET_FILES, sizeof(char **));
     for (int i = 0; i < RPC_MAX_ASSET_FILES; i++) paths[i] = (char *)RL_CALLOC(RPC_ASSET_PATH_LENGTH, sizeof(char));
@@ -2052,23 +2043,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     // NOTE: This file can be used by [rpb] to build the project
     //-------------------------------------------------------------------------------------
     LOG("INFO: Generating project config file (.rpc): %s/%s.rpc\n", config->Project.repoName, config->Project.internalName);
-    // Update project configuration .rpc to defined values by [rpc] tool:
-    /*
-    PROJECT_INTERNAL_NAME                   "$(project_name)"                   # Project intenal name, used for executable and project files
-    PROJECT_REPO_NAME                       "$(repo-name)"                      # Project repository name, used for VCS (GitHub, GitLab)
-    PROJECT_COMMERCIAL_NAME                 "$(CommercialName)"                 # Project commercial name, used for docs and web
-    PROJECT_SHORT_NAME                      "$(ShortName)"                      # Project short name
-    PROJECT_VERSION                         "$(ProjectVersion)"                 # Project version
-    PROJECT_DESCRIPTION                     "$(ProjectDescription)"             # Project description
-    PROJECT_PUBLISHER_NAME                  "$(PublisherName)"                  # Project publisher name
-    PROJECT_DEVELOPER_NAME                  "$(ProjectDeveloper)"               # Project developer name
-    PROJECT_DEVELOPER_URL                   "$(DeveloperUrl)"                   # Project developer webpage url
-    PROJECT_DEVELOPER_EMAIL                 "$(DeveloperEmail)"                 # Project developer email
-    PROJECT_ICON_FILE                       "$(repo-name)/src/$(project_name).ico" # Project icon file
-    PROJECT_SOURCE_PATH                     "$(repo-name)/src"                  # Project source directory, including all required code files (C/C++)
-    PROJECT_ASSETS_PATH                     "$(repo-name)/src/resources"        # Project assets directory, including all required assets
-    PROJECT_ASSETS_OUTPUT_PATH              "$(repo-name)/release/resources"    # Project assets destination path
-    */
+    // Update project configuration .rpc to defined values by [rpc] tool
     rini_data data = rini_load_full(TextFormat("%s/project_name.rpc", templatePath));
     rini_set_value_text(&data, "PROJECT_REPO_NAME", config->Project.repoName, NULL);
     rini_set_value_text(&data, "PROJECT_INTERNAL_NAME", config->Project.internalName, NULL);
