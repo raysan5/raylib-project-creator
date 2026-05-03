@@ -180,9 +180,9 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     //GuiSetTooltip("Export project (LCTRL+E)");
     //state->btnExportFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 72 + 12, state->anchorFile.y + 8, 24, 24 }, "#7#");
 
-    GuiSetTooltip("Add source/assets file to project (LCTRL+LSHIFT+A)");
+    GuiSetTooltip("Add source/assets file to project (LCTRL+A)");
     state->btnAddInputFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 84 + 4, state->anchorFile.y + 8, 24, 24 }, "#8#");
-    GuiSetTooltip("Add source/assets directory to project (LCTRL+A)");
+    GuiSetTooltip("Add source/assets directory to project (LCTRL+SHIFT+A)");
     state->btnAddInputFolderPressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 108 + 8, state->anchorFile.y + 8, 24, 24 }, "#204#");
     GuiSetTooltip("Clear project files");
     state->btnClearFilesPressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 132 + 12, state->anchorFile.y + 8, 24, 24 }, "#143#");
