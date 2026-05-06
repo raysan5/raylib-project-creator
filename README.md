@@ -1,8 +1,8 @@
 # `rpc` - raylib project creator
 
-![raylib project creator](screenshot/rpc_v200_shot01.png)
+![raylib project creator](screenshots/rpc_v200_shot01.png)
 
---> [USE IT ONLINE!](https://raysan5.itch.io/raylib-project-creator)
+### [USE `rpc` TOOL ONLINE!](https://raysan5.itch.io/raylib-project-creator)
 
 ## What can I do with `rpc`?
 
