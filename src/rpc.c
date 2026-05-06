@@ -850,7 +850,8 @@ static void UpdateDrawFrame(void)
         if ((project.entries[i].category == RPC_CAT_PROJECT) && // Only project category
             (!TextIsEqual(project.entries[i].key, "PROJECT_SOURCE_PATH")) && // Project source path is generated from template
             (!TextIsEqual(project.entries[i].key, "PROJECT_ASSETS_PATH")) && // Project assets path is generated from template
-            (!TextIsEqual(project.entries[i].key, "PROJECT_ASSETS_OUTPUT_PATH")))
+            (!TextIsEqual(project.entries[i].key, "PROJECT_ASSETS_OUTPUT_PATH")) && // Project icon is configured on [rpb]
+            (!TextIsEqual(project.entries[i].key, "PROJECT_ICON_FILE")))
         {
             if (project.entries[i].type != RPC_TYPE_BOOL)
                 GuiLabel((Rectangle){ 24, 180 + (24 + 8)*k + propPanelScroll.y, 160, 24 }, TextFormat("%s:", project.entries[i].name));
@@ -922,7 +923,7 @@ static void UpdateDrawFrame(void)
         }
     }
 
-    GuiScrollPanel((Rectangle){ 12, 536, GetScreenWidth() - 24, 200 }, TextFormat("#16#PROJECT INPUT FILES: SOURCE (%i) + ASSETS (%i)", input.srcFileCount, input.assetFileCount),
+    GuiScrollPanel((Rectangle){ 12, 500, GetScreenWidth() - 24, 236 }, TextFormat("#16#PROJECT INPUT FILES: SOURCE (%i) + ASSETS (%i)", input.srcFileCount, input.assetFileCount),
         (Rectangle){ 0, 0, GetScreenWidth() - 24 - 20, 4 + (input.srcFileCount + input.assetFileCount)*(28 + 2) }, &filesPanelScroll, &filesPanelView);
 
     if ((input.srcFileCount == 0) && (selectedTemplate == 0))
@@ -930,7 +931,7 @@ static void UpdateDrawFrame(void)
         GuiSetIconScale(2);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
         GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize*2);
-        GuiLabel((Rectangle){ 12, 536, GetScreenWidth() - 24, 200 }, "#10#Drag & Drop you code files here!");
+        GuiLabel((Rectangle){ 12, 500, GetScreenWidth() - 24, 236 }, "#10#Drag & Drop you code files here!");
         GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
         GuiSetIconScale(1);
@@ -941,7 +942,7 @@ static void UpdateDrawFrame(void)
         {
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
-            GuiToggle((Rectangle){ 16, 536 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
+            GuiToggle((Rectangle){ 16, 500 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
                 TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))), NULL);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 0);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
@@ -959,7 +960,7 @@ static void UpdateDrawFrame(void)
 
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
-            GuiToggle((Rectangle){ 16, 536 + 26 + (28 + 2)*(i + input.srcFileCount) + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
+            GuiToggle((Rectangle){ 16, 500 + 26 + (28 + 2)*(i + input.srcFileCount) + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
                 TextFormat("#200#%s", input.assetFilePaths[i]), NULL);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 0);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
@@ -968,16 +969,16 @@ static void UpdateDrawFrame(void)
     EndScissorMode();
 
     // Choose build system toggles
-    GuiLabel((Rectangle){ 12, 536 + 200 + 8, 170, 24}, "CHOOSE BUILD SYSTEMS:");
+    GuiLabel((Rectangle){ 12, 736 + 8, 170, 24}, "CHOOSE BUILD SYSTEMS:");
     GuiSetStyle(TOGGLE, BORDER_WIDTH, 2);
-    GuiToggle((Rectangle){ 12, 536 + 200 + 36, 170, 40 }, "Scripts", &input.requestedBuildSystems[0]);
-    GuiToggle((Rectangle){ 12 + (175*1), 536 + 200 + 36, 170, 40 }, "Makefile", &input.requestedBuildSystems[1]);
-    GuiToggle((Rectangle){ 12 + (175*2), 536 + 200 + 36, 170, 40 }, "VSCode", &input.requestedBuildSystems[2]);
-    GuiToggle((Rectangle){ 12 + (175*3), 536 + 200 + 36, 170, 40 }, "Visual Studio 2022", &input.requestedBuildSystems[3]);
+    GuiToggle((Rectangle){ 12, 736 + 36, 170, 40 }, "Scripts", &input.requestedBuildSystems[0]);
+    GuiToggle((Rectangle){ 12 + (175*1), 736 + 36, 170, 40 }, "Makefile", &input.requestedBuildSystems[1]);
+    GuiToggle((Rectangle){ 12 + (175*2), 736 + 36, 170, 40 }, "VSCode", &input.requestedBuildSystems[2]);
+    GuiToggle((Rectangle){ 12 + (175*3), 736 + 36, 170, 40 }, "Visual Studio 2022", &input.requestedBuildSystems[3]);
     GuiDisable();
-    GuiToggle((Rectangle){ 12 + (175*4), 536 + 200 + 36, 170, 40 }, "CMake", &input.requestedBuildSystems[4]);
+    GuiToggle((Rectangle){ 12 + (175*4), 736 + 36, 170, 40 }, "CMake", &input.requestedBuildSystems[4]);
     GuiEnable();
-    GuiToggle((Rectangle){ 12 + (175*5), 536 + 200 + 36, 170, 40 }, "GitHub Actions", &input.requestedBuildSystems[5]);
+    GuiToggle((Rectangle){ 12 + (175*5), 736 + 36, 170, 40 }, "GitHub Actions", &input.requestedBuildSystems[5]);
 
     GuiSetStyle(TOGGLE, BORDER_WIDTH, 1);
 
