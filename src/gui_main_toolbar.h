@@ -177,8 +177,6 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     state->btnLoadFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 24 + 4, state->anchorFile.y + 8, 24, 24 }, "#1#");
     GuiSetTooltip("Save rpc project file (LCTRL+S)");
     state->btnSaveFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 48 + 8, state->anchorFile.y + 8, 24, 24 }, "#2#");
-    //GuiSetTooltip("Export project (LCTRL+E)");
-    //state->btnExportFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 72 + 12, state->anchorFile.y + 8, 24, 24 }, "#7#");
 
     GuiSetTooltip("Add source/assets file to project (LCTRL+A)");
     state->btnAddInputFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 84 + 4, state->anchorFile.y + 8, 24, 24 }, "#8#");
@@ -188,6 +186,8 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     state->btnClearFilesPressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 132 + 12, state->anchorFile.y + 8, 24, 24 }, "#143#");
 
     // Edit options
+    GuiSetTooltip("Generate project structure (LCTRL+E)");
+    state->btnExportFilePressed = GuiButton((Rectangle){ state->anchorTools.x + 12, state->anchorTools.y + 8, 280, 24 }, "#13#GENERATE PROJECT STRUCTURE");
 
     // Tool options
 
