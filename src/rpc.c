@@ -3,9 +3,14 @@
 *   rpc v2.0 - A simple and easy-to-use raylib projects creator
 *
 *   FEATURES:
-*       - Generate complete build systems: Makefile, VSCode, VS2022
+*       - Select startup project from some game/tool templates
+*       - Select custom C code files to generate project
+*       - Select project assets to be included in the project
+*       - Code scanning for assets usage validation
+*       - Generate build systems: scripts, Makefile, VSCode, VS2022
 *       - Generate complete GitHub project, ready to upload
--       - Generate preconfigured GitHub Actions, ready to run
+*       - Generate preconfigured GitHub Actions, ready to run
+*       - Command-line support for automated project generation
 *       - WEB: Download generated template as a .zip file
 *
 *   LIMITATIONS:
@@ -18,7 +23,8 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       2.0  (xx-Nov-2026)  ADDED: Load and save project configuration data
+*       2.0  (10-May-2026)  ADDED: Complete UI redesign
+*                           ADDED: Load and save project configuration data
 *                           ADDED: Resource scan from code files
 *                           REVIEWED: Resource management, copy to generated project
 *
@@ -30,7 +36,7 @@
 *       1.0  (26-Sep-2024)  First release
 *
 *   DEPENDENCIES:
-*       raylib 6.0              - Windowing/input management and drawing
+*       raylib 6.1-dev          - Windowing/input management and drawing
 *       raygui 5.0              - Immediate-mode GUI controls with custom styling and icons
 *       tinyfiledialogs 3.20.0  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *       miniz 2.2.0             - Save .zip package file (required for multiple images export)
@@ -60,7 +66,7 @@
 *
 **********************************************************************************************/
 
-#define TOOL_NAME               "raylib project creator"
+#define TOOL_NAME               "rpc"
 #define TOOL_SHORT_NAME         "rpc"
 #define TOOL_VERSION            "2.0"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raylib projects creator"
@@ -255,8 +261,6 @@ static bool showLoadDirectoryDialog = false;
 static int projectEditProperty = -1;
 
 static bool showLoadIconDialog = false;
-
-static bool showLoadSourceFilesDialog = false;
 //-----------------------------------------------------------------------------------
 
 // Support Message Box
@@ -427,15 +431,6 @@ int main(int argc, char *argv[])
                 rpcSetText(project, "PROJECT_REPO_NAME", GetFileNameWithoutExt(argv[1]));
                 rpcSetText(project, "PROJECT_COMMERCIAL_NAME", GetFileNameWithoutExt(argv[1]));
                 rpcSetText(project, "PROJECT_SHORT_NAME", GetFileNameWithoutExt(argv[1]));
-                rpcSetText(project, "PROJECT_VERSION", "1.0");
-                rpcSetText(project, "PROJECT_DESCRIPTION","A very cool project");
-                rpcSetText(project, "PROJECT_PUBLISHER_NAME", "raylib technologies");
-                rpcSetText(project, "PROJECT_DEVELOPER_NAME", "Ramon Santamaria");
-                rpcSetText(project, "PROJECT_DEVELOPER_URL", "www.raylibtech.com");
-                rpcSetText(project, "PROJECT_DEVELOPER_EMAIL", "ray@raylibtech.com");
-                rpcSetText(project, "PROJECT_ICON_FILE", "template/src/project_name.ico");
-                rpcSetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH", "C:\\raylib\\w64devkit\\bin");
-                rpcSetText(project, "RAYLIB_SRC_PATH", "C:\\raylib\\raylib\\src");
 
                 selectedTemplate = 0;  // Custom input file
                 input.srcFileCount = 1;
@@ -619,8 +614,7 @@ static void UpdateDrawFrame(void)
             {
                 if (IsPathFile(droppedFiles.paths[i]))
                 {
-
-                    if (IsFileExtension(droppedFiles.paths[i], ".c;.h;.cpp;.hpp"))
+                    if (IsFileExtension(droppedFiles.paths[i], ".c;.h"))
                     {
                         // Add files to source list
                         strcpy(input.srcFilePaths[input.srcFileCount], droppedFiles.paths[i]);
@@ -638,22 +632,24 @@ static void UpdateDrawFrame(void)
                 {
                     FilePathList list = LoadDirectoryFilesEx(droppedFiles.paths[i], "FILES*", true);
 
-                    for (unsigned int i = 0; i < list.count; i++)
+                    for (unsigned int l = 0; l < list.count; l++)
                     {
-                        if (IsFileExtension(droppedFiles.paths[i], ".c;.h;.cpp;.hpp"))
+                        if (IsFileExtension(list.paths[l], ".c;.h"))
                         {
                             // Add files to source list
-                            strcpy(input.srcFilePaths[input.srcFileCount], droppedFiles.paths[i]);
+                            strcpy(input.srcFilePaths[input.srcFileCount], list.paths[l]);
                             input.srcFileCount++;
                         }
-                        else if (IsFileExtension(droppedFiles.paths[i], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
+                        else if (IsFileExtension(list.paths[l], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
                         {
                             // Add assets to assets list
                             // TODO: Filtering for recognized assets extensions but, really required?
-                            strcpy(input.assetFilePaths[input.assetFileCount], droppedFiles.paths[i]);
+                            strcpy(input.assetFilePaths[input.assetFileCount], list.paths[l]);
                             input.assetFileCount++;
                         }
                     }
+
+                    UnloadDirectoryFiles(list);
                 }
             }
         }
@@ -686,8 +682,12 @@ static void UpdateDrawFrame(void)
     // Show dialog: save project config file (.rpc)
     if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) showSaveProjectDialog = true;
 
-    // Show dialog: load source files
-    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) showLoadSourceFilesDialog = true;
+    // Show dialog: load input files / input directory
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_A)) showAddInputDirectoryDialog = true;
+    else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_A)) showAddInputFilesDialog = true;
+
+    // Show dialog: generate project
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) showProjectGenPathDialog = true;
 
     // Toggle window: help
     if (IsKeyPressed(KEY_F1)) windowHelpState.windowActive = !windowHelpState.windowActive;
@@ -715,8 +715,8 @@ static void UpdateDrawFrame(void)
         else if (showGenProjectProgress) showGenProjectProgress = false;
         else if (showLoadFileDialog) showLoadFileDialog = false;
         else if (showLoadDirectoryDialog) showLoadDirectoryDialog = false;
-        else if (showLoadSourceFilesDialog) showLoadSourceFilesDialog = false;
-        //else if (showLoadResourcePathDialog) showLoadResourcePathDialog = false;
+        else if (showAddInputFilesDialog) showAddInputFilesDialog = false;
+        else if (showAddInputDirectoryDialog) showAddInputDirectoryDialog = false;
         //else if (showLoadRaylibSourcePathDialog) showLoadRaylibSourcePathDialog = false;
         //else if (showLoadCompilerPathDialog) showLoadCompilerPathDialog = false;
 #endif
@@ -815,7 +815,8 @@ static void UpdateDrawFrame(void)
         showLoadDirectoryDialog ||
         showProjectGenPathDialog ||
         showGenProjectProgress ||
-        showLoadSourceFilesDialog) lockBackground = true;
+        showAddInputFilesDialog ||
+        showAddInputDirectoryDialog) lockBackground = true;
     else lockBackground = false;
 
     if (lockBackground) GuiLock();
@@ -1194,7 +1195,7 @@ static void UpdateDrawFrame(void)
 
             for (int i = 0; i < multiFileCount; i++)
             {
-                if (IsFileExtension(multiFileList[i], ".c;.h;.cpp;.hpp"))
+                if (IsFileExtension(multiFileList[i], ".c;.h"))
                 {
                     // Scan code file looking for assets
                     int assetCount = 0;
@@ -1211,6 +1212,8 @@ static void UpdateDrawFrame(void)
                         temp.srcFileCount++;
                         temp.assetFileCount++;
                     }
+
+                    UnloadSourceAssetPaths(assetPaths);
 
                     // Add files to source list
                     strcpy(input.srcFilePaths[input.srcFileCount], multiFileList[i]);
@@ -1257,11 +1260,11 @@ static void UpdateDrawFrame(void)
                 // Temp project input paths for scanned assets
                 // WARNING: Storing in srcFilePaths the source path for every asset added,
                 // so the asset can be related to equivalent source path
-                rpcProjectInput temp = rpcLoadProjectInput();
+                rpcProjectInput temp = rpcLoadProjectInput(); // Init empty input list
 
                 for (unsigned int i = 0; i < pathList.count; i++)
                 {
-                    if (IsFileExtension(pathList.paths[i], ".c;.h;.cpp;.hpp"))
+                    if (IsFileExtension(pathList.paths[i], ".c;.h"))
                     {
                         // Scan code file looking for assets
                         int assetCount = 0;
@@ -1278,6 +1281,8 @@ static void UpdateDrawFrame(void)
                             temp.srcFileCount++;
                             temp.assetFileCount++;
                         }
+
+                        UnloadSourceAssetPaths(assetPaths);
 
                         // Add files to source list
                         strcpy(input.srcFilePaths[input.srcFileCount], pathList.paths[i]);
@@ -1314,7 +1319,6 @@ static void UpdateDrawFrame(void)
         if (result >= 0) showAddInputDirectoryDialog = false;
     }
     //----------------------------------------------------------------------------------------
-
 
     // GUI: Load File Dialog (and loading logic) - GENERIC
     //----------------------------------------------------------------------------------------
@@ -1504,25 +1508,25 @@ static void ShowCommandLineInfo(void)
 {
     printf("\n//////////////////////////////////////////////////////////////////////////////////\n");
     printf("//                                                                              //\n");
-    printf("// %s v%s - %s     //\n", TOOL_NAME, TOOL_VERSION, TOOL_DESCRIPTION);
+    printf("// %s v%s - %s                  //\n", TOOL_NAME, TOOL_VERSION, TOOL_DESCRIPTION);
     printf("// powered by raylib v%s and raygui v%s                               //\n", RAYLIB_VERSION, RAYGUI_VERSION);
     printf("//                                                                              //\n");
-    printf("// Copyright (c) 2024-%i Ramon Santamaria (@raysan5)                        //\n", currentYear);
+    printf("// Copyright (c) 2024-%i Ramon Santamaria (@raysan5)                          //\n", currentYear);
     printf("//                                                                              //\n");
     printf("//////////////////////////////////////////////////////////////////////////////////\n\n");
 
     printf("USAGE:\n\n");
-    printf("    > rpc [--help] --pn <project_name> --src <source_file01.c>,<source_file02.c>\n");
-    printf("             [--rn <repo-name>] [--cn <commercial_name>] [--pv <version>]\n");
-    printf("             [--desc <project_description>] [--dev <developer_name>]\n");
-    printf("             [--devurl <developer_webpage>] [--devmail <developer_email>]\n");
-    printf("             [--raylib <raylib_src_path>] [--comp <compiler_path>]\n");
-    printf("             [--out <output_path>]\n");
+    printf("    > rpc [--help] --i <src_dir>,<assets_dir> --rpc <project_config.rpc>\n");
+    printf("          [--pn <project_name>] [--rn <repo-name>]\n");
+    printf("          [--cn <commercial_name>] [--pv <version>]\n");
+    printf("          [--desc <project_description>] [--dev <developer_name>]\n");
+    printf("          [--devurl <developer_webpage>] [--devmail <developer_email>]\n");
+    printf("          [--out <output_path>]\n");
 
     printf("\nOPTIONS:\n\n");
     printf("    -h, --help                          : Show tool version and command line usage help\n\n");
-    printf("    -i, --src <source_file01.c>,<source_file02.c>\n");
-    printf("                                        : Define input source files(s), comma separated\n");
+    printf("    -i, --input <path_dir>,<file01.xxx>,<file02.xxx>\n");
+    printf("                                        : Define inputs, directory or files(s), comma separated\n");
     printf("    -rpc <config_file.rpc>              : Define raylib project configuration file\n");
 
     printf("    -pn, --project-name <project_name>  : Define project internal name\n");
@@ -1533,12 +1537,10 @@ static void ShowCommandLineInfo(void)
     printf("    --dev <developer_name>              : Define developer name\n");
     printf("    --devurl <developer_webpage>        : Define developer webpage\n");
     printf("    --devmail <developer_email>         : Define developer email\n");
-    printf("    --raylib <raylib_src_path>          : Define raylib src path (raylib.h)\n");
-    printf("    --comp <compiler_path>              : Define compiler path (ggc.exe)\n");
     printf("    -o, --out <output_path>             : Define output path for project generation\n");
 
     printf("\nEXAMPLES:\n\n");
-    printf("    > rpc -pn cool_game -rn cool-game-repo -cn \"Cool Game\" -pv 1.0\n");
+    printf("    > rpc -i src_dir -rpc my_project_config.rpc -pn cool_game -rn cool-game-repo -cn \"Cool Game\" -pv 1.0\n");
     printf("        Generates project <cool_game> in output directory <cool-game-repo>\n");
 }
 
@@ -1564,7 +1566,7 @@ static void ProcessCommandLine(int argc, char *argv[])
         {
             showUsageInfo = true;
         }
-        else if ((strcmp(argv[i], "-i") == 0) || (strcmp(argv[i], "--src") == 0))
+        else if ((strcmp(argv[i], "-i") == 0) || (strcmp(argv[i], "--input") == 0))
         {
             // Check for valid argument and valid file extension
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
@@ -1575,12 +1577,45 @@ static void ProcessCommandLine(int argc, char *argv[])
 
                 for (int j = 0; j < fileCount; j++)
                 {
-                    if (IsFileExtension(files[i], ".h;.c"))
+                    if (IsPathFile(files[j]))
                     {
-                        strcpy(input.srcFilePaths[input.srcFileCount], files[i]);
-                        input.srcFileCount++;
+                        if (IsFileExtension(files[j], ".c;.h"))
+                        {
+                            // Add files to source list
+                            strcpy(input.srcFilePaths[input.srcFileCount], files[j]);
+                            input.srcFileCount++;
+                        }
+                        else if (IsFileExtension(files[j], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
+                        {
+                            // Add assets to assets list
+                            // TODO: Filtering for recognized assets extensions but, really required?
+                            strcpy(input.assetFilePaths[input.assetFileCount], files[j]);
+                            input.assetFileCount++;
+                        }
                     }
-                    else LOG("WARNING: [%s] File not recognized as source file (Use: .c,.h)\n", files[i]);
+                    else // Path is a directory
+                    {
+                        FilePathList list = LoadDirectoryFilesEx(files[j], "FILES*", true);
+
+                        for (unsigned int l = 0; l < list.count; l++)
+                        {
+                            if (IsFileExtension(list.paths[l], ".c;.h"))
+                            {
+                                // Add files to source list
+                                strcpy(input.srcFilePaths[input.srcFileCount], list.paths[l]);
+                                input.srcFileCount++;
+                            }
+                            else if (IsFileExtension(list.paths[l], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
+                            {
+                                // Add assets to assets list
+                                // TODO: Filtering for recognized assets extensions but, really required?
+                                strcpy(input.assetFilePaths[input.assetFileCount], list.paths[l]);
+                                input.assetFileCount++;
+                            }
+                        }
+
+                        UnloadDirectoryFiles(list);
+                    }
                 }
             }
             else LOG("WARNING: No input file provided\n");
@@ -2102,7 +2137,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         int srcFileCount = 0;
         for (int j = 0; j < input.srcFileCount; j++)
         {
-            if (IsFileExtension(input.srcFilePaths[j], ".c;.cpp"))
+            if (IsFileExtension(input.srcFilePaths[j], ".c"))
             {
                 // TODO: WARNING: Some code files could be inside a directory structure,
                 // but on copy it will be eliminated
@@ -2170,7 +2205,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         int srcFileCount = 0;
         for (int j = 0; j < input.srcFileCount; j++)
         {
-            if (IsFileExtension(input.srcFilePaths[j], ".c;.cpp"))
+            if (IsFileExtension(input.srcFilePaths[j], ".c"))
             {
                 // TODO: WARNING: Some code files could be inside a directory structure,
                 // but on copy it will be eliminated
@@ -2241,7 +2276,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         int srcFileCount = 0;
         for (int j = 0; j < input.srcFileCount; j++)
         {
-            if (IsFileExtension(input.srcFilePaths[j], ".c;.cpp"))
+            if (IsFileExtension(input.srcFilePaths[j], ".c"))
             {
                 // TODO: WARNING: Some code files could be inside a directory structure,
                 // but on copy it will be eliminated
