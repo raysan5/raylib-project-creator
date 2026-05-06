@@ -19,7 +19,7 @@ _**DISCLAIMER: Note that a project could be really complex in terms of source fi
 ## Features
 
  - Support `.rpc` **project configuration** interchange file format
-    - Shared with homonymous tool: `rpb` - raylib project builder
+    - Shared with homonymous tool: [`rpb` - raylib project builder](https://github.com/raysan5/raylib-project-builder)
  - Select startup project from some **game/tool templates**
  - Select **custom C code files** to generate project
  - Select **project assets** to be included in the project
