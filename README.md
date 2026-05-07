@@ -50,7 +50,7 @@ Open the tool, drag & drop your C code files and Asset files. Configure project 
  - **VSCode** [`projects/VSCode/*`]: Visual Studio Code preconfigured tasks and settings for the project._-CHECK LIMITATIONS BELOW-_
     WARNING: VSCode project requires the compiler and tools available in the system path; it also calls the `src/Makefile` build system. It would be nice to make it more self-contained.
  - **GitHub Actions** [`.github/workflows/*`]: GitHub Actions workflows preconfigured to compile the project on multiple platforms (Windows, Linux, macOS, WebAssembly). Windows workflow use `projects/VS2022` for building while Linux/macOS/WebAssembly use `src/Makefile` for project building. Note that those workflows are setup to automatically run and upload generated files to on new GitHub project `Release` creation. They can also be run manually.
- 
+
 ## Generated project structure
 
 The generated structure follows the template structure and contrains the following elements:
@@ -84,7 +84,7 @@ project-repo-name/
 
 `.rpc` is a text and open file format, following a `.ini` style, and can be freely edited with any text editor.
 
-`rpc` project generation uses a [pre-defined `.rpc` file as a base template](src/template/project_name.rpc) to further update required values. 
+`rpc` project generation uses a [pre-defined `.rpc` file as a base template](src/template/project_name.rpc) to further update required values.
 
 ## Keyboard/Mouse Shortcuts
 
