@@ -171,11 +171,11 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     GuiPanel((Rectangle){ state->anchorRight.x, state->anchorRight.y, 104, 40 }, NULL);
 
     // Project/File options
-    GuiSetTooltip("Create new rpc project (LCTRL+N)");
+    GuiSetTooltip("Create new project config (LCTRL+N)");
     state->btnNewFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12, state->anchorFile.y + 8, 24, 24 }, "#203#");
-    GuiSetTooltip("Load rpc project file (LCTRL+O)");
+    GuiSetTooltip("Load project config file (LCTRL+O)");
     state->btnLoadFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 24 + 4, state->anchorFile.y + 8, 24, 24 }, "#1#");
-    GuiSetTooltip("Save rpc project file (LCTRL+S)");
+    GuiSetTooltip("Save project config file (LCTRL+S)");
     state->btnSaveFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 48 + 8, state->anchorFile.y + 8, 24, 24 }, "#2#");
 
     GuiSetTooltip("Add source/assets file to project (LCTRL+A)");
