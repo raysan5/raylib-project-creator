@@ -24,7 +24,8 @@
 #        - VALUE does contain ["]: Value is considered a text, it displays as [GuiTextBox]
 #        - VALUE does not contain ["]: Value is considered an integer, it displays as [GuiValueBox]
 #
-# NOTE: The comments/description for each entry is used as tooltip when editing the entry on [rpc] and [rpb]
+# NOTE 1: The comments/description for each entry is used as tooltip when editing the entry on [rpc] and [rpb]
+# NOTE 2: All relative paths resolve from the location of this .rpc project file
 #
 
 # Project settings
@@ -68,7 +69,7 @@ BUILD_TARGET_MODE                       "RELEASE"                           # Bu
 BUILD_FLAG_ASSETS_VALIDATION            1                                   # Flag: request assets validation on building
 BUILD_FLAG_ASSETS_PACKAGING             0                                   # Flag: request assets packaging on building
 
-BUILD_RRES_PACKER_PATH                  "C:/tools/rrespacker.exe"           # Path to [rrespacker] tool to package assets
+BUILD_RRES_PACKER_PATH                  "tools/rrespacker.exe"              # Path to [rrespacker] tool to package assets
 #------------------------------------------------------------------------------------
 
 # Platform-specific settings
@@ -106,6 +107,7 @@ PLATFORM_ANDROID_TARGET_SDK_VERSION     36                                  # Ta
 # Platform: DRM
 PLATFORM_DRM_FLAG_CROSS_COMPILE         0                                   # Flag: request cross-compiler usage
 PLATFORM_DRM_CROSS_COMPILER_PATH        "path/to/cross-compiler"            # Path to DRM cross-compiler for target ABI
+
 # Platform: FreeBSD
 
 # Platform: Dreamcast
