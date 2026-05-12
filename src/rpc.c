@@ -297,12 +297,6 @@ static bool showIssueReportWindow = false;
 //static GuiWindowUserState windowUserState = { 0 };
 //-----------------------------------------------------------------------------------
 
-// GUI: Export Window
-//-----------------------------------------------------------------------------------
-static bool windowExportActive = false;
-static int exportFormatActive = 0;         // ComboBox file type selection
-//-----------------------------------------------------------------------------------
-
 // GUI: Exit Window
 //-----------------------------------------------------------------------------------
 static bool closeWindow = false;
@@ -706,7 +700,6 @@ static void UpdateDrawFrame(void)
         if (windowHelpState.windowActive) windowHelpState.windowActive = false;
         else if (windowAboutState.windowActive) windowAboutState.windowActive = false;
         else if (showIssueReportWindow) showIssueReportWindow = false;
-        else if (windowExportActive) windowExportActive = false;
 #if defined(PLATFORM_DESKTOP)
         else if (showInfoMessagePanel) showInfoMessagePanel = false;
         else windowExitActive = !windowExitActive;
@@ -984,9 +977,6 @@ static void UpdateDrawFrame(void)
 
     GuiSetStyle(TOGGLE, BORDER_WIDTH, 1);
 
-#if defined(PLATFORM_WEB)
-    GuiDisable();
-#endif
     if (input.srcFileCount == 0) GuiDisable();
     if (GuiButton((Rectangle){ 8, GetScreenHeight() - 24 - 8 - 40, GetScreenWidth() - 16, 40 }, "#13#GENERATE PROJECT STRUCTURE")) showProjectGenPathDialog = true;
     GuiEnable();
@@ -1079,24 +1069,6 @@ static void UpdateDrawFrame(void)
         else if (result == 0) showIssueReportWindow = false;
     }
     //----------------------------------------------------------------------------------------
-
-    // GUI: Export Window
-    //----------------------------------------------------------------------------------------
-    if (windowExportActive)
-    {
-        Rectangle messageBox = { (float)screenWidth/2 - 248/2, (float)screenHeight/2 - 200/2, 248, 112 };
-        int result = GuiMessageBox(messageBox, "#7#Export File", " ", "#7#Export File");
-
-        // TODO: Fill export window data if required
-
-        if (result == 1)    // Export button pressed
-        {
-            windowExportActive = false;
-            showProjectGenPathDialog = true;
-        }
-        else if (result == 0) windowExportActive = false;
-    }
-    //----------------------------------------------------------------------------------
 
     // GUI: Load File Dialog (and loading logic)
     //----------------------------------------------------------------------------------------
@@ -1405,11 +1377,16 @@ static void UpdateDrawFrame(void)
     //----------------------------------------------------------------------------------------
     if (showProjectGenPathDialog)
     {
-#if defined(CUSTOM_MODAL_DIALOGS)
-        int result = GuiFileDialog(DIALOG_MESSAGE, "Select generation output directory...", outProjectPath, "Ok", "Edit the path in text box");
+#if defined(PLATFORM_WEB)
+        // Generate project in base directory of wasm virtual file system
+        memset(generationOutPath, 0, 256);
+        strcpy(generationOutPath, ".");
+        GenerateProject(project, input, generationOutPath);
+        showGenProjectProgress = true;
+        showProjectGenPathDialog = false;
 #else
         int result = GuiFileDialog(DIALOG_OPEN_DIRECTORY, "Select generation output directory...", outProjectPath, NULL, NULL);
-#endif
+
         if (result == 1)
         {
             strcpy(generationOutPath, outProjectPath);
@@ -1418,6 +1395,7 @@ static void UpdateDrawFrame(void)
         }
 
         if (result >= 0) showProjectGenPathDialog = false;
+#endif
     }
     //----------------------------------------------------------------------------------------
 
