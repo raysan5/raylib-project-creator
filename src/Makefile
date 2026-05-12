@@ -1,6 +1,6 @@
 #**************************************************************************************************
 #
-#   raylib makefile for Desktop platforms, Raspberry Pi and WebAssembly
+#   raylib makefile for Desktop platforms, Raspberry Pi and Web Assembly
 #
 #   Copyright (c) 2021-2026 Ramon Santamaria (@raysan5)
 #
@@ -32,12 +32,15 @@ PLATFORM              ?= PLATFORM_DESKTOP
 PROJECT_NAME          ?= rpc
 PROJECT_VERSION       ?= 1.0
 PROJECT_BUILD_PATH    ?= .
-PROJECT_SOURCE_FILES  ?= rpc.c external/tinyfiledialogs.c
+PROJECT_SOURCE_FILES  ?= rpc.c
+ifneq ($(PLATFORM),PLATFORM_WEB)
+PROJECT_SOURCE_FILES  += external/tinyfiledialogs.c
+endif
 
 # raylib library variables
-RAYLIB_PATH           ?= C:\GitHub\raylib
-RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_PATH)\src
-RAYLIB_LIB_PATH       ?= $(RAYLIB_PATH)\src
+RAYLIB_PATH           ?= C:/GitHub/raylib
+RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_PATH)/src
+RAYLIB_LIB_PATH       ?= $(RAYLIB_PATH)/src
 
 # Library type used for raylib: STATIC (.a) or SHARED (.so/.dll)
 RAYLIB_LIBTYPE        ?= STATIC
@@ -153,8 +156,14 @@ endif
 #  -Wno-missing-braces  ignore invalid warning (GCC bug 53119)
 #  -Wno-unused-value    ignore unused return values of some functions (i.e. fread())
 #  -D_DEFAULT_SOURCE    use with -std=c99 on Linux and PLATFORM_WEB, required for timespec
-CFLAGS = -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces -Wno-unused-value -Wno-pointer-sign $(PROJECT_CUSTOM_FLAGS)
+CFLAGS = -Wall -D_DEFAULT_SOURCE -Wno-missing-braces -Wno-unused-value -Wno-pointer-sign $(PROJECT_CUSTOM_FLAGS)
 #CFLAGS += -Wextra -Wmissing-prototypes -Wstrict-prototypes
+
+ifeq ($(PLATFORM),PLATFORM_WEB)
+    CFLAGS += -std=gnu99
+else
+    CFLAGS += -std=c99
+endif
 
 ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -D_DEBUG
@@ -179,7 +188,6 @@ endif
 
 # Define include paths for required headers: INCLUDE_PATHS
 #------------------------------------------------------------------------------------------------
-# NOTE: Several external required libraries (stb and others)
 INCLUDE_PATHS += -I. -Iexternal -I$(RAYLIB_INCLUDE_PATH)
 
 # Define additional directories containing required header files

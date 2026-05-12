@@ -20,8 +20,8 @@ jobs:
 
     # WARNING: Project (internal) name could not be the same as repository name
     env:
-      PROJECT_REPO_NAME: ${{ github.event.repository.name }}
       PROJECT_NAME: rpc
+      PROJECT_REPO_NAME: ${{ github.event.repository.name }}
       PROJECT_BUILD_PATH: "${{ github.event.repository.name }}\\projects\\VS2022\\build\\rpc\\bin\\x64\\Release"
       PROJECT_RELEASE_PATH: rpc_dev_win_x64
       PROJECT_RESOURCES_SRC_PATH: src\template
@@ -38,17 +38,18 @@ jobs:
       with:
         repository: raysan5/raylib
         path: raylib
-        
+
     # NOTE: Visual Studio project build configuration already defines all required directories where project is generated:
     # $(SolutionDir)\build\$(ProjectName)\bin\$(Platform)\$(Configuration)\
     - name: Setup Release Paths
       run: |
+        echo "PROJECT_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
         echo "PROJECT_RELEASE_PATH=${{ env.PROJECT_NAME }}_v${{ github.event.release.tag_name }}_win_x64" >> $GITHUB_ENV
       shell: bash
       if: github.event_name == 'release' && github.event.action == 'published'
 
     - name: Setup Environment
-      run: | 
+      run: |
         mkdir ${{ env.PROJECT_RELEASE_PATH }}
         dir
       shell: cmd
