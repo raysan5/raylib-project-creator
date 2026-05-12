@@ -50,7 +50,7 @@ typedef struct {
     bool btnNewFilePressed;
     bool btnLoadFilePressed;
     bool btnSaveFilePressed;
-    bool btnExportFilePressed;
+    bool btnGenProjectPressed;
 
     bool btnAddInputFolderPressed;
     bool btnAddInputFilePressed;
@@ -131,7 +131,7 @@ GuiMainToolbarState InitGuiMainToolbar(void)
     state.btnNewFilePressed = false;
     state.btnLoadFilePressed = false;
     state.btnSaveFilePressed = false;
-    state.btnExportFilePressed = false;
+    state.btnGenProjectPressed = false;
 
     state.btnAddInputFilePressed = false;
     state.btnAddInputFolderPressed = false;
@@ -187,7 +187,8 @@ void GuiMainToolbar(GuiMainToolbarState *state)
 
     // Edit options
     GuiSetTooltip("Generate project structure (LCTRL+E)");
-    state->btnExportFilePressed = GuiButton((Rectangle){ state->anchorTools.x + 12, state->anchorTools.y + 8, 280, 24 }, "#13#GENERATE PROJECT STRUCTURE");
+    state->btnGenProjectPressed = GuiButton((Rectangle){ state->anchorTools.x + 12, state->anchorTools.y + 8, 
+        state->anchorVisuals.x - state->anchorTools.x - 24, 24 }, "#13#GENERATE PROJECT STRUCTURE");
 
     // Tool options
 

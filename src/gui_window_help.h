@@ -119,7 +119,7 @@ static const char *helpLines[] = {
     "LCTRL + S - Save project file (.rpc)",
     "LCTRL + A - Add source/asset files to project",
     "LCTRL + LSHIFT + A - Add source/asset directory",
-    "LCTRL + E - Generate project structure",
+    "LCTRL + G - Generate project structure",
     "-",
     "ESCAPE - Close Window/Exit",
     NULL

@@ -109,7 +109,6 @@
 #include "styles/style_terminal.h"          // raygui style: terminal
 #include "styles/style_amber.h"             // raygui style: amber
 
-
 // miniz: Single C source file zlib-replacement library
 // REF: https://github.com/richgel999/miniz
 #include "external/miniz.h"                 // ZIP packaging functions definition
@@ -503,7 +502,7 @@ int main(int argc, char *argv[])
 
     // Welcome panel data
     infoTitle = "WELCOME! LET'S CREATE A PROJECT!";
-    infoMessage = "Provide some source code files (.c) to generate project!";// \nOr choose a default project type!";
+    infoMessage = "Provide some source code files (.c) or\nchoose one project template to generate project structure!";
     infoButton = "Sure! Let's start!";
     showInfoMessagePanel = true;
 
@@ -687,7 +686,10 @@ static void UpdateDrawFrame(void)
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_A)) showAddInputFilesDialog = true;
 
     // Show dialog: generate project
-    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) showProjectGenPathDialog = true;
+    if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_G)) || mainToolbarState.btnGenProjectPressed)
+    {
+        if (input.srcFileCount > 0) showProjectGenPathDialog = true;
+    }
 
     // Toggle window: help
     if (IsKeyPressed(KEY_F1)) windowHelpState.windowActive = !windowHelpState.windowActive;
@@ -1024,11 +1026,13 @@ static void UpdateDrawFrame(void)
         GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize*3);
         GuiSetStyle(DEFAULT, TEXT_SPACING, 0);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-        GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, GuiGetStyle(DEFAULT, TEXT_COLOR_FOCUSED));
+        GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, GuiGetStyle(DEFAULT, TEXT_COLOR_PRESSED));
         GuiLabel((Rectangle){ -10, screenHeight/2 - 140, screenWidth + 20, 30 }, infoTitle);
         GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL));
         GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize*2);
-        GuiLabel((Rectangle){ -10, screenHeight/2 - textSize.y - 30, screenWidth + 20, 30 }, infoMessage);
+        GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, GuiGetFont().baseSize*3);
+        GuiLabel((Rectangle){ 0, screenHeight/2 - textSize.y - 20, screenWidth + 20, 100 }, infoMessage);
+        GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, GuiGetFont().baseSize);
 
         if (GuiButton((Rectangle){ screenWidth/4, screenHeight/2 + 40, screenWidth/2, 40 }, infoButton))
         {
