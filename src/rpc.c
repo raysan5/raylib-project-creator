@@ -931,7 +931,7 @@ static void UpdateDrawFrame(void)
         GuiSetIconScale(2);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
         GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize*2);
-        GuiLabel((Rectangle){ 12, 500, GetScreenWidth() - 24, 236 }, "#10#Drag & Drop you code files here!");
+        GuiLabel((Rectangle){ 12, 500, GetScreenWidth() - 24, 236 }, "#10#Drag & drop you code files here!");
         GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
         GuiSetIconScale(1);
@@ -2073,7 +2073,6 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         LOG("INFO: Copied project asset files successfully\n");
     }
     //-------------------------------------------------------------------------------------
-
 
     // Project configuration file (.rpc)
     // NOTE: This file can be used by [rpb] to build the project
