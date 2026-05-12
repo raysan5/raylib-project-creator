@@ -186,7 +186,7 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     state->btnClearFilesPressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 132 + 12, state->anchorFile.y + 8, 24, 24 }, "#143#");
 
     // Edit options
-    GuiSetTooltip("Generate project structure (LCTRL+E)");
+    GuiSetTooltip("Generate project structure (LCTRL+G)");
     state->btnGenProjectPressed = GuiButton((Rectangle){ state->anchorTools.x + 12, state->anchorTools.y + 8, 
         state->anchorVisuals.x - state->anchorTools.x - 24, 24 }, "#13#GENERATE PROJECT STRUCTURE");
 
