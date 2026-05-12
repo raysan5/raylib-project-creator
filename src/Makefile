@@ -34,9 +34,10 @@ PROJECT_VERSION       ?= 1.0
 PROJECT_BUILD_PATH    ?= .
 PROJECT_SOURCE_FILES  ?= rpc.c external/tinyfiledialogs.c
 
-RAYLIB_SRC_PATH       ?= C:\GitHub\raylib\src
-RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_SRC_PATH)
-RAYLIB_LIB_PATH       ?= $(RAYLIB_SRC_PATH)
+# raylib library variables
+RAYLIB_PATH           ?= C:\GitHub\raylib
+RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_PATH)\src
+RAYLIB_LIB_PATH       ?= $(RAYLIB_PATH)\src
 
 # Library type used for raylib: STATIC (.a) or SHARED (.so/.dll)
 RAYLIB_LIBTYPE        ?= STATIC

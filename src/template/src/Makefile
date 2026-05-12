@@ -2,7 +2,7 @@
 #
 #   raylib makefile for Desktop platforms, Web (Wasm), Raspberry Pi (DRM mode) and Android
 #
-#   Copyright (c) 2013-2025 Ramon Santamaria (@raysan5)
+#   Copyright (c) 2013-2026 Ramon Santamaria (@raysan5)
 #
 #   This software is provided "as-is", without any express or implied warranty. In no event
 #   will the authors be held liable for any damages arising from the use of this software.
@@ -35,9 +35,9 @@ PROJECT_BUILD_PATH    ?= .
 PROJECT_SOURCE_FILES  ?= project_name.c
 
 # raylib library variables
-RAYLIB_SRC_PATH       ?= C:/raylib/raylib/src
-RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_SRC_PATH)
-RAYLIB_LIB_PATH       ?= $(RAYLIB_SRC_PATH)
+RAYLIB_PATH           ?= C:/raylib/raylib
+RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_PATH)/src
+RAYLIB_LIB_PATH       ?= $(RAYLIB_PATH)/src
 # Library type used for raylib: STATIC (.a) or SHARED (.so/.dll)
 RAYLIB_LIBTYPE        ?= STATIC
 
