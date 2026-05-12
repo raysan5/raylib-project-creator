@@ -67,7 +67,7 @@ jobs:
 
     - name: Generate Artifacts
       run: |
-        ls ${{ env.PROJECT_BUILD_PATH }}
+        ls ${{ env.PROJECT_RELEASE_PATH }}
         cp ${{ env.PROJECT_BUILD_PATH }}/${{ env.PROJECT_NAME }} ${{ env.PROJECT_RELEASE_PATH }}
         cp -r ${{ env.PROJECT_REPO_NAME }}/${{ env.PROJECT_RESOURCES_PATH }} ${{ env.PROJECT_RELEASE_PATH }}
         cp ${{ env.PROJECT_REPO_NAME }}/README.md ${{ env.PROJECT_RELEASE_PATH }}
@@ -79,7 +79,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ env.PROJECT_RELEASE_PATH }}.zip
-        path: ./${{ env.PROJECT_RELEASE_PATH }}.zip
+        path: |
+            ./${{ env.PROJECT_RELEASE_PATH }}.zip
+            !./${{ env.PROJECT_RELEASE_PATH }}.zip
 
     - name: Upload Artifact to Release
       uses: softprops/action-gh-release@v1
