@@ -58,6 +58,7 @@ dkms.conf
 [R]elease/
 [Rr]elease.DLL/
 *.user
+!src/template/projects/VS2022/project_name/project_name.vcxproj.user
 *.aps
 .vs
 

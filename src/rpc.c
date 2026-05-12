@@ -2288,6 +2288,10 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
 
+        // Copy user file to set working directory to src path, so resources can be found 
+        FileCopy(TextFormat("%s/projects/VS2022/project_name/project_name.vcxproj.user", templatePath),
+            TextFormat("%s/%s/projects/VS2022/%s.vcxproj.user", outPath, config->Project.repoName, config->Project.internalName, config->Project.internalName));
+
         // Update projects/VS2022/project_name.sln
         fileText = LoadFileText(TextFormat("%s/projects/VS2022/project_name.sln", templatePath));
         fileTextUpdated[0] = TextReplaceAlloc(fileText, "project_name", config->Project.internalName);
