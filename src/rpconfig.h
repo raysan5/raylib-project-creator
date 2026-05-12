@@ -7,7 +7,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2025 raylib technologies (@raylibtech) / Ramon Santamaria (@raysan5)
+*   Copyright (c) 2025-2026 raylib technologies (@raylibtech) / Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -251,7 +251,8 @@ typedef struct {
 
 // Project Config Data (generic)
 typedef struct {
-    int entryCount;     // Number of entries
+    int capacity;       // Entries capacity
+    int entryCount;     // Number of entries used
     rpcPropertyEntry *entries;  // Entries
 } rpcProjectConfig;
 
@@ -264,8 +265,8 @@ extern "C" {    // Prevents name mangling of functions
 #endif
 
 RPCAPI rpcProjectConfig rpcLoadProjectConfig(const char *fileName); // Load project config data from .rpc file
-RPCAPI void rpcUnloadProjectConfig(rpcProjectConfig config); // Unload project config config data
-RPCAPI void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, int flags); // Save project config config data to .rpc file
+RPCAPI void rpcUnloadProjectConfig(rpcProjectConfig config); // Unload project config data
+RPCAPI void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, int flags); // Save project config data to .rpc file
 
 RPCAPI char *rpcGetText(rpcProjectConfig config, const char *key); // Get project config text by key
 RPCAPI int *rpcGetValue(rpcProjectConfig config, const char *key); // Get project config pointer to value by key
@@ -311,8 +312,9 @@ rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
         rini_data config = { 0 };
         config = rini_load(fileName);
 
-        project.entries = (rpcPropertyEntry *)RL_CALLOC(RPC_MAX_PROPERTY_ENTRIES_RAW, sizeof(rpcPropertyEntry));
-        project.entryCount = RPC_MAX_PROPERTY_ENTRIES_RAW;
+        project.capacity = RPC_MAX_PROPERTY_ENTRIES_RAW;
+        project.entries = (rpcPropertyEntry *)RL_CALLOC(project.capacity, sizeof(rpcPropertyEntry));
+        project.entryCount = config.count;
 
         for (unsigned int i = 0; i < config.count; i++)
         {
@@ -403,10 +405,10 @@ void rpcUnloadProjectConfig(rpcProjectConfig config)
 // NOTE: Same function as [rpc] tool but but adding more data
 void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, int flags)
 {
-    rini_data data = rini_load(NULL);   // Create empty config with 32 entries (RINI_MAX_CONFIG_CAPACITY)
+    rini_data data = rini_load(NULL);   // Create empty config with RINI_MAX_VALUE_CAPACITY entries
 
     // Define header comment lines
-    rini_set_comment_line(&data, NULL);   // Empty comment line, but including comment prefix delimiter
+    rini_set_comment_line(&data, NULL); // Empty comment line, but including comment prefix delimiter
     rini_set_comment_line(&data, "raylib project configuration");
     rini_set_comment_line(&data, NULL);
     rini_set_comment_line(&data, "This file contains all required data to define a raylib C/C++ project");
@@ -771,6 +773,7 @@ void rpcSyncProjectConfigTyped(rpcProjectConfigTyped *dst, rpcProjectConfig src)
 static void UpdateEntryValue(rpcPropertyEntry *entry, int value)
 {
     entry->value = value;
+    memset(entry->text, 0, 256);
     TextCopy(entry->text, TextFormat("%i", value));
 }
 
@@ -778,7 +781,11 @@ static void UpdateEntryValue(rpcPropertyEntry *entry, int value)
 // NOTE: Only updated text if provided, if not, using default value from template
 static void UpdateEntryText(rpcPropertyEntry *entry, const char *text)
 {
-    if ((text != NULL) && (text[0] != '\0')) TextCopy(entry->text, text);
+    if ((text != NULL) && (text[0] != '\0'))
+    {
+        memset(entry->text, 0, 256);
+        TextCopy(entry->text, text);
+    }
 }
 
 // Sync ProjectConfig data --> ProjectConfigRaw data
