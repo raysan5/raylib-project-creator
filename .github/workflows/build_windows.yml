@@ -24,7 +24,8 @@ jobs:
       PROJECT_NAME: rpc
       PROJECT_BUILD_PATH: "${{ github.event.repository.name }}\\projects\\VS2022\\build\\rpc\\bin\\x64\\Release"
       PROJECT_RELEASE_PATH: rpc_dev_win_x64
-      PROJECT_RESOURCES_PATH: src\template
+      PROJECT_RESOURCES_SRC_PATH: src\template
+      PROJECT_RESOURCES_DST_PATH: template
 
     steps:
     - name: Checkout this repo
@@ -68,7 +69,7 @@ jobs:
       run: |
         dir ${{ env.PROJECT_BUILD_PATH }}
         copy /Y ${{ env.PROJECT_BUILD_PATH }}\${{ env.PROJECT_NAME }}.exe ${{ env.PROJECT_RELEASE_PATH }}\${{ env.PROJECT_NAME }}.exe
-        xcopy ${{ env.PROJECT_REPO_NAME }}\${{ env.PROJECT_RESOURCES_PATH }} ${{ env.PROJECT_RELEASE_PATH }}\template /s /e /i
+        xcopy ${{ env.PROJECT_REPO_NAME }}\${{ env.PROJECT_RESOURCES_SRC_PATH }} ${{ env.PROJECT_RELEASE_PATH }}\${{ env.PROJECT_RESOURCES_DST_PATH }} /S /E /I
         copy /Y ${{ env.PROJECT_REPO_NAME }}\README.md ${{ env.PROJECT_RELEASE_PATH }}\README.md
         copy /Y ${{ env.PROJECT_REPO_NAME }}\LICENSE ${{ env.PROJECT_RELEASE_PATH }}\LICENSE
         dir ${{ env.PROJECT_RELEASE_PATH }}
