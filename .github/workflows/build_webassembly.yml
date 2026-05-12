@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - 'src/**'
-      - '.github/workflows/webassembly.yml'
+      - '.github/workflows/build_webassembly.yml'
   release:
     types: [published]
 
@@ -83,7 +83,7 @@ jobs:
       with:
         name: ${{ env.PROJECT_RELEASE_PATH }}.zip
         path: |
-            ./${{ env.PROJECT_RELEASE_PATH }}.zip
+            ./${{ env.PROJECT_RELEASE_PATH }}
             !./${{ env.PROJECT_RELEASE_PATH }}.zip
 
     - name: Upload Artifact to Release

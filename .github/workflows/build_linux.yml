@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - 'src/**'
-      - '.github/workflows/linux.yml'
+      - '.github/workflows/build_linux.yml'
   release:
     types: [published]
     
@@ -80,7 +80,7 @@ jobs:
       with:
         name: ${{ env.PROJECT_RELEASE_PATH }}.zip
         path: |
-            ./${{ env.PROJECT_RELEASE_PATH }}.zip
+            ./${{ env.PROJECT_RELEASE_PATH }}
             !./${{ env.PROJECT_RELEASE_PATH }}.zip
 
     - name: Upload Artifact to Release
