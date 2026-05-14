@@ -408,6 +408,7 @@ int main(int argc, char *argv[])
                 // Process automatically the C file and setup a project using source file name
                 // WARNING: Really? Is this the desired behaviour?
                 project = rpcLoadProjectConfig("template/project_name.rpc"); // Load base template data
+                input = rpcLoadProjectInput();
 
                 rpcSetText(project, "PROJECT_INTERNAL_NAME", TextToSnake(GetFileNameWithoutExt(argv[1])));
                 rpcSetText(project, "PROJECT_REPO_NAME", GetFileNameWithoutExt(argv[1]));
@@ -422,6 +423,7 @@ int main(int argc, char *argv[])
                 // NOTE: Project requires input data to generate output .rpc file
                 GenerateProject(project, input, generationOutPath);
 
+                rpcUnloadProjectInput(input);
                 rpcUnloadProjectConfig(project);
 
                 return 0;
@@ -811,7 +813,7 @@ static void UpdateDrawFrame(void)
 
     GuiLabel((Rectangle){ 16, 44, 200, 24 }, "CHOOSE PROJECT TEMPLATE:");
     GuiSetStyle(TOGGLE, BORDER_WIDTH, 4);
-    GuiToggleGroup((Rectangle){ 16, 72, 206, 80 }, "#142#Custom;#198#Basic Window;#227#Screen Manager;#150#Platform 2D;#162#First Person 3D", &selectedTemplate);
+    GuiToggleGroup((Rectangle){ 16, 72, 206, 80 }, "#142#Custom;#198#Basic Window;#227#Screen Manager;#150#Platformer 2D;#162#First Person 3D", &selectedTemplate);
     GuiSetStyle(TOGGLE, BORDER_WIDTH, 1);
 
     // Update project data required files depending on selected template
@@ -1496,7 +1498,15 @@ static void ShowCommandLineInfo(void)
     printf("    -h, --help                          : Show tool version and command line usage help\n\n");
     printf("    -i, --input <path_dir>,<file01.xxx>,<file02.xxx>\n");
     printf("                                        : Define inputs, directory or files(s), comma separated\n");
+    printf("                                        : NOTE: Provide full paths or prepend './' for relative paths\n");
     printf("    -rpc <config_file.rpc>              : Define raylib project configuration file\n");
+    printf("    -t, --template <template_id>        : Define raylib template to be used:\n");
+    printf("                                          Supported values:\n");
+    printf("                                            0 - None, custom input files (default)\n");
+    printf("                                            1 - Basic Window\n");
+    printf("                                            2 - Screen Manager\n");
+    printf("                                            3 - Platformer 2D\n");
+    printf("                                            4 - First Person 3D\n\n");
 
     printf("    -pn, --project-name <project_name>  : Define project internal name\n");
     printf("    -rn, --repo-name <repository_name>  : Define project repository name\n");
@@ -1527,6 +1537,7 @@ static void ProcessCommandLine(int argc, char *argv[])
     // NOTE 2: Properties defined on command-line will also override default ones
     rpcProjectConfig config = rpcLoadProjectConfig("template/project_name.rpc");
     rpcProjectInput input = rpcLoadProjectInput();
+    int selectedTemplate = 0;
 
     // Process command line arguments
     for (int i = 1; i < argc; i++)
@@ -1551,6 +1562,7 @@ static void ProcessCommandLine(int argc, char *argv[])
                         if (IsFileExtension(files[j], ".c;.h"))
                         {
                             // Add files to source list
+                            // TODO: Get full path for input file or prepend "./" for relative paths?
                             strcpy(input.srcFilePaths[input.srcFileCount], files[j]);
                             input.srcFileCount++;
                         }
@@ -1605,6 +1617,19 @@ static void ProcessCommandLine(int argc, char *argv[])
                 }
             }
             else LOG("WARNING: No .rpc config file provided or not valid\n");
+        }
+        else if ((strcmp(argv[i], "-t") == 0) || (strcmp(argv[i], "--template") == 0))
+        {
+            // Check for valid argumment and valid parameters
+            if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
+            {
+                selectedTemplate = TextToInteger(argv[i + 1]);
+
+                if ((selectedTemplate < 0) && (selectedTemplate > 4)) selectedTemplate = 0;
+
+                i++;
+            }
+            else LOG("WARNING: Format parameters provided not valid\n");
         }
         else if ((strcmp(argv[i], "-pn") == 0) || (strcmp(argv[i], "--project-name") == 0))
         {
@@ -1702,8 +1727,17 @@ static void ProcessCommandLine(int argc, char *argv[])
         }
     }
 
-    // Generate build projects
-    GenerateProject(config, input, generationOutPath);
+    if (input.srcFileCount == 0)
+    {
+        if (selectedTemplate > 0) rpcUpdateProjectInput(&input, selectedTemplate);
+        else LOG("WARNING: No valid input source files provided and no valid template selected\n");
+    }
+
+    if (input.srcFileCount > 0)
+    {
+        // Generate raylib project structure
+        GenerateProject(config, input, generationOutPath);
+    }
 
     rpcUnloadProjectConfig(config);
     rpcUnloadProjectInput(input);
@@ -1807,7 +1841,7 @@ void rpcUpdateProjectInput(rpcProjectInput *input, int selTemplate)
         UnloadDirectoryFiles(pathList);
         */
     }
-    else if (selTemplate == 3)  // Platform 2D
+    else if (selTemplate == 3)  // Platformer 2D
     {
         strcpy(input->srcFilePaths[0], TextFormat("%s/src_platformer_2d/project_name.c", templatePath));
         input->srcFileCount = 1;
@@ -2005,18 +2039,28 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 #endif
     
     LOG("\nINFO: Starting project generation: %s\n", rpcGetText(project, "PROJECT_REPO_NAME"));
-    LOG("-----------------------------------------------------------------\n");
+    LOG("-----------------------------------------------------------------\n\n");
 
     //mz_bool mz_zip_reader_init_mem(mz_zip_archive *pZip, const void *pMem, size_t size, mz_uint flags); // Read file from memory zip data
     // TODO: Replace LoadFileText(), from template path, by reading text file from zip data, decompressing it...
 
     if (rpcGetText(project, "PROJECT_REPO_NAME")[0] == '\0') strcpy(rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_INTERNAL_NAME"));
 
-    LOG("INFO: Output path: %s/%s\n", outPath, rpcGetText(project, "PROJECT_REPO_NAME"));
+    LOG("INFO: Output path: %s/%s\n\n", outPath, rpcGetText(project, "PROJECT_REPO_NAME"));
+
+    LOG("INFO: Output project source code path: %s/%s", rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_SOURCE_PATH"));
+    LOG("INFO: Input source code files to be added [%i]:\n", input.srcFileCount);
+    for (int i = 0; i < input.srcFileCount; i++) LOG("      [%i/%i] %s\n", i + 1, input.srcFileCount, input.srcFilePaths[i]);
+    LOG("\n");
+    LOG("INFO: Output project assets path: %s/%s", rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_ASSETS_PATH"));
+    LOG("INFO: Input asset files to be added [%i]:\n", input.assetFileCount);
+    for (int i = 0; i < input.assetFileCount; i++) LOG("      [%i/%i] %s\n", i + 1, input.assetFileCount, input.assetFilePaths[i]);
+    LOG("\n");
 
     // Copy project source file(s) provided
     //--------------------------------------------------------------------------
-    LOG("INFO: Copying input source files to project sources path: %s/%s\n", rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_SOURCE_PATH"));
+    LOG("INFO: Copying input source files to project sources path: %s/%s\n", 
+        rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_SOURCE_PATH"));
 
     // Create required output directories (src/external)
     MakeDirectory(TextFormat("%s/%s/%s/external", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_SOURCE_PATH")));
@@ -2286,13 +2330,15 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 
         fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
         fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "C:\\raylib\\raylib\\src", raylibSrcPath);
-        SaveFileText(TextFormat("%s/%s/projects/VS2022/%s/%s.vcxproj", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_INTERNAL_NAME"), rpcGetText(project, "PROJECT_INTERNAL_NAME")), fileTextUpdated[3]);
+        SaveFileText(TextFormat("%s/%s/projects/VS2022/%s/%s.vcxproj", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), 
+            rpcGetText(project, "PROJECT_INTERNAL_NAME"), rpcGetText(project, "PROJECT_INTERNAL_NAME")), fileTextUpdated[3]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
 
         // Copy user file to set working directory to src path, so resources can be found 
         FileCopy(TextFormat("%s/projects/VS2022/project_name/project_name.vcxproj.user", templatePath),
-            TextFormat("%s/%s/projects/VS2022/%s.vcxproj.user", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_INTERNAL_NAME"), rpcGetText(project, "PROJECT_INTERNAL_NAME")));
+            TextFormat("%s/%s/projects/VS2022/%s/%s.vcxproj.user", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), 
+                rpcGetText(project, "PROJECT_INTERNAL_NAME"), rpcGetText(project, "PROJECT_INTERNAL_NAME")));
 
         // Update projects/VS2022/project_name.sln
         fileText = LoadFileText(TextFormat("%s/projects/VS2022/project_name.sln", templatePath));
