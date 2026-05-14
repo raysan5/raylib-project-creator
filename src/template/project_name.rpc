@@ -52,7 +52,7 @@ PROJECT_ASSETS_OUTPUT_PATH              "release/resources"                 # Pr
 
 # raylib settings
 #------------------------------------------------------------------------------------
-RAYLIB_SRC_PATH                         "C:/raylib/raylib/src"              # Path to raylib source code, to be build for target platform
+RAYLIB_SRC_PATH                         "C:/raylib/raylib/src"              # Path to raylib source code, to be build for target platform (OS-dependant)
 RAYLIB_OPENGL_VERSION                   "3.3"                               # OpenGL version to be used by raylib, WARNING: Platform dependant!
 # TODO: Support raylib config.h options
 #------------------------------------------------------------------------------------
