@@ -420,6 +420,21 @@ int main(int argc, char *argv[])
                 strcpy(input.srcFilePaths[0], argv[1]);
                 strcpy(generationOutPath, ".");
 
+                // Scan code file looking for assets
+                int assetCount = 0;
+                char **assetPaths = LoadSourceAssetPaths(argv[1], &assetCount);
+
+                for (int a = 0; (a < assetCount) && (input.assetFileCount < RPC_MAX_ASSET_FILES); a++)
+                {
+                    // WARNING: Not verifying at the moment if asset exist, just adding it to assets list
+                    //const char *fullPath = TextFormat("%s/%s", GetDirectoryPath(multiFileList[i]), assetPaths[a]);
+                    //if (FileExists(TextFormat(fullPath))) { }
+                    strcpy(input.assetFilePaths[input.assetFileCount], assetPaths[a]);
+                    input.assetFileCount++;
+                }
+
+                UnloadSourceAssetPaths(assetPaths);
+
                 // NOTE: Project requires input data to generate output .rpc file
                 GenerateProject(project, input, generationOutPath);
 
@@ -597,6 +612,21 @@ static void UpdateDrawFrame(void)
                         // Add files to source list
                         strcpy(input.srcFilePaths[input.srcFileCount], droppedFiles.paths[i]);
                         input.srcFileCount++;
+
+                        // Scan code file looking for assets
+                        int assetCount = 0;
+                        char **assetPaths = LoadSourceAssetPaths(droppedFiles.paths[i], &assetCount);
+
+                        for (int a = 0; (a < assetCount) && (input.assetFileCount < RPC_MAX_ASSET_FILES); a++)
+                        {
+                            // WARNING: Not verifying at the moment if asset exist, just adding it to assets list
+                            //const char *fullPath = TextFormat("%s/%s", GetDirectoryPath(multiFileList[i]), assetPaths[a]);
+                            //if (FileExists(TextFormat(fullPath))) { }
+                            strcpy(input.assetFilePaths[input.assetFileCount], assetPaths[a]);
+                            input.assetFileCount++;
+                        }
+
+                        UnloadSourceAssetPaths(assetPaths);
                     }
                     else if (IsFileExtension(droppedFiles.paths[i], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
                     {
@@ -617,6 +647,21 @@ static void UpdateDrawFrame(void)
                             // Add files to source list
                             strcpy(input.srcFilePaths[input.srcFileCount], list.paths[l]);
                             input.srcFileCount++;
+
+                            // Scan code file looking for assets
+                            int assetCount = 0;
+                            char **assetPaths = LoadSourceAssetPaths(list.paths[l], &assetCount);
+
+                            for (int a = 0; (a < assetCount) && (input.assetFileCount < RPC_MAX_ASSET_FILES); a++)
+                            {
+                                // WARNING: Not verifying at the moment if asset exist, just adding it to assets list
+                                //const char *fullPath = TextFormat("%s/%s", GetDirectoryPath(multiFileList[i]), assetPaths[a]);
+                                //if (FileExists(TextFormat(fullPath))) { }
+                                strcpy(input.assetFilePaths[input.assetFileCount], assetPaths[a]);
+                                input.assetFileCount++;
+                            }
+
+                            UnloadSourceAssetPaths(assetPaths);
                         }
                         else if (IsFileExtension(list.paths[l], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
                         {
@@ -1154,11 +1199,6 @@ static void UpdateDrawFrame(void)
             int multiFileCount = 0;
             const char **multiFileList = GetSubtextPtrs(multiFileNames, '|', &multiFileCount); // Split text into multiple strings
 
-            // Temp project input paths for scanned assets
-            // WARNING: Storing in srcFilePaths the source path for every asset added,
-            // so the asset can be related to equivalent source path
-            rpcProjectInput temp = rpcLoadProjectInput();
-
             for (int i = 0; i < multiFileCount; i++)
             {
                 if (IsFileExtension(multiFileList[i], ".c;.h"))
@@ -1167,41 +1207,35 @@ static void UpdateDrawFrame(void)
                     int assetCount = 0;
                     char **assetPaths = LoadSourceAssetPaths(multiFileList[i], &assetCount);
 
-                    for (int a = 0; a < assetCount; a++)
+                    for (int a = 0; (a < assetCount) && (input.assetFileCount < RPC_MAX_ASSET_FILES); a++)
                     {
                         // NOTE: Not verifying at the moment if asset exist, just adding it to assets list
                         // const char *fullPath = TextFormat("%s/%s", GetDirectoryPath(multiFileList[i]), assetPaths[a]);
                         //if (FileExists(TextFormat(fullPath))) { }
-
-                        strcpy(temp.srcFilePaths[temp.srcFileCount], multiFileList[i]);
-                        strcpy(temp.assetFilePaths[temp.assetFileCount], assetPaths[a]);
-                        temp.srcFileCount++;
-                        temp.assetFileCount++;
+                        strcpy(input.assetFilePaths[input.assetFileCount], assetPaths[a]);
+                        input.assetFileCount++;
                     }
 
                     UnloadSourceAssetPaths(assetPaths);
 
                     // Add files to source list
-                    strcpy(input.srcFilePaths[input.srcFileCount], multiFileList[i]);
-                    input.srcFileCount++;
-
-                    if (input.srcFileCount >= RPC_MAX_SOURCE_FILES) break;
+                    if (input.srcFileCount < RPC_MAX_SOURCE_FILES)
+                    {
+                        strcpy(input.srcFilePaths[input.srcFileCount], multiFileList[i]);
+                        input.srcFileCount++;
+                    }
                 }
                 else if (IsFileExtension(multiFileList[i], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
                 {
                     // Add assets to assets list
                     // TODO: Filtering for recognized assets extensions but, really required?
-                    strcpy(input.assetFilePaths[input.assetFileCount], multiFileList[i]);
-                    input.assetFileCount++;
-
-                    if (input.assetFileCount >= RPC_MAX_ASSET_FILES) break;
+                    if (input.assetFileCount < RPC_MAX_ASSET_FILES)
+                    {
+                        strcpy(input.assetFilePaths[input.assetFileCount], multiFileList[i]);
+                        input.assetFileCount++;
+                    }
                 }
             }
-
-            // TODO: What should be done with temp assets scanned?
-            // It should probably be validated that they exist and there are no dups on the list
-
-            rpcUnloadProjectInput(temp);
         }
 
         if (result >= 0) showAddInputFilesDialog = false;
@@ -1223,11 +1257,6 @@ static void UpdateDrawFrame(void)
             {
                 FilePathList pathList = LoadDirectoryFilesEx(inDirectoryPath, "FILES*", true);
 
-                // Temp project input paths for scanned assets
-                // WARNING: Storing in srcFilePaths the source path for every asset added,
-                // so the asset can be related to equivalent source path
-                rpcProjectInput temp = rpcLoadProjectInput(); // Init empty input list
-
                 for (unsigned int i = 0; i < pathList.count; i++)
                 {
                     if (IsFileExtension(pathList.paths[i], ".c;.h"))
@@ -1236,41 +1265,35 @@ static void UpdateDrawFrame(void)
                         int assetCount = 0;
                         char **assetPaths = LoadSourceAssetPaths(pathList.paths[i], &assetCount);
 
-                        for (int a = 0; a < assetCount; a++)
+                        for (int a = 0; (a < assetCount) && (input.assetFileCount < RPC_MAX_ASSET_FILES); a++)
                         {
-                            // NOTE: Not verifying at the moment if asset exist, just adding it to assets list
+                            // TODO: WARNING: Assets should be validatd  if they exist, adjusting src path if required
                             // const char *fullPath = TextFormat("%s/%s", GetDirectoryPath(pathList.paths[i]), assetPaths[a]);
                             //if (FileExists(TextFormat(fullPath))) { }
-
-                            strcpy(temp.srcFilePaths[temp.srcFileCount], pathList.paths[i]);
-                            strcpy(temp.assetFilePaths[temp.assetFileCount], assetPaths[a]);
-                            temp.srcFileCount++;
-                            temp.assetFileCount++;
+                            strcpy(input.assetFilePaths[input.assetFileCount], assetPaths[a]);
+                            input.assetFileCount++;
                         }
 
                         UnloadSourceAssetPaths(assetPaths);
 
                         // Add files to source list
-                        strcpy(input.srcFilePaths[input.srcFileCount], pathList.paths[i]);
-                        input.srcFileCount++;
-
-                        if (input.srcFileCount >= RPC_MAX_SOURCE_FILES) break;
+                        if (input.srcFileCount < RPC_MAX_SOURCE_FILES)
+                        {
+                            strcpy(input.srcFilePaths[input.srcFileCount], pathList.paths[i]);
+                            input.srcFileCount++;
+                        }
                     }
                     else if (IsFileExtension(pathList.paths[i], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
                     {
                         // Add assets to assets list
                         // TODO: Filtering for recognized assets extensions but, really required?
-                        strcpy(input.assetFilePaths[input.assetFileCount], pathList.paths[i]);
-                        input.assetFileCount++;
-
-                        if (input.assetFileCount >= RPC_MAX_ASSET_FILES) break;
+                        if (input.assetFileCount < RPC_MAX_ASSET_FILES)
+                        {
+                            strcpy(input.assetFilePaths[input.assetFileCount], pathList.paths[i]);
+                            input.assetFileCount++;
+                        }
                     }
                 }
-
-                // TODO: What should be done with temp assets scanned?
-                // It should probably be validated that they exist and there are no dups on the list
-
-                rpcUnloadProjectInput(temp);
 
                 UnloadDirectoryFiles(pathList);
             }
@@ -1937,6 +1960,9 @@ static char **LoadSourceAssetPaths(const char *srcFilePath, int *assetCount)
 
                             if (!found && (assetCounter < RPC_MAX_ASSET_FILES))
                             {
+                                // TODO: WARNING: The path obtained could be relative to srcFilePath or
+                                // relative to expected build output, it must be copied to expected build output path
+                                // So, asset src path could require compute and validation
                                 strcpy(paths[assetCounter], buffer);
                                 assetCounter++;
                             }
@@ -2039,7 +2065,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     strcpy(raylibSrcPath, rpcGetText(project, "RAYLIB_SRC_PATH"));
 #endif
     
-    LOG("INFO: Starting project generation: %s\n", rpcGetText(project, "PROJECT_REPO_NAME")? : "-");
+    LOG("INFO: Starting project generation: %s\n", rpcGetText(project, "PROJECT_REPO_NAME")? rpcGetText(project, "PROJECT_REPO_NAME") : "-");
 
     //mz_bool mz_zip_reader_init_mem(mz_zip_archive *pZip, const void *pMem, size_t size, mz_uint flags); // Read file from memory zip data
     // TODO: Replace LoadFileText(), from template path, by reading text file from zip data, decompressing it...
