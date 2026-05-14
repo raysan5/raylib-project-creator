@@ -38,9 +38,9 @@ PROJECT_SOURCE_FILES  += external/tinyfiledialogs.c
 endif
 
 # raylib library variables
-RAYLIB_SRC_PATH       ?= C:/raylib/raylib/src
-RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_SRC_PATH)
-RAYLIB_LIB_PATH       ?= $(RAYLIB_SRC_PATH)
+RAYLIB_PATH           ?= ../../raylib
+RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_PATH)/src
+RAYLIB_LIB_PATH       ?= $(RAYLIB_PATH)/src
 
 # Library type used for raylib: STATIC (.a) or SHARED (.so/.dll)
 RAYLIB_LIBTYPE        ?= STATIC
