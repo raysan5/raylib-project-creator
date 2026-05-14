@@ -821,6 +821,10 @@ static void UpdateDrawFrame(void)
     //    rpcGetText(project, "PROJECT_INTERNAL_NAME"), 255, rpcGetPropertyEntry(project, "PROJECT_INTERNAL_NAME")->editMode))
     //    rpcGetPropertyEntry(project, "PROJECT_INTERNAL_NAME")->editMode = !rpcGetPropertyEntry(project, "PROJECT_INTERNAL_NAME")->editMode;
 
+    // TODO: Add scroll panel
+    //GuiScrollPanel((Rectangle){ 12, 168, GetScreenWidth() - 24, 300 }, TextFormat("#13#PROJECT PROPERIES", input.srcFileCount, input.assetFileCount),
+    //    (Rectangle){ 0, 0, GetScreenWidth() - 24 - 20, 4 + (input.srcFileCount + input.assetFileCount)*(28 + 2) }, &filesPanelScroll, &filesPanelView);
+
     // Draw project configuration fields
     for (int i = 0, k = 0; i < project.entryCount; i++)
     {
