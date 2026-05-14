@@ -35,9 +35,9 @@ PROJECT_BUILD_PATH    ?= .
 PROJECT_SOURCE_FILES  ?= project_name.c
 
 # raylib library variables
-RAYLIB_PATH           ?= C:/raylib/raylib
-RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_PATH)/src
-RAYLIB_LIB_PATH       ?= $(RAYLIB_PATH)/src
+RAYLIB_SRC_PATH       ?= C:/raylib/raylib
+RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_SRC_PATH)
+RAYLIB_LIB_PATH       ?= $(RAYLIB_SRC_PATH)
 # Library type used for raylib: STATIC (.a) or SHARED (.so/.dll)
 RAYLIB_LIBTYPE        ?= STATIC
 
