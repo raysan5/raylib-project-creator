@@ -416,8 +416,8 @@ int main(int argc, char *argv[])
 
                 selectedTemplate = 0;  // Custom input file
                 input.srcFileCount = 1;
-                strcpy(input.srcFilePaths[0], argv[1]);
-                strcpy(generationOutPath, ".");
+                snprintf(input.srcFilePaths[0], RPC_SOURCE_PATH_LENGTH, "%s", argv[1]);
+                snprintf(generationOutPath, sizeof(generationOutPath), ".");
 
                 // NOTE: Project requires input data to generate output .rpc file
                 GenerateProject(project, input, generationOutPath);
@@ -463,8 +463,8 @@ int main(int argc, char *argv[])
         // Set default template input source file
         // NOTE: "project_name" would be renamed to PROJECT_INTERNAL_NAME on generation
         input.srcFileCount = 1;
-        strcpy(input.srcFilePaths[0], TextFormat("template/src/project_name.c"));
-        strcpy(generationOutPath, ".");
+        snprintf(input.srcFilePaths[0], RPC_SOURCE_PATH_LENGTH, "%s", TextFormat("template/src/project_name.c"));
+        snprintf(generationOutPath, sizeof(generationOutPath), ".");
     }
 
 #if !defined(PLATFORM_WEB)
@@ -489,7 +489,7 @@ int main(int argc, char *argv[])
     infoButton = "Sure! Let's start!";
     showInfoMessagePanel = true;
 
-    strcpy(outFileName, TextFormat("%s/%s", GetWorkingDirectory(), rpcGetText(project, "PROJECT_INTERNAL_NAME")));
+    snprintf(outFileName, sizeof(outFileName), "%s/%s", GetWorkingDirectory(), rpcGetText(project, "PROJECT_INTERNAL_NAME"));
 
     LOG("INIT: Ready to show project generation info...\n");
     //-----------------------------------------------------------------------------------
@@ -592,14 +592,14 @@ static void UpdateDrawFrame(void)
                     if (IsFileExtension(droppedFiles.paths[i], ".c;.h"))
                     {
                         // Add files to source list
-                        strcpy(input.srcFilePaths[input.srcFileCount], droppedFiles.paths[i]);
+                        snprintf(input.srcFilePaths[input.srcFileCount], RPC_SOURCE_PATH_LENGTH, "%s", droppedFiles.paths[i]);
                         input.srcFileCount++;
                     }
                     else if (IsFileExtension(droppedFiles.paths[i], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
                     {
                         // Add assets to assets list
                         // TODO: Filtering for recognized assets extensions but, really required?
-                        strcpy(input.assetFilePaths[input.assetFileCount], droppedFiles.paths[i]);
+                        snprintf(input.assetFilePaths[input.assetFileCount], RPC_SOURCE_PATH_LENGTH, "%s", droppedFiles.paths[i]);
                         input.assetFileCount++;
                     }
                 }
@@ -612,14 +612,14 @@ static void UpdateDrawFrame(void)
                         if (IsFileExtension(list.paths[l], ".c;.h"))
                         {
                             // Add files to source list
-                            strcpy(input.srcFilePaths[input.srcFileCount], list.paths[l]);
+                            snprintf(input.srcFilePaths[input.srcFileCount], RPC_SOURCE_PATH_LENGTH, "%s", list.paths[l]);
                             input.srcFileCount++;
                         }
                         else if (IsFileExtension(list.paths[l], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
                         {
                             // Add assets to assets list
                             // TODO: Filtering for recognized assets extensions but, really required?
-                            strcpy(input.assetFilePaths[input.assetFileCount], list.paths[l]);
+                            snprintf(input.assetFilePaths[input.assetFileCount], RPC_SOURCE_PATH_LENGTH, "%s", list.paths[l]);
                             input.assetFileCount++;
                         }
                     }
@@ -647,8 +647,8 @@ static void UpdateDrawFrame(void)
         // Set default template input source file
         // NOTE: "project_name" would be renamed to PROJECT_INTERNAL_NAME on generation
         input.srcFileCount = 1;
-        strcpy(input.srcFilePaths[0], TextFormat("template/src/project_name.c"));
-        strcpy(generationOutPath, ".");
+        snprintf(input.srcFilePaths[0], RPC_SOURCE_PATH_LENGTH, "%s", TextFormat("template/src/project_name.c"));
+        snprintf(generationOutPath, sizeof(generationOutPath), ".");
     }
 
     // Show dialog: load project config file (.rpc)
@@ -707,7 +707,7 @@ static void UpdateDrawFrame(void)
     else if (mainToolbarState.btnSaveFilePressed)
     {
         memset(outFileName, 0, 256);
-        strcpy(outFileName, TextFormat("%s.rpc", rpcGetText(project, "PROJECT_INTERNAL_NAME")));
+        snprintf(outFileName, sizeof(outFileName), "%s.rpc", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
         showSaveProjectDialog = true;
     }
     else if (mainToolbarState.btnAddInputFilePressed) showAddInputFilesDialog = true;
@@ -1166,8 +1166,8 @@ static void UpdateDrawFrame(void)
                         // const char *fullPath = TextFormat("%s/%s", GetDirectoryPath(multiFileList[i]), assetPaths[a]);
                         //if (FileExists(TextFormat(fullPath))) { }
 
-                        strcpy(temp.srcFilePaths[temp.srcFileCount], multiFileList[i]);
-                        strcpy(temp.assetFilePaths[temp.assetFileCount], assetPaths[a]);
+                        snprintf(temp.srcFilePaths[temp.srcFileCount], RPC_SOURCE_PATH_LENGTH, "%s", multiFileList[i]);
+                        snprintf(temp.assetFilePaths[temp.assetFileCount], RPC_SOURCE_PATH_LENGTH, "%s", assetPaths[a]);
                         temp.srcFileCount++;
                         temp.assetFileCount++;
                     }
@@ -1175,7 +1175,7 @@ static void UpdateDrawFrame(void)
                     UnloadSourceAssetPaths(assetPaths);
 
                     // Add files to source list
-                    strcpy(input.srcFilePaths[input.srcFileCount], multiFileList[i]);
+                    snprintf(input.srcFilePaths[input.srcFileCount], RPC_SOURCE_PATH_LENGTH, "%s", multiFileList[i]);
                     input.srcFileCount++;
 
                     if (input.srcFileCount >= RPC_MAX_SOURCE_FILES) break;
@@ -1184,7 +1184,7 @@ static void UpdateDrawFrame(void)
                 {
                     // Add assets to assets list
                     // TODO: Filtering for recognized assets extensions but, really required?
-                    strcpy(input.assetFilePaths[input.assetFileCount], multiFileList[i]);
+                    snprintf(input.assetFilePaths[input.assetFileCount], RPC_SOURCE_PATH_LENGTH, "%s", multiFileList[i]);
                     input.assetFileCount++;
 
                     if (input.assetFileCount >= RPC_MAX_ASSET_FILES) break;
@@ -1235,8 +1235,8 @@ static void UpdateDrawFrame(void)
                             // const char *fullPath = TextFormat("%s/%s", GetDirectoryPath(pathList.paths[i]), assetPaths[a]);
                             //if (FileExists(TextFormat(fullPath))) { }
 
-                            strcpy(temp.srcFilePaths[temp.srcFileCount], pathList.paths[i]);
-                            strcpy(temp.assetFilePaths[temp.assetFileCount], assetPaths[a]);
+                            snprintf(temp.srcFilePaths[temp.srcFileCount], RPC_SOURCE_PATH_LENGTH, "%s", pathList.paths[i]);
+                            snprintf(temp.assetFilePaths[temp.assetFileCount], RPC_SOURCE_PATH_LENGTH, "%s", assetPaths[a]);
                             temp.srcFileCount++;
                             temp.assetFileCount++;
                         }
@@ -1244,7 +1244,7 @@ static void UpdateDrawFrame(void)
                         UnloadSourceAssetPaths(assetPaths);
 
                         // Add files to source list
-                        strcpy(input.srcFilePaths[input.srcFileCount], pathList.paths[i]);
+                        snprintf(input.srcFilePaths[input.srcFileCount], RPC_SOURCE_PATH_LENGTH, "%s", pathList.paths[i]);
                         input.srcFileCount++;
 
                         if (input.srcFileCount >= RPC_MAX_SOURCE_FILES) break;
@@ -1253,7 +1253,7 @@ static void UpdateDrawFrame(void)
                     {
                         // Add assets to assets list
                         // TODO: Filtering for recognized assets extensions but, really required?
-                        strcpy(input.assetFilePaths[input.assetFileCount], pathList.paths[i]);
+                        snprintf(input.assetFilePaths[input.assetFileCount], RPC_SOURCE_PATH_LENGTH, "%s", pathList.paths[i]);
                         input.assetFileCount++;
 
                         if (input.assetFileCount >= RPC_MAX_ASSET_FILES) break;
@@ -1294,7 +1294,7 @@ static void UpdateDrawFrame(void)
             {
                 // Update required property with selected path
                 memset(project.entries[projectEditProperty].text, 0, 256);
-                strcpy(project.entries[projectEditProperty].text, inFileName);
+                snprintf(project.entries[projectEditProperty].text, sizeof(project.entries[projectEditProperty].text), "%s", inFileName);
             }
             else
             {
@@ -1323,7 +1323,7 @@ static void UpdateDrawFrame(void)
             {
                 // Update required property with selected path
                 memset(project.entries[projectEditProperty].text, 0, 256);
-                strcpy(project.entries[projectEditProperty].text, inDirectoryPath);
+                snprintf(project.entries[projectEditProperty].text, sizeof(project.entries[projectEditProperty].text), "%s", inDirectoryPath);
             }
             else
             {
@@ -1362,7 +1362,7 @@ static void UpdateDrawFrame(void)
 #if defined(PLATFORM_WEB)
         // Generate project in base directory of wasm virtual file system
         memset(generationOutPath, 0, 256);
-        strcpy(generationOutPath, ".");
+        snprintf(generationOutPath, sizeof(generationOutPath), ".");
         GenerateProject(project, input, generationOutPath);
         showGenProjectProgress = true;
         showProjectGenPathDialog = false;
@@ -1371,7 +1371,7 @@ static void UpdateDrawFrame(void)
 
         if (result == 1)
         {
-            strcpy(generationOutPath, outProjectPath);
+            snprintf(generationOutPath, sizeof(generationOutPath), "%s", outProjectPath);
             GenerateProject(project, input, generationOutPath);
             showGenProjectProgress = true;
         }
@@ -1410,7 +1410,7 @@ static void UpdateDrawFrame(void)
         if (!showGenProjectProgress)
         {
 #if defined(PLATFORM_WEB)
-            strcpy(outFileName, TextFormat("%s/%s", generationOutPath, TextToLower(rpcGetText(project, "PROJECT_REPO_NAME"))));
+            snprintf(outFileName, sizeof(outFileName), "%s/%s", generationOutPath, TextToLower(rpcGetText(project, "PROJECT_REPO_NAME")));
 
             // Package all created files (in browser MEMFS) into a .zip to be exported
             mz_zip_archive zip = { 0 };
@@ -1439,7 +1439,7 @@ static void UpdateDrawFrame(void)
             UnloadDirectoryFiles(files);
 
             char tempFileName[512] = { 0 };
-            strcpy(tempFileName, TextFormat("%s.zip", outFileName));
+            snprintf(tempFileName, sizeof(tempFileName), "%s.zip", outFileName);
             emscripten_run_script(TextFormat("saveFileFromMEMFSToDisk('%s','%s')", tempFileName, GetFileName(tempFileName)));
 
             // Download file from MEMFS (emscripten memory filesystem)
@@ -1547,7 +1547,7 @@ static void ProcessCommandLine(int argc, char *argv[])
                         if (IsFileExtension(files[j], ".c;.h"))
                         {
                             // Add files to source list
-                            strcpy(input.srcFilePaths[input.srcFileCount], files[j]);
+                            snprintf(input.srcFilePaths[input.srcFileCount], RPC_SOURCE_PATH_LENGTH, "%s", files[j]);
                             input.srcFileCount++;
                         }
                         else if (IsFileExtension(files[j], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
