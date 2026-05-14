@@ -494,6 +494,7 @@ int main(int argc, char *argv[])
     strcpy(outFileName, TextFormat("%s/%s", GetWorkingDirectory(), rpcGetText(project, "PROJECT_INTERNAL_NAME")));
 
     LOG("INIT: Ready to show project generation info...\n");
+    LOG("-----------------------------------------------------------------\n");
     //-----------------------------------------------------------------------------------
 
     // GUI: Main toolbar panel (file and visualization)
@@ -2038,8 +2039,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     strcpy(raylibSrcPath, rpcGetText(project, "RAYLIB_SRC_PATH"));
 #endif
     
-    LOG("\nINFO: Starting project generation: %s\n", rpcGetText(project, "PROJECT_REPO_NAME"));
-    LOG("-----------------------------------------------------------------\n\n");
+    LOG("INFO: Starting project generation: %s\n", rpcGetText(project, "PROJECT_REPO_NAME")? : "-");
 
     //mz_bool mz_zip_reader_init_mem(mz_zip_archive *pZip, const void *pMem, size_t size, mz_uint flags); // Read file from memory zip data
     // TODO: Replace LoadFileText(), from template path, by reading text file from zip data, decompressing it...
