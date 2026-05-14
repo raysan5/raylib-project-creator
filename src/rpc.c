@@ -201,8 +201,8 @@ static char outFileName[256] = { 0 };           // Output file name (required fo
 static char inDirectoryPath[256] = { 0 };       // Input directory path
 static char outProjectPath[256] = { 0 };        // Output project path, initializeed to working directory
 
-static int framesCounter = 0;                   // General pourpose frames counter (not used)
-static Vector2 mousePoint = { 0 };              // Mouse position
+//static int framesCounter = 0;                   // General pourpose frames counter (not used)
+//static Vector2 mousePoint = { 0 };              // Mouse position
 static bool lockBackground = false;             // Toggle lock background (controls locked)
 static bool saveChangesRequired = false;        // Flag to notice save changes are required
 
@@ -224,13 +224,12 @@ static int monitorWidth = 0;                    // Monitor width
 static int monitorHeight = 0;                   // Monitor height
 static bool screenSizeDouble = false;           // Flag to screen size x2, in case of HighDPI
 
-static bool showMessageReset = false;           // Show message: reset
 static bool showMessageExit = false;            // Show message: exit (quit)
 static bool showGenProjectProgress = false;     // Show project generation progress bar
 static float generateProjectProgress = 0.0f;    // Project export progress bar (fake)
 
-static double baseTime = 0;                     // Base time in seconds to start counting
-static double currentTime = 0;                  // Current time counter in seconds
+//static double baseTime = 0;                     // Base time in seconds to start counting
+//static double currentTime = 0;                  // Current time counter in seconds
 static int currentYear = 2026;                  // Current year for project, retrieved at init
 
 // Project variables
@@ -260,16 +259,6 @@ static bool showLoadDirectoryDialog = false;
 static int projectEditProperty = -1;
 
 static bool showLoadIconDialog = false;
-//-----------------------------------------------------------------------------------
-
-// Support Message Box
-//-----------------------------------------------------------------------------------
-#if defined(SPLASH_SUPPORT_MESSAGE)
-static bool showSupportMessage = true;      // Support message box splash message at startup
-#else
-static bool showSupportMessage = false;
-#endif
-static int supportMessageRandBtn = 0;       // Support message buttons random position
 //-----------------------------------------------------------------------------------
 
 // GUI: Main toolbar panel
@@ -529,13 +518,6 @@ int main(int argc, char *argv[])
     // GUI: User Window
     //-----------------------------------------------------------------------------------
     //windowUserState = InitGuiWindowUser();
-    //-----------------------------------------------------------------------------------
-
-    // Trial message(s) and Support Message Box
-    //-----------------------------------------------------------------------------------
-#if defined(SPLASH_SUPPORT_MESSAGE)
-    supportMessageRandBtn = GetRandomValue(0, 1); // Used for the support message button order
-#endif
     //-----------------------------------------------------------------------------------
 
     // Load application init configuration (if available)
