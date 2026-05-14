@@ -23,10 +23,15 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       2.0  (10-May-2026)  ADDED: Complete UI redesign
-*                           ADDED: Load and save project configuration data
-*                           ADDED: Resource scan from code files
-*                           REVIEWED: Resource management, copy to generated project
+*       2.0  (14-May-2026)  ADDED: Complete internal redesign to align with [rpb] builder tool
+*                           ADDED: Load and save project configuration files (.rpc), shared with [rpb]
+*                           ADDED: Multiple project templates to start projects, including assets
+*                           ADDED: Source code scanning for automatic assets detection
+*                           REVIEWED: Support for multiple input files, code or assets
+*                           REVIEWED: Command-line interface to support new features
+*                           REVIEWED: Complete UI redesign, new styles added
+*                           REVIEWED: Assets management, copy assets to generated project
+*                           REVIEWED: VS2022 working directory to src, where resources is located
 *
 *       1.1  (30-Sep-2024)  ADDED: Support raylib path as property on VS2022 projects
 *                           ADDED: Support for HighDPI/4K monitors, scaling UI automatically
