@@ -1,8 +1,8 @@
 #**************************************************************************************************
 #
-#   raylib makefile for Desktop platforms, Raspberry Pi and Web Assembly
+#   raylib makefile for Desktop platforms, Web (Wasm), Raspberry Pi (DRM mode) and Android
 #
-#   Copyright (c) 2021-2026 Ramon Santamaria (@raysan5)
+#   Copyright (c) 2013-2026 Ramon Santamaria (@raysan5)
 #
 #   This software is provided "as-is", without any express or implied warranty. In no event
 #   will the authors be held liable for any damages arising from the use of this software.
@@ -25,7 +25,7 @@
 
 # Define required environment variables
 #------------------------------------------------------------------------------------------------
-# Define target platform: PLATFORM_DESKTOP, PLATFORM_WEB, PLATFORM_DRM
+# Define target platform: PLATFORM_DESKTOP, PLATFORM_WEB, PLATFORM_DRM, PLATFORM_ANDROID
 PLATFORM              ?= PLATFORM_DESKTOP
 
 # Define project variables
@@ -96,14 +96,16 @@ ifeq ($(PLATFORM),PLATFORM_DRM)
     endif
 endif
 
-ifeq ($(PLATFORM),PLATFORM_WEB)
-    # Emscripten required variables
-    EMSDK_PATH         ?= C:/raylib/emsdk
-    EMSCRIPTEN_PATH    ?= $(EMSDK_PATH)/upstream/emscripten
-    CLANG_PATH          = $(EMSDK_PATH)/upstream/bin
-    PYTHON_PATH         = $(EMSDK_PATH)/python/3.13.3_64bit
-    NODE_PATH           = $(EMSDK_PATH)/node/22.16.0_64bit/bin
-    export PATH         = $(EMSDK_PATH);$(EMSCRIPTEN_PATH);$(CLANG_PATH);$(NODE_PATH);$(PYTHON_PATH):$$(PATH)
+ifeq ($(PLATFORM_OS),WINDOWS)
+    ifeq ($(PLATFORM),PLATFORM_WEB)
+        # Emscripten required variables
+        EMSDK_PATH         ?= C:/raylib/emsdk
+        EMSCRIPTEN_PATH    ?= $(EMSDK_PATH)/upstream/emscripten
+        CLANG_PATH          = $(EMSDK_PATH)/upstream/bin
+        PYTHON_PATH         = $(EMSDK_PATH)/python/3.13.3_64bit
+        NODE_PATH           = $(EMSDK_PATH)/node/22.16.0_64bit/bin
+        export PATH         = $(EMSDK_PATH);$(EMSCRIPTEN_PATH);$(CLANG_PATH);$(NODE_PATH);$(PYTHON_PATH):$$(PATH)
+    endif
 endif
 
 # Define default C compiler: CC
