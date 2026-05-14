@@ -38,7 +38,7 @@ PROJECT_SOURCE_FILES  += external/tinyfiledialogs.c
 endif
 
 # raylib library variables
-RAYLIB_PATH           ?= C:/GitHub/raylib
+RAYLIB_PATH           ?= ../../raylib
 RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_PATH)/src
 RAYLIB_LIB_PATH       ?= $(RAYLIB_PATH)/src
 
