@@ -209,7 +209,7 @@ static bool saveChangesRequired = false;        // Flag to notice save changes a
 static RenderTexture2D screenTarget = { 0 };    // Render texture to render the tool (if required)
 
 static Vector2 propPanelScroll = { 0, -10 };    // Project properties panel scroll offset
-static Rectangle propPanelView = { 0 };         // Project properties panel view (for scissoring)
+//static Rectangle propPanelView = { 0 };         // Project properties panel view (for scissoring)
 static Vector2 filesPanelScroll = { 0 };
 static Rectangle filesPanelView = { 0 };
 
