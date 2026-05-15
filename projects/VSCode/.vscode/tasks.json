@@ -10,24 +10,24 @@
             "args": [
                 "PLATFORM=PLATFORM_DESKTOP",
                 "BUILD_MODE=DEBUG",
-                "PROJECT_NAME=raylib_project_creator",
-                "OBJS=raylib_project_creator.c"
+                "PROJECT_NAME=rpc",
+                "OBJS=rpc.c"
             ],
             "windows": {
                 "command": "mingw32-make.exe",
                 "args": [
                     "-f ../../src/Makefile",
-                    "RAYLIB_SRC_PATH=C:/raylib/raylib",
-                    "PROJECT_NAME=raylib_project_creator",
-                    "OBJS=raylib_project_creator.c",
+                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
+                    "PROJECT_NAME=rpc",
+                    "OBJS=rpc.c",
                     "BUILD_MODE=DEBUG"
                 ],
             },
             "osx": {
                 "args": [
-                    "RAYLIB_SRC_PATH=C:/raylib/raylib",
-                    "PROJECT_NAME=raylib_project_creator",
-                    "OBJS=raylib_project_creator.c",
+                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
+                    "PROJECT_NAME=rpc",
+                    "OBJS=rpc.c",
                     "BUILD_MODE=DEBUG"
                 ],
             },
@@ -42,23 +42,23 @@
             "command": "make",
             "args": [
                 "PLATFORM=PLATFORM_DESKTOP",
-                "PROJECT_NAME=raylib_project_creator",
-                "OBJS=raylib_project_creator.c"
+                "PROJECT_NAME=rpc",
+                "OBJS=rpc.c"
             ],
             "windows": {
                 "command": "mingw32-make.exe",
                 "args": [
                     "-f ../../src/Makefile",
-                    "RAYLIB_SRC_PATH=C:\GitHub\raylib\src",
-                    "PROJECT_NAME=raylib_project_creator",
-                    "OBJS=raylib_project_creator.c"
+                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
+                    "PROJECT_NAME=rpc",
+                    "OBJS=rpc.c"
                 ],
             },
             "osx": {
                 "args": [
-                    "RAYLIB_SRC_PATH=C:\GitHub\raylib\src",
-                    "PROJECT_NAME=raylib_project_creator",
-                    "OBJS=raylib_project_creator.c"
+                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
+                    "PROJECT_NAME=rpc",
+                    "OBJS=rpc.c"
                 ],
             },
             "group": "build",
