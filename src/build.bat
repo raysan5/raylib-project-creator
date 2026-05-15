@@ -11,7 +11,7 @@ cmd /c mingw32-make ^
 PROJECT_PATH=. ^
 PROJECT_NAME=rpb ^
 PROJECT_VERSION=1.0 ^
-PROJECT_DESCRIPTION="A simple and easy-to-use raylib projects creator^
+PROJECT_DESCRIPTION="A simple and easy-to-use raylib project creator^
 PROJECT_INTERNAL_NAME=rpc ^
 PROJECT_BUILD_PATH=ONE ^
 PROJECT_PLATFORM=PLATFORM_DESKTOP ^
