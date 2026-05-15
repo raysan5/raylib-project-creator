@@ -1,7 +1,7 @@
 GLFW_ICON ICON "rpc.ico"
 1 VERSIONINFO
-FILEVERSION     1,0,0,0
-PRODUCTVERSION  1,0,0,0
+FILEVERSION     2,0,0,0
+PRODUCTVERSION  2,0,0,0
 BEGIN
   BLOCK "StringFileInfo"
   BEGIN
@@ -9,13 +9,13 @@ BEGIN
     BLOCK "040904E4"    // English US
     BEGIN
       VALUE "CompanyName", "raylibtech"
-      VALUE "FileDescription", "raylib project creator | A simple and easy-to-use raylib build projects creator"
-      VALUE "FileVersion", "1.0"
+      VALUE "FileDescription", "rpc | A simple and easy-to-use raylib build projects creator"
+      VALUE "FileVersion", "2.0"
       VALUE "InternalName", "rpc"
-      VALUE "LegalCopyright", "(c) 2025 raylib technologies (@raylibtech)"
+      VALUE "LegalCopyright", "(c) 2026 raylib technologies (@raylibtech)"
       VALUE "OriginalFilename", "rpc.exe"
       VALUE "ProductName", "raylib project creator"
-      VALUE "ProductVersion", "1.0"
+      VALUE "ProductVersion", "2.0"
     END
   END
   BLOCK "VarFileInfo"
