@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rpc v2.0 - A simple and easy-to-use raylib projects creator
+*   rpc v2.0 - A simple and easy-to-use raylib project creator
 *
 *   FEATURES:
 *       - Select startup project from some game/tool templates
@@ -18,6 +18,9 @@
 *       - VSCode: Requires compiler tools (make.exe) in the system path
 *
 *   CONFIGURATION:
+*       #define COMMAND_LINE_ONLY
+*           Compile tool only for command line usage
+*
 *       #define CUSTOM_MODAL_DIALOGS
 *           Use custom raygui generated modal dialogs instead of native OS ones
 *           NOTE: Avoids including tinyfiledialogs depencency library
@@ -42,14 +45,21 @@
 *
 *   DEPENDENCIES:
 *       raylib 6.1-dev          - Windowing/input management and drawing
-*       raygui 5.0              - Immediate-mode GUI controls with custom styling and icons
-*       tinyfiledialogs 3.20.0  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
+*       raygui 5.0-dev          - Immediate-mode GUI controls with custom styling and icons
+*       rini 3.0                - Configuration file load/save
 *       miniz 2.2.0             - Save .zip package file (required for multiple images export)
+*       tinyfiledialogs 3.20.0  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *
-*   COMPILATION (Windows - MinGW):
-*       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
+*   BUILDING:
+*     - Windows (MinGW-w64):
+*       gcc -o rpc.exe rpc.c external/tinyfiledialogs.c rpc.rc.data -s -O2 -std=c99 -Wall -Iexternal /
+*           -lraylib -lopengl32 -lgdi32 -lcomdlg32 -lole32
 *
+*     - Linux (GCC):
+*       gcc -o rpc rpc.c external/tinyfiledialogs.c -s -no-pie -Iexternal -D_DEFAULT_SOURCE /
+*           -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 *
+
 *   LICENSE: zlib/libpng
 *
 *   Copyright (c) 2024-2026 Ramon Santamaria (@raysan5)
@@ -74,9 +84,9 @@
 #define TOOL_NAME               "rpc"
 #define TOOL_SHORT_NAME         "rpc"
 #define TOOL_VERSION            "2.0"
-#define TOOL_DESCRIPTION        "A simple and easy-to-use raylib projects creator"
-#define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use\nraylib projects creator"
-#define TOOL_RELEASE_DATE       "Sep.2025"
+#define TOOL_DESCRIPTION        "A simple and easy-to-use raylib project creator"
+#define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use\nraylib project creator"
+#define TOOL_RELEASE_DATE       "May.2026"
 #define TOOL_LOGO_COLOR         0x000000ff
 #define TOOL_CONFIG_FILENAME    "rpc.ini"
 
@@ -100,7 +110,7 @@
 #include "gui_window_help.h"                // GUI: Help Window
 
 #define GUI_WINDOW_ABOUT_IMPLEMENTATION
-#include "gui_window_about_welcome.h"       // GUI: About Window
+#include "gui_window_about_welcome.h"       // GUI: About/Welcome Window
 
 #define GUI_FILE_DIALOGS_IMPLEMENTATION
 #include "gui_file_dialogs.h"               // GUI: File Dialogs
@@ -121,9 +131,7 @@
 
 //#include "template.zip.h"                   // Project template to embed into executable (zipped)
 
-#define RPNG_IMPLEMENTATION
-#include "external/rpng.h"                  // PNG chunks management
-
+// NOTE: Using same config than [rpc], for .rpc files consistency
 #define RINI_MAX_VALUE_CAPACITY     256
 #define RINI_MAX_TEXT_SIZE          256
 #define RINI_KEY_SPACING             37
@@ -136,15 +144,17 @@
 #include "rpconfig.h"                // Data types and functionality (shared by [rpc] and [rpb] tools)
 
 // Standard C libraries
+#include <stdlib.h>                         // Required for: NULL, malloc(), free()
 #include <stdio.h>                          // Required for: fopen(), fclose(), fread()...
-#include <stdlib.h>                         // Required for: NULL, calloc(), free()
 #include <string.h>                         // Required for: memcpy()
+#include <time.h>                           // Required for: time(), localtime()
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
 #if (!defined(_DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
-bool __stdcall FreeConsole(void);   // Close console from code (kernel32.lib)
+// WARNING: Comment if LOG() output is required for this tool
+bool __stdcall FreeConsole(void);           // Close console from code (kernel32.lib)
 #endif
 
 // Simple log system to avoid printf() calls if required
@@ -200,18 +210,18 @@ static const int screenWidth = 1070;        // Default screen width (at initiali
 static const int screenHeight = 900;        // Default screen height (at initialization)
 
 // NOTE: Max length depends on OS, in Windows MAX_PATH = 256
-static char inFileName[256] = { 0 };            // Input file name (required in case of drag & drop over executable)
-static char outFileName[256] = { 0 };           // Output file name (required for file save/export)
+static char inFileName[256] = { 0 };        // Input file name (required in case of drag & drop over executable)
+static char outFileName[256] = { 0 };       // Output file name (required for file save/export)
 
-static char inDirectoryPath[256] = { 0 };       // Input directory path
-static char outProjectPath[256] = { 0 };        // Output project path, initializeed to working directory
+static char inDirectoryPath[256] = { 0 };   // Input directory path
+static char outProjectPath[256] = { 0 };    // Output project path, initializeed to working directory
 
-//static int framesCounter = 0;                   // General pourpose frames counter (not used)
-//static Vector2 mousePoint = { 0 };              // Mouse position
-static bool lockBackground = false;             // Toggle lock background (controls locked)
-static bool saveChangesRequired = false;        // Flag to notice save changes are required
+//static int framesCounter = 0;               // General pourpose frames counter (not used)
+//static Vector2 mousePoint = { 0 };          // Mouse position
+static bool lockBackground = false;         // Toggle lock background (controls locked)
+static bool saveChangesRequired = false;    // Flag to notice save changes are required
 
-static RenderTexture2D screenTarget = { 0 };    // Render texture to render the tool (if required)
+static RenderTexture2D target = { 0 };      // Render texture to render the tool (if required)
 
 static Vector2 propPanelScroll = { 0, -10 };    // Project properties panel scroll offset
 //static Rectangle propPanelView = { 0 };         // Project properties panel view (for scissoring)
@@ -455,12 +465,14 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
-#endif // PLATFORM_DESKTOP
+#endif
+
 #if (!defined(_DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
     // WARNING (Windows): If program is compiled as Window application (instead of console),
     // no console is available to show output info... solution is compiling a console application
     // and closing console (FreeConsole()) when changing to GUI interface
-    //FreeConsole();
+    // WARNING: Comment in case LOG() output is required for this tool
+    FreeConsole();
 #endif
 
     // GUI usage mode - Initialization
@@ -688,6 +700,15 @@ static void UpdateDrawFrame(void)
 
     // Keyboard shortcuts
     //------------------------------------------------------------------------------------
+    // Toggle window: help
+    if (IsKeyPressed(KEY_F1)) windowHelpState.windowActive = !windowHelpState.windowActive;
+
+    // Toggle window: about
+    if (IsKeyPressed(KEY_F2)) windowAboutState.windowActive = !windowAboutState.windowActive;
+
+    // Toggle window: issue report
+    if (IsKeyPressed(KEY_F3)) showIssueReportWindow = !showIssueReportWindow;
+
     // New style file, previous in/out files registeres are reseted
     if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_N)) || mainToolbarState.btnNewFilePressed)
     {
@@ -719,16 +740,6 @@ static void UpdateDrawFrame(void)
     {
         if (input.srcFileCount > 0) showProjectGenPathDialog = true;
     }
-
-    // Toggle window: help
-    if (IsKeyPressed(KEY_F1)) windowHelpState.windowActive = !windowHelpState.windowActive;
-
-    // Toggle window: about
-    if (IsKeyPressed(KEY_F2)) windowAboutState.windowActive = !windowAboutState.windowActive;
-
-    // Toggle window: issue report
-    if (IsKeyPressed(KEY_F3)) showIssueReportWindow = !showIssueReportWindow;
-
     // Show closing window on ESC
     if (IsKeyPressed(KEY_ESCAPE))
     {
@@ -1510,6 +1521,8 @@ static void ShowCommandLineInfo(void)
     printf("//                                                                              //\n");
     printf("// %s v%s - %s                  //\n", TOOL_NAME, TOOL_VERSION, TOOL_DESCRIPTION);
     printf("// powered by raylib v%s and raygui v%s                               //\n", RAYLIB_VERSION, RAYGUI_VERSION);
+    printf("// more info and bugs-report: github.com/raysan5/raylib-project-creator         //\n");
+    printf("// feedback and support:      ray[at]raylib.com                                 //\n");
     printf("//                                                                              //\n");
     printf("// Copyright (c) 2024-%i Ramon Santamaria (@raysan5)                          //\n", currentYear);
     printf("//                                                                              //\n");
@@ -1778,10 +1791,10 @@ static void ProcessCommandLine(int argc, char *argv[])
 //--------------------------------------------------------------------------------------------
 // Load/Save/Export functions
 //--------------------------------------------------------------------------------------------
-//...
+// NOTE: rpconfig.h provides required functions, shared by [rpc] and [rpb] tools
 
 //--------------------------------------------------------------------------------------------
-// Auxiliar functions
+// Auxiliar functions (utilities)
 //--------------------------------------------------------------------------------------------
 
 // Load project source/asset file paths bucket
