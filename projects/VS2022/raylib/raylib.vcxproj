@@ -332,6 +332,9 @@
     <ClInclude Include="$(RaylibSrcPath)\external\stb_vorbis.h" />
     <ClInclude Include="$(RaylibSrcPath)\external\cgltf.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="$(RaylibSrcPath)\raylib.dll.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
