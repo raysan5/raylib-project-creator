@@ -5,15 +5,15 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
-	<string>raylib_project_creator</string>
+	<string>rpc</string>
 	<key>CFBundleIconFile</key>
-	<string>raylib_project_creator.icns</string>
+	<string>rpc.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.raylibtech.raylib_project_creator</string>
+	<string>com.raylibtech.rpc</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>raylib_project_creator</string>
+	<string>rpc</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleVersion</key>
@@ -23,7 +23,7 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>10.12</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright (c) 2024 raylib technologies</string>
+	<string>Copyright (c) 2024-2026 Ramon Santamaria (@raysan5)</string>
     <key>CFBundleSignature</key>
     <string>????</string>
 </dict>
