@@ -31,7 +31,7 @@
 
 #include "raylib.h"
 
-#define RPC_MAX_PROPERTY_ENTRIES_RAW    128
+#define RPC_MAX_PROPERTY_ENTRIES    256
 
 #define RPCAPI
 
@@ -93,12 +93,12 @@ typedef enum {
     RPC_PLATFORM_ANY
 } rpcPlatform;
 
-// Project Config Property Entry data selectedTemplate
+// Project config property entry
 // NOTE: Useful to automatice UI generation,
 // every data entry is read from rpc config file
 typedef struct {
     char key[64];       // Entry key (as read from .rpc)
-    char text[256];     // Entry text data (selectedTemplate: TEXT, FILE, PATH) - WARNING: Max len defined for rini
+    char text[256];     // Entry text data (type: TEXT, FILE, PATH) - WARNING: Max len defined for rini
     char desc[128];     // Entry data description, useful for tooltips
 
     // Data extracted from key
@@ -116,7 +116,7 @@ typedef struct {
 typedef struct {
     int capacity;       // Entries capacity
     int entryCount;     // Number of entries used
-    rpcPropertyEntry *entries;  // Entries
+    rpcPropertyEntry *entries; // Entries
 } rpcProjectConfig;
 
 //----------------------------------------------------------------------------------
@@ -133,9 +133,9 @@ RPCAPI void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, 
 
 RPCAPI char *rpcGetText(rpcProjectConfig config, const char *key); // Get project config text by key
 RPCAPI int *rpcGetValue(rpcProjectConfig config, const char *key); // Get project config pointer to value by key
-RPCAPI rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfig raw, const char *key);
 RPCAPI int rpcSetText(rpcProjectConfig config, const char *key, const char *text); // Set project config text by key
 RPCAPI int rpcSetValue(rpcProjectConfig config, const char *key, int value); // Set project config value by key
+RPCAPI rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfig config, const char *key); // Get project property entry from key
 
 #if defined(__cplusplus)
 }               // Prevents name mangling of functions
@@ -156,7 +156,8 @@ RPCAPI int rpcSetValue(rpcProjectConfig config, const char *key, int value); // 
 #include <string.h>     // Required for: strncpy()
 #include <stdlib.h>     // Required for: calloc(), free()
 
-// Load project config config data from .rpc file
+// Load project config data from .rpc file
+// NOTE: Data is parsed to organize by type of entry
 rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
 {
     rpcProjectConfig project = { 0 };
@@ -166,7 +167,7 @@ rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
         rini_data config = { 0 };
         config = rini_load(fileName);
 
-        project.capacity = RPC_MAX_PROPERTY_ENTRIES_RAW;
+        project.capacity = RPC_MAX_PROPERTY_ENTRIES;
         project.entries = (rpcPropertyEntry *)RL_CALLOC(project.capacity, sizeof(rpcPropertyEntry));
         project.entryCount = config.count;
 
@@ -256,7 +257,7 @@ void rpcUnloadProjectConfig(rpcProjectConfig config)
 }
 
 // Save project config data to .rpc file
-// NOTE: Same function as [rpc] tool but but adding more data
+// NOTE: Same function as [rpc] tool but adding more data
 void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, int flags)
 {
     rini_data data = rini_load(NULL);   // Create empty config with RINI_MAX_VALUE_CAPACITY entries
@@ -473,17 +474,6 @@ int *rpcGetValue(rpcProjectConfig config, const char *key)
     return NULL;
 }
 
-// Get project property entry
-rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfig config, const char *key)
-{
-    for (int i = 0; i < config.entryCount; i++)
-    {
-        if (TextIsEqual(config.entries[i].key, key)) return &config.entries[i];
-    }
-
-    return NULL;
-}
-
 // Set project config text by key
 int rpcSetText(rpcProjectConfig config, const char *key, const char *text)
 {
@@ -491,7 +481,8 @@ int rpcSetText(rpcProjectConfig config, const char *key, const char *text)
 
     for (int i = 0; i < config.entryCount; i++)
     {
-        if (TextIsEqual(config.entries[i].key, key))
+        if (TextIsEqual(config.entries[i].key, key) && 
+            !TextIsEqual(config.entries[i].text, text))
         {
             memset(config.entries[i].text, 0, 256);
             strcpy(config.entries[i].text, text);
@@ -522,23 +513,15 @@ int rpcSetValue(rpcProjectConfig config, const char *key, int value)
     return result;
 }
 
-// Update property entry value and text
-static void UpdateEntryValue(rpcPropertyEntry *entry, int value)
+// Get project property entry
+rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfig config, const char *key)
 {
-    entry->value = value;
-    memset(entry->text, 0, 256);
-    TextCopy(entry->text, TextFormat("%i", value));
-}
-
-// Update property entry text (if provided)
-// NOTE: Only updated text if provided, if not, using default value from template
-static void UpdateEntryText(rpcPropertyEntry *entry, const char *text)
-{
-    if ((text != NULL) && (text[0] != '\0'))
+    for (int i = 0; i < config.entryCount; i++)
     {
-        memset(entry->text, 0, 256);
-        TextCopy(entry->text, text);
+        if (TextIsEqual(config.entries[i].key, key)) return &config.entries[i];
     }
+
+    return NULL;
 }
 
 #endif // RPCDATA_IMPLEMENTATION
