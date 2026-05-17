@@ -483,8 +483,8 @@ int main(int argc, char *argv[])
     SetExitKey(0);
 
     // Create a RenderTexture2D to be used for render to texture
-    screenTarget = LoadRenderTexture(screenWidth, screenHeight);
-    SetTextureFilter(screenTarget.texture, TEXTURE_FILTER_POINT);
+    target = LoadRenderTexture(screenWidth, screenHeight);
+    SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
 
     input = rpcLoadProjectInput();
 
@@ -581,7 +581,7 @@ int main(int argc, char *argv[])
     //--------------------------------------------------------------------------------------
     //rpcUnloadProjectConfigTyped(project);
 
-    UnloadRenderTexture(screenTarget); // Unload render texture
+    UnloadRenderTexture(target); // Unload render texture
 
     // Save application init configuration for next run
     //--------------------------------------------------------------------------------------
@@ -866,7 +866,7 @@ static void UpdateDrawFrame(void)
     // Draw
     //----------------------------------------------------------------------------------
     // Render all screen to texture (for scaling)
-    BeginTextureMode(screenTarget);
+    BeginTextureMode(target);
     ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
     // GUI: Main Window
@@ -1502,12 +1502,12 @@ static void UpdateDrawFrame(void)
         ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
         // Draw render texture to screen
-        if (screenSizeDouble) DrawTexturePro(screenTarget.texture,
-            (Rectangle){ 0, 0, (float)screenTarget.texture.width, -(float)screenTarget.texture.height },
-            (Rectangle){ 0, 0, (float)screenTarget.texture.width*2, (float)screenTarget.texture.height*2 },
+        if (screenSizeDouble) DrawTexturePro(target.texture,
+            (Rectangle){ 0, 0, (float)target.texture.width, -(float)target.texture.height },
+            (Rectangle){ 0, 0, (float)target.texture.width*2, (float)target.texture.height*2 },
             (Vector2){ 0, 0 }, 0.0f, WHITE);
-        else DrawTextureRec(screenTarget.texture,
-            (Rectangle){ 0, 0, (float)screenTarget.texture.width, -(float)screenTarget.texture.height },
+        else DrawTextureRec(target.texture,
+            (Rectangle){ 0, 0, (float)target.texture.width, -(float)target.texture.height },
             (Vector2){ 0, 0 }, WHITE);
     EndDrawing();
     //----------------------------------------------------------------------------------
