@@ -132,7 +132,7 @@
 //#include "template.zip.h"                   // Project template to embed into executable (zipped)
 
 // NOTE: Using same config than [rpc], for .rpc files consistency
-#define RINI_MAX_VALUE_CAPACITY     256
+#define RINI_MAX_ENTRY_CAPACITY     256
 #define RINI_MAX_TEXT_SIZE          256
 #define RINI_KEY_SPACING             37
 #define RINI_VALUE_SPACING           35
