@@ -173,16 +173,16 @@ rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
 
         for (unsigned int i = 0; i < config.count; i++)
         {
-            TextCopy(project.entries[i].key, config.values[i].key);
-            TextCopy(project.entries[i].desc, config.values[i].desc);
+            TextCopy(project.entries[i].key, config.entries[i].key);
+            TextCopy(project.entries[i].desc, config.entries[i].desc);
             project.entries[i].platform = RPC_PLATFORM_ANY;
 
             // Category is parsed from first word on key
             char category[32] = { 0 };
             int categoryLen = 0; //TextFindIndex(config.values[i].key, "_");
-            for (int c = 0; c < 128; c++) { if (config.values[i].key[c] != '_') categoryLen++; else break; }
-            strncpy(category, config.values[i].key, categoryLen);
-            TextCopy(project.entries[i].name, TextReplace(config.values[i].key + categoryLen + 1, "_", " "));
+            for (int c = 0; c < 128; c++) { if (config.entries[i].key[c] != '_') categoryLen++; else break; }
+            strncpy(category, config.entries[i].key, categoryLen);
+            TextCopy(project.entries[i].name, TextReplace(config.entries[i].key + categoryLen + 1, "_", " "));
 
             if (TextIsEqual(category, "PROJECT")) project.entries[i].category = RPC_CAT_PROJECT;
             else if (TextIsEqual(category, "BUILD")) project.entries[i].category = RPC_CAT_BUILD;
@@ -193,8 +193,8 @@ rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
                 // Get platform from key
                 char platform[32] = { 0 };
                 int platformLen = 0;//TextFindIndex(config.values[i].key + categoryLen + 1, "_");
-                for (int c = 0; c < 128; c++) { if (config.values[i].key[c + categoryLen + 1] != '_') platformLen++; else break; }
-                memcpy(platform, config.values[i].key + categoryLen + 1, platformLen);
+                for (int c = 0; c < 128; c++) { if (config.entries[i].key[c + categoryLen + 1] != '_') platformLen++; else break; }
+                memcpy(platform, config.entries[i].key + categoryLen + 1, platformLen);
 
                 if (TextIsEqual(platform, "WINDOWS")) project.entries[i].platform = RPC_PLATFORM_WINDOWS;
                 else if (TextIsEqual(platform, "LINUX")) project.entries[i].platform = RPC_PLATFORM_LINUX;
@@ -207,7 +207,7 @@ rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
                 else if (TextIsEqual(platform, "FREEBSD")) project.entries[i].platform = RPC_PLATFORM_FREEBSD;
 
                 memset(project.entries[i].name, 0, 64);
-                TextCopy(project.entries[i].name, config.values[i].key + categoryLen + platformLen + 2);
+                TextCopy(project.entries[i].name, config.entries[i].key + categoryLen + platformLen + 2);
             }
             else if (TextIsEqual(category, "DEPLOY")) project.entries[i].category = RPC_CAT_DEPLOY;
             else if (TextIsEqual(category, "IMAGERY")) project.entries[i].category = RPC_CAT_IMAGERY;
@@ -217,13 +217,13 @@ rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
         for (unsigned int i = 0; i < config.count; i++)
         {
             // Type is parsed from key and value
-            if (!config.values[i].is_text)
+            if (!config.entries[i].is_text)
             {
                 if (TextFindIndex(project.entries[i].key, "_FLAG")) project.entries[i].type = RPC_TYPE_BOOL;
                 else project.entries[i].type = RPC_TYPE_VALUE;
 
                 // Get the value
-                project.entries[i].value = TextToInteger(config.values[i].text);
+                project.entries[i].value = TextToInteger(config.entries[i].text);
             }
             else // Value is text
             {
@@ -240,7 +240,7 @@ rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
                     project.entries[i].type = RPC_TYPE_TEXT;
                 }
 
-                TextCopy(project.entries[i].text, config.values[i].text);
+                TextCopy(project.entries[i].text, config.entries[i].text);
             }
         }
 
@@ -260,7 +260,7 @@ void rpcUnloadProjectConfig(rpcProjectConfig config)
 // NOTE: Same function as [rpc] tool but adding more data
 void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, int flags)
 {
-    rini_data data = rini_load(NULL);   // Create empty config with RINI_MAX_VALUE_CAPACITY entries
+    rini_data data = rini_load(NULL);   // Create empty config with RINI_MAX_ENTRY_CAPACITY entries
 
     // Define header comment lines
     rini_set_comment_line(&data, NULL); // Empty comment line, but including comment prefix delimiter
