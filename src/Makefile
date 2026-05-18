@@ -52,7 +52,7 @@ COMPILER_PATH         ?= C:\raylib\w64devkit\bin
 BUILD_MODE            ?= RELEASE
 
 # PLATFORM_WEB: Default properties
-BUILD_WEB_ASYNCIFY    ?= TRUE
+BUILD_WEB_ASYNCIFY    ?= FALSE
 BUILD_WEB_SHELL       ?= minshell.html
 BUILD_WEB_HEAP_SIZE   ?= 128MB
 BUILD_WEB_STACK_SIZE  ?= 1MB
@@ -96,16 +96,14 @@ ifeq ($(PLATFORM),PLATFORM_DRM)
     endif
 endif
 
-ifeq ($(PLATFORM_OS),WINDOWS)
-    ifeq ($(PLATFORM),PLATFORM_WEB)
-        # Emscripten required variables
-        EMSDK_PATH         ?= C:/raylib/emsdk
-        EMSCRIPTEN_PATH    ?= $(EMSDK_PATH)/upstream/emscripten
-        CLANG_PATH          = $(EMSDK_PATH)/upstream/bin
-        PYTHON_PATH         = $(EMSDK_PATH)/python/3.13.3_64bit
-        NODE_PATH           = $(EMSDK_PATH)/node/22.16.0_64bit/bin
-        export PATH         = $(EMSDK_PATH);$(EMSCRIPTEN_PATH);$(CLANG_PATH);$(NODE_PATH);$(PYTHON_PATH):$$(PATH)
-    endif
+ifeq ($(PLATFORM),PLATFORM_WEB)
+    # Emscripten required variables
+    EMSDK_PATH         ?= C:/raylib/emsdk
+    EMSCRIPTEN_PATH    ?= $(EMSDK_PATH)/upstream/emscripten
+    CLANG_PATH          = $(EMSDK_PATH)/upstream/bin
+    PYTHON_PATH         = $(EMSDK_PATH)/python/3.13.3_64bit
+    NODE_PATH           = $(EMSDK_PATH)/node/22.16.0_64bit/bin
+    export PATH         = $(EMSDK_PATH);$(EMSCRIPTEN_PATH);$(CLANG_PATH);$(NODE_PATH);$(PYTHON_PATH):$$(PATH)
 endif
 
 # Define default C compiler: CC

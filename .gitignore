@@ -9,6 +9,10 @@ src/*
 *.x86_64
 *.hex
 *.ini
+src/rpc.html
+src/*.wasm
+src/rpc.data
+src/*.js
 
 # Prerequisites
 *.d

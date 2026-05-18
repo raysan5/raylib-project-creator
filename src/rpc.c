@@ -601,9 +601,11 @@ int main(int argc, char *argv[])
 // Update and draw one frame
 static void UpdateDrawFrame(void)
 {
+#if !defined(PLATFORM_WEB)
     // WARNING: ASINCIFY requires this line,
     // it contains the call to emscripten_sleep() for PLATFORM_WEB
     if (WindowShouldClose()) closeWindow = true;
+#endif
 
     // Dropped files logic
     //----------------------------------------------------------------------------------
