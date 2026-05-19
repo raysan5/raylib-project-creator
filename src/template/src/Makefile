@@ -35,7 +35,7 @@ PROJECT_BUILD_PATH    ?= .
 PROJECT_SOURCE_FILES  ?= project_name.c
 
 # raylib library variables
-RAYLIB_SRC_PATH       ?= C:/raylib/raylib
+RAYLIB_SRC_PATH       ?= C:/raylib/raylib/src
 RAYLIB_INCLUDE_PATH   ?= $(RAYLIB_SRC_PATH)
 RAYLIB_LIB_PATH       ?= $(RAYLIB_SRC_PATH)
 # Library type used for raylib: STATIC (.a) or SHARED (.so/.dll)
@@ -62,7 +62,7 @@ ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     # ifeq ($(UNAME),Msys) -> Windows
     ifeq ($(OS),Windows_NT)
         PLATFORM_OS = WINDOWS
-        export PATH := $(COMPILER_PATH):$(PATH)
+        export PATH := $(COMPILER_PATH);$(PATH)
     else
         UNAMEOS = $(shell uname)
         ifeq ($(UNAMEOS),Linux)
@@ -349,22 +349,34 @@ $(PROJECT_NAME): $(OBJS)
 clean:
 ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     ifeq ($(PLATFORM_OS),WINDOWS)
-		del *.o *.exe /s
+	del *.o *.exe /s
     endif
     ifeq ($(PLATFORM_OS),LINUX)
-		find . -type f -executable -delete
-		rm -fv *.o
+	find . -type f -executable -delete
+	rm -fv *.o
     endif
     ifeq ($(PLATFORM_OS),OSX)
-		rm -f *.o external/*.o $(PROJECT_NAME)
+	rm -f *.o external/*.o $(PROJECT_NAME)
     endif
+endif
+ifeq ($(PLATFORM),PLATFORM_RPI)
+	find . -type f -executable -delete
+	rm -fv *.o
 endif
 ifeq ($(PLATFORM),PLATFORM_DRM)
 	find . -type f -executable -delete
 	rm -fv *.o
 endif
 ifeq ($(PLATFORM),PLATFORM_WEB)
+    ifeq ($(PLATFORM_OS),WINDOWS)
 	del *.o *.html *.js
+    endif
+    ifeq ($(PLATFORM_OS),LINUX)
+	rm -fv *.o $(PROJECT_NAME).data $(PROJECT_NAME).html $(PROJECT_NAME).js $(PROJECT_NAME).wasm
+    endif
+    ifeq ($(PLATFORM_OS),OSX)
+	rm -f *.o $(PROJECT_NAME).data $(PROJECT_NAME).html $(PROJECT_NAME).js $(PROJECT_NAME).wasm
+    endif
 endif
 	@echo Cleaning done
 
