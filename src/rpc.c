@@ -1754,7 +1754,7 @@ static void ProcessCommandLine(int argc, char *argv[])
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
-                if (FileExists(TextFormat("%s/gcc.exe", argv[i + 1]))) rpcSetText(config, "PLATFORM_WINDOWS_W64DEVKIT_PATH", argv[i + 1]);
+                if (FileExists(TextFormat("%s/bin/gcc.exe", argv[i + 1]))) rpcSetText(config, "PLATFORM_WINDOWS_W64DEVKIT_PATH", argv[i + 1]);
                 else LOG("WARNING: Compiler path provided does not contain gcc.exe\n");
             }
             else LOG("WARNING: Compiler path parameters provided not valid\n");
@@ -2184,7 +2184,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         fileText = LoadFileText(TextFormat("%s/projects/scripts/build.bat", templatePath));
         fileTextUpdated[0] = TextReplaceAlloc(fileText, "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
         fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "ProjectDescription", rpcGetText(project, "PROJECT_DESCRIPTION"));
-        fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "C:\\raylib\\w64devkit\\bin", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
+        fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "C:\\raylib\\w64devkit", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
         SaveFileText(TextFormat("%s/%s/projects/scripts/build.bat", outPath, rpcGetText(project, "PROJECT_REPO_NAME")), fileTextUpdated[2]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
@@ -2223,7 +2223,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         // Add all project required sources concatenated
         fileTextUpdated[0] = TextReplaceAlloc(fileText, "project_name.c", TextJoin(srcFileNames, srcFileCount, " "));
         fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
-        fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "C:\\raylib\\w64devkit\\bin", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
+        fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "C:\\raylib\\w64devkit", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
         fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "C:/raylib/raylib/src", raylibSrcPath);
         if (input.assetFileCount > 0)
         {
@@ -2256,7 +2256,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         // Update projects/VSCode/.vscode/launch.json
         fileText = LoadFileText(TextFormat("%s/projects/VSCode/.vscode/launch.json", templatePath));
         fileTextUpdated[0] = TextReplaceAlloc(fileText, "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
-        fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "C:/raylib/w64devkit/bin", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
+        fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "C:/raylib/w64devkit", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
         SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/launch.json", outPath, rpcGetText(project, "PROJECT_REPO_NAME")), fileTextUpdated[1]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
@@ -2264,7 +2264,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         // Update projects/VSCode/.vscode/c_cpp_properties.json
         fileText = LoadFileText(TextFormat("%s/projects/VSCode/.vscode/c_cpp_properties.json", templatePath));
         fileTextUpdated[0] = TextReplaceAlloc(fileText, "C:/raylib/raylib/src", raylibSrcPath);
-        fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "C:/raylib/w64devkit/bin", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
+        fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "C:/raylib/w64devkit", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
         SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/c_cpp_properties.json", outPath, rpcGetText(project, "PROJECT_REPO_NAME")), fileTextUpdated[1]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
@@ -2296,7 +2296,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 
         fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
         fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "C:/raylib/raylib/src", raylibSrcPath);
-        fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "C:/raylib/w64devkit/bin", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
+        fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "C:/raylib/w64devkit", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
 
         SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/tasks.json", outPath, rpcGetText(project, "PROJECT_REPO_NAME")), fileTextUpdated[3]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
