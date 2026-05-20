@@ -47,7 +47,7 @@ PROJECT_ICON_FILE                       "template/src/project_name.ico"     # Pr
 PROJECT_SOURCE_PATH                     "src"                               # Project source directory, including all required code files (C/C++)
 PROJECT_ASSETS_PATH                     "src/resources"                     # Project assets directory, including all required assets
 
-PROJECT_ASSETS_OUTPUT_PATH              "release/resources"                 # Project assets destination path
+PROJECT_ASSETS_OUTPUT_PATH              "resources"                         # Project assets destination path
 #------------------------------------------------------------------------------------
 
 # raylib settings
@@ -75,10 +75,10 @@ BUILD_RRES_PACKER_PATH                  "tools/rrespacker.exe"              # Pa
 # Platform-specific settings
 #------------------------------------------------------------------------------------
 # Platform: Windows
-PLATFORM_WINDOWS_MSBUILD_PATH           "path/to/msbuild"                   # Path to MSBuild system, required to build VS2022 solution
-PLATFORM_WINDOWS_W64DEVKIT_PATH         "C:/raylib/w64devkit"               # Path to w64devkit (GCC), required to use Makefile building
-PLATFORM_WINDOWS_SIGNTOOL_PATH          "path/to/signtool"                  # Path to signtool in case program needs to be signed (certificate required)
-PLATFORM_WINDOWS_SIGNCERT_FILE          "path/to/signcert"                  # Path to a valid signature certificate to sign executable
+PLATFORM_WINDOWS_MSBUILD_PATH           "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Msbuild\\Current\\Bin"   # Path to MSBuild system, required to build VS2022 solution
+PLATFORM_WINDOWS_W64DEVKIT_PATH         "C:\\raylib\\w64devkit\\bin"        # Path to w64devkit compiler (GCC), required to use Makefile building
+PLATFORM_WINDOWS_SIGNTOOL_PATH          "path\\to\\signtool"                # Path to signtool in case program needs to be signed (certificate required)
+PLATFORM_WINDOWS_SIGNCERT_FILE          "path\\to\\signcert"                # Path to a valid signature certificate to sign executable
 
 # Platform: Linux
 PLATFORM_LINUX_FLAG_CROSS_COMPILE       0                                   # Flag: request cross-compiler usage
