@@ -52,6 +52,7 @@ PROJECT_ASSETS_OUTPUT_PATH              "resources"                         # Pr
 
 # raylib settings
 #------------------------------------------------------------------------------------
+RAYLIB_FLAG_BUILDING_REQUIRED           0                                   # Flag: Require raylib library rebuild
 RAYLIB_SRC_PATH                         "C:/raylib/raylib/src"              # Path to raylib source code, to be build for target platform (OS-dependant)
 RAYLIB_OPENGL_VERSION                   "3.3"                               # OpenGL version to be used by raylib, WARNING: Platform dependant!
 # TODO: Support raylib config.h options
@@ -60,7 +61,7 @@ RAYLIB_OPENGL_VERSION                   "3.3"                               # Op
 # Build settings
 # NOTE: General settings, common to all platforms
 #------------------------------------------------------------------------------------
-BUILD_OUTPUT_PATH                       "release"                           # Build output path
+BUILD_OUTPUT_PATH                       "build"                             # Build output path
 
 BUILD_TARGET_PLATFORM                   "Windows"                           # Build target platform (Supported: Windows, Linux, macOS, Android, Web)
 BUILD_TARGET_ARCHITECTURE               "x86-64"                            # Build target architecture (Supported: x86-64, Win32, arm64)
@@ -89,12 +90,12 @@ PLATFORM_MACOS_BUNDLE_INFO_FILE         "src/Info.plist"                    # Pa
 PLATFORM_MACOS_BUNDLE_NAME              "Cool Project"                      # Bundle name (commercial product name)
 PLATFORM_MACOS_BUNDLE_VERSION           "1"                                 # Bundle version
 
-# Platform: HTML5
-PLATFORM_HTML5_EMSDK_PATH               "C:/raylib/emsdk"                   # Path to emsdk, required for Web building
-PLATFORM_HTML5_SHELL_FILE               "src/minshell.html"                 # Path to shell file to be used by emscripten
-PLATFORM_HTML5_HEAP_MEMORY_SIZE         128                                 # Required heap memory size in MB (required for assets loading)
-PLATFORM_HTML5_FLAG_USE_ASINCIFY        0                                   # Flag: use ASINCIFY mode on building
-PLATFORM_HTML5_FLAG_USE_WEBGL2          0                                   # Flag: use WebGL2 (OpenGL ES 3.1) instead of default WebGL1 (OpenGL ES 2.0)
+# Platform: Web
+PLATFORM_WEB_EMSDK_PATH                 "C:/raylib/emsdk"                   # Path to emsdk, required for Web building
+PLATFORM_WEB_SHELL_FILE                 "src/minshell.html"                 # Path to shell file to be used by emscripten
+PLATFORM_WEB_HEAP_MEMORY_SIZE           128                                 # Required heap memory size in MB (required for assets loading)
+PLATFORM_WEB_FLAG_USE_ASINCIFY          0                                   # Flag: use ASINCIFY mode on building
+PLATFORM_WEB_FLAG_USE_WEBGL2            0                                   # Flag: use WebGL2 (OpenGL ES 3.1) instead of default WebGL1 (OpenGL ES 2.0)
 
 # Platform: Android
 PLATFORM_ANDROID_SDK_PATH               "path/to/android-sdk"               # Path to Android SDK, required for Android App building and support tools
