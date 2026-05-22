@@ -472,7 +472,7 @@ int main(int argc, char *argv[])
     // no console is available to show output info... solution is compiling a console application
     // and closing console (FreeConsole()) when changing to GUI interface
     // WARNING: Comment in case LOG() output is required for this tool
-    FreeConsole();
+    //FreeConsole();
 #endif
 
     // GUI usage mode - Initialization
@@ -524,6 +524,8 @@ int main(int argc, char *argv[])
     showInfoMessagePanel = true;
 
     strcpy(outFileName, TextFormat("%s/%s", GetWorkingDirectory(), rpcGetText(project, "PROJECT_INTERNAL_NAME")));
+
+    strcpy(outProjectPath, GetWorkingDirectory());
 
     LOG("INIT: Ready to show project generation info...\n");
     LOG("-----------------------------------------------------------------\n");
@@ -1439,12 +1441,12 @@ static void UpdateDrawFrame(void)
         GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize*3);
         GuiSetStyle(DEFAULT, TEXT_SPACING, 3);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-        GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, GuiGetStyle(DEFAULT, TEXT_COLOR_FOCUSED));
+        GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, GuiGetStyle(DEFAULT, TEXT_COLOR_PRESSED));
         GuiLabel((Rectangle){ -10, screenHeight/2 - 60, screenWidth + 20, 30 }, ((int)generateProjectProgress >= 100)? "PROJECT GENERATED SUCCESSFULLY" : "GENERATING PROJECT...");
         GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL));
         GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize*2);
 
-        generateProjectProgress += 2.0f;
+        generateProjectProgress += 4.0f;
         GuiProgressBar((Rectangle){ 12, screenHeight/2, screenWidth - 24, 20 }, NULL, NULL, &generateProjectProgress, 0, 100);
 
         if (generateProjectProgress < 100.0f) GuiDisable();
@@ -2458,6 +2460,11 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
     LOG("INFO: Generated Windows resource file successfully: %s/%s.rc\n", rpcGetText(project, "PROJECT_SOURCE_PATH"), rpcGetText(project, "PROJECT_INTERNAL_NAME"));
+
+    // Copy src/project_name.rc.data
+    // TODO: It should be generated but ok for now
+    FileCopy(TextFormat("%s/src/project_name.rc.data", templatePath),
+        TextFormat("%s/%s/%s/%s.rc.data", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_SOURCE_PATH"), rpcGetText(project, "PROJECT_INTERNAL_NAME")));
 
     // Copy src/project_name.ico to src/project_name.ico
     // TODO: Generate .ico file from .png if required?
