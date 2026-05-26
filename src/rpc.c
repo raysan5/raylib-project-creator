@@ -186,7 +186,11 @@ typedef struct rpcProjectInput {
     int assetFileCount;             // Project: assets files count
     char **assetFilePaths;          // Project: assets files paths -> RPC_MAX_ASSET_FILES
 
+    // Runtime required variables
     bool requestedBuildSystems[6];  // Build: Flags: systems required: 0-Script, 1-Makefile, 2-VSCode, 3-VS2022, 4-CMake
+
+    bool *srcFileSelected;          // Flags for selection toggle on src file list
+    bool *assetFileSelected;        // Flags for selection toggle on asset file list
 } rpcProjectInput;
 
 // Packed file entry
@@ -741,6 +745,50 @@ static void UpdateDrawFrame(void)
     if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_A)) showAddInputDirectoryDialog = true;
     else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_A)) showAddInputFilesDialog = true;
 
+    // Remove selected files from project
+    if (IsKeyDown(KEY_DELETE) || mainToolbarState.btnRemoveInputFilePressed)
+    {
+        for (int i = 0; i < input.srcFileCount; i++)
+        {
+            if (input.srcFileSelected[i])
+            {
+                // Remove entry from list
+                memset(input.srcFilePaths[i], 0, RPC_SOURCE_PATH_LENGTH);
+                input.srcFileSelected[i] = false;
+
+                // Copy all remaining file paths one position to the left
+                for (int j = i; j < input.srcFileCount - 1; j++)
+                {
+                    memcpy(input.srcFilePaths[j], input.srcFilePaths[j + 1], RPC_SOURCE_PATH_LENGTH);
+                    input.srcFileSelected[j] = input.srcFileSelected[j + 1];
+                }
+
+                input.srcFileCount--;
+                i--;
+            }
+        }
+
+        for (int i = 0; i < input.assetFileCount; i++)
+        {
+            if (input.assetFileSelected[i])
+            {
+                // Remove entry from list
+                memset(input.assetFilePaths[i], 0, RPC_SOURCE_PATH_LENGTH);
+                input.assetFileSelected[i] = false;
+
+                // Copy all remaining file paths one position to the left
+                for (int j = i; j < input.assetFileCount - 1; j++)
+                {
+                    memcpy(input.assetFilePaths[j], input.assetFilePaths[j + 1], RPC_SOURCE_PATH_LENGTH);
+                    input.assetFileSelected[j] = input.assetFileSelected[j + 1];
+                }
+
+                input.assetFileCount--;
+                i--;
+            }
+        }
+    }
+
     // Show dialog: generate project
     if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_G)) || mainToolbarState.btnGenProjectPressed)
     {
@@ -880,9 +928,11 @@ static void UpdateDrawFrame(void)
     int prevProjectType = selectedTemplate;
 
     GuiLabel((Rectangle){ 16, 44, 200, 24 }, "CHOOSE PROJECT TEMPLATE:");
-    GuiSetStyle(TOGGLE, BORDER_WIDTH, 4);
-    GuiToggleGroup((Rectangle){ 16, 72, 206, 80 }, "#142#Custom;#198#Basic Window;#227#Screen Manager;#150#Platformer 2D;#162#First Person 3D", &selectedTemplate);
-    GuiSetStyle(TOGGLE, BORDER_WIDTH, 1);
+    GuiSetStyle(TOGGLE, GROUP_PADDING, 8);
+    GuiSetIconScale(2);
+    GuiToggleGroup((Rectangle){ 16, 72, 202, 80 }, "#142#Custom;#198#Basic Window;#227#Screen Manager;#150#Platformer 2D;#162#First Person 3D", &selectedTemplate);
+    GuiSetIconScale(1);
+    GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
 
     // Update project data required files depending on selected template
     if (selectedTemplate != prevProjectType) rpcUpdateProjectInput(&input, selectedTemplate);
@@ -994,7 +1044,8 @@ static void UpdateDrawFrame(void)
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
             GuiToggle((Rectangle){ 16, 500 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
-                TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))), NULL);
+                TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))), 
+                    &input.srcFileSelected[i]);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 0);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
         }
@@ -1012,7 +1063,7 @@ static void UpdateDrawFrame(void)
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
             GuiToggle((Rectangle){ 16, 500 + 26 + (28 + 2)*(i + input.srcFileCount) + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
-                TextFormat("#200#%s", input.assetFilePaths[i]), NULL);
+                TextFormat("#200#%s", input.assetFilePaths[i]), &input.assetFileSelected[i]);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 0);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 
@@ -1826,8 +1877,11 @@ static rpcProjectInput rpcLoadProjectInput(void)
     input.requestedBuildSystems[1] = true;  // Makefile
     input.requestedBuildSystems[2] = true;  // VSCode
     input.requestedBuildSystems[3] = true;  // VS2022
-    input.requestedBuildSystems[4] = false;  // CMake
+    input.requestedBuildSystems[4] = false; // CMake
     input.requestedBuildSystems[5] = true;  // GitHub Actions
+
+    input.srcFileSelected = (bool *)RL_CALLOC(RPC_MAX_SOURCE_FILES, sizeof(bool));
+    input.assetFileSelected = (bool *)RL_CALLOC(RPC_MAX_ASSET_FILES, sizeof(bool));
 
     return input;
 }
@@ -1840,14 +1894,24 @@ static void rpcUnloadProjectInput(rpcProjectInput input)
 
     RL_FREE(input.srcFilePaths);
     RL_FREE(input.assetFilePaths);
+    RL_FREE(input.srcFileSelected);
+    RL_FREE(input.assetFileSelected);
 }
 
 // Update input data by selected template
 void rpcUpdateProjectInput(rpcProjectInput *input, int selTemplate)
 {
     // Clear input data content to refill
-    for (int i = 0; i < RPC_MAX_SOURCE_FILES; i++) memset(input->srcFilePaths[i], 0, RPC_SOURCE_PATH_LENGTH);
-    for (int i = 0; i < RPC_MAX_ASSET_FILES; i++) memset(input->assetFilePaths[i], 0, RPC_ASSET_PATH_LENGTH);
+    for (int i = 0; i < RPC_MAX_SOURCE_FILES; i++)
+    {
+        memset(input->srcFilePaths[i], 0, RPC_SOURCE_PATH_LENGTH);
+        input->srcFileSelected[i] = false;
+    }
+    for (int i = 0; i < RPC_MAX_ASSET_FILES; i++)
+    {
+        memset(input->assetFilePaths[i], 0, RPC_ASSET_PATH_LENGTH);
+        input->assetFileSelected[i] = false;
+    }
     input->srcFileCount = 0;
     input->assetFileCount = 0;
 
