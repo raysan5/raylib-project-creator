@@ -630,54 +630,40 @@ static void UpdateDrawFrame(void)
         }
         else
         {
-            for (unsigned int i = 0; i < droppedFiles.count; i++)
+            // Consider special case, one single .c file dropped over properties section:
+            // It generates a custom build and takes all naming from th single .c file
+            if ((droppedFiles.count == 1) && IsFileExtension(droppedFiles.paths[0], ".c") &&
+                CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 0, 170, GetScreenWidth(), 340 }))
             {
-                if (IsPathFile(droppedFiles.paths[i]))
+                // Reset inputs
+                selectedTemplate = 0; // Custom input file
+                rpcUnloadProjectInput(input);
+                input = rpcLoadProjectInput();
+                strcpy(input.srcFilePaths[0], droppedFiles.paths[0]);
+                input.srcFileCount = 1;
+
+                rpcSetText(project, "PROJECT_REPO_NAME", GetFileNameWithoutExt(droppedFiles.paths[0]));
+                rpcSetText(project, "PROJECT_INTERNAL_NAME", TextToSnake(GetFileNameWithoutExt(droppedFiles.paths[0])));
+                rpcSetText(project, "PROJECT_COMMERCIAL_NAME", GetFileNameWithoutExt(droppedFiles.paths[0]));
+                rpcSetText(project, "PROJECT_SHORT_NAME", GetFileNameWithoutExt(droppedFiles.paths[0]));
+
+                strcpy(outProjectPath, GetDirectoryPath(droppedFiles.paths[0]));
+            }
+            else
+            {
+                for (unsigned int i = 0; i < droppedFiles.count; i++)
                 {
-                    if (IsFileExtension(droppedFiles.paths[i], ".c;.h"))
+                    if (IsPathFile(droppedFiles.paths[i]))
                     {
-                        // Add files to source list
-                        strcpy(input.srcFilePaths[input.srcFileCount], droppedFiles.paths[i]);
-                        input.srcFileCount++;
-
-                        // Scan code file looking for assets
-                        int assetCount = 0;
-                        char **assetPaths = LoadSourceAssetPaths(droppedFiles.paths[i], &assetCount);
-
-                        for (int a = 0; (a < assetCount) && (input.assetFileCount < RPC_MAX_ASSET_FILES); a++)
-                        {
-                            // WARNING: Not verifying at the moment if asset exist, just adding it to assets list
-                            //const char *fullPath = TextFormat("%s/%s", GetDirectoryPath(multiFileList[i]), assetPaths[a]);
-                            //if (FileExists(TextFormat(fullPath))) { }
-                            strcpy(input.assetFilePaths[input.assetFileCount], assetPaths[a]);
-                            input.assetFileCount++;
-                        }
-
-                        UnloadSourceAssetPaths(assetPaths);
-                    }
-                    else if (IsFileExtension(droppedFiles.paths[i], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
-                    {
-                        // Add assets to assets list
-                        // TODO: Filtering for recognized assets extensions but, really required?
-                        strcpy(input.assetFilePaths[input.assetFileCount], droppedFiles.paths[i]);
-                        input.assetFileCount++;
-                    }
-                }
-                else // Path is a directory
-                {
-                    FilePathList list = LoadDirectoryFilesEx(droppedFiles.paths[i], "FILES*", true);
-
-                    for (unsigned int l = 0; l < list.count; l++)
-                    {
-                        if (IsFileExtension(list.paths[l], ".c;.h"))
+                        if (IsFileExtension(droppedFiles.paths[i], ".c;.h"))
                         {
                             // Add files to source list
-                            strcpy(input.srcFilePaths[input.srcFileCount], list.paths[l]);
+                            strcpy(input.srcFilePaths[input.srcFileCount], droppedFiles.paths[i]);
                             input.srcFileCount++;
 
                             // Scan code file looking for assets
                             int assetCount = 0;
-                            char **assetPaths = LoadSourceAssetPaths(list.paths[l], &assetCount);
+                            char **assetPaths = LoadSourceAssetPaths(droppedFiles.paths[i], &assetCount);
 
                             for (int a = 0; (a < assetCount) && (input.assetFileCount < RPC_MAX_ASSET_FILES); a++)
                             {
@@ -690,16 +676,52 @@ static void UpdateDrawFrame(void)
 
                             UnloadSourceAssetPaths(assetPaths);
                         }
-                        else if (IsFileExtension(list.paths[l], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
+                        else if (IsFileExtension(droppedFiles.paths[i], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
                         {
                             // Add assets to assets list
                             // TODO: Filtering for recognized assets extensions but, really required?
-                            strcpy(input.assetFilePaths[input.assetFileCount], list.paths[l]);
+                            strcpy(input.assetFilePaths[input.assetFileCount], droppedFiles.paths[i]);
                             input.assetFileCount++;
                         }
                     }
+                    else // Path is a directory
+                    {
+                        FilePathList list = LoadDirectoryFilesEx(droppedFiles.paths[i], "FILES*", true);
 
-                    UnloadDirectoryFiles(list);
+                        for (unsigned int l = 0; l < list.count; l++)
+                        {
+                            if (IsFileExtension(list.paths[l], ".c;.h"))
+                            {
+                                // Add files to source list
+                                strcpy(input.srcFilePaths[input.srcFileCount], list.paths[l]);
+                                input.srcFileCount++;
+
+                                // Scan code file looking for assets
+                                int assetCount = 0;
+                                char **assetPaths = LoadSourceAssetPaths(list.paths[l], &assetCount);
+
+                                for (int a = 0; (a < assetCount) && (input.assetFileCount < RPC_MAX_ASSET_FILES); a++)
+                                {
+                                    // WARNING: Not verifying at the moment if asset exist, just adding it to assets list
+                                    //const char *fullPath = TextFormat("%s/%s", GetDirectoryPath(multiFileList[i]), assetPaths[a]);
+                                    //if (FileExists(TextFormat(fullPath))) { }
+                                    strcpy(input.assetFilePaths[input.assetFileCount], assetPaths[a]);
+                                    input.assetFileCount++;
+                                }
+
+                                UnloadSourceAssetPaths(assetPaths);
+                            }
+                            else if (IsFileExtension(list.paths[l], ".png;.bmp;.jpg;.qoi;.gif;.raw;.hdr;.ktx;.dxt;.astc;.pvr;.ttf;.otf;.fnt;.wav;.ogg;.mp3;.flac;.mod;.xm;.qoa;.obj;.iqm;.glb;.gltf;.m3d;.vox;.vs;.fs;.txt"))
+                            {
+                                // Add assets to assets list
+                                // TODO: Filtering for recognized assets extensions but, really required?
+                                strcpy(input.assetFilePaths[input.assetFileCount], list.paths[l]);
+                                input.assetFileCount++;
+                            }
+                        }
+
+                        UnloadDirectoryFiles(list);
+                    }
                 }
             }
         }
