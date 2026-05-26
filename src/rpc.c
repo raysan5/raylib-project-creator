@@ -204,6 +204,8 @@ static const char *toolName = TOOL_NAME;
 static const char *toolVersion = TOOL_VERSION;
 static const char *toolDescription = TOOL_DESCRIPTION;
 
+const char *templateNames[] = { "Custom", "Basic Window", "Screen Manager", "Platformer 2D", "First Person 3D", "Tool (raygui)" };
+
 // Basic program variables
 //----------------------------------------------------------------------------------
 static const int screenWidth = 1070;        // Default screen width (at initialization)
@@ -1048,8 +1050,16 @@ static void UpdateDrawFrame(void)
     //----------------------------------------------------------------------------------
     int textPadding = GuiGetStyle(STATUSBAR, TEXT_PADDING);
     GuiSetStyle(STATUSBAR, TEXT_PADDING, 12);
-    GuiStatusBar((Rectangle){ 0, screenHeight - 24, screenWidth, 24 },
+    GuiStatusBar((Rectangle){ 0, screenHeight - 24, 240, 24 },
+        TextFormat("TEMPLATE: %s", templateNames[selectedTemplate]));
+    GuiSetStyle(STATUSBAR, TEXT_PADDING, 0);
+    GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+    GuiStatusBar((Rectangle){ 240 - 1, screenHeight - 24, 320, 24 },
         TextFormat("SOURCE FILES: %i  | ASSET FILES: %i", input.srcFileCount, input.assetFileCount));
+    GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+    GuiSetStyle(STATUSBAR, TEXT_PADDING, 12);
+    GuiStatusBar((Rectangle){ 240 + 320 - 2, screenHeight - 24, screenWidth - 240 - 320 + 2, 24 },
+        TextFormat("OUTPUT: %s/%s", TextReplace(outProjectPath, "\\", "/"), rpcGetText(project, "PROJECT_INTERNAL_NAME")));
     GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
     //----------------------------------------------------------------------------------
 
@@ -1074,9 +1084,9 @@ static void UpdateDrawFrame(void)
         GuiLabel((Rectangle){ -10, screenHeight/2 - 140, screenWidth + 20, 30 }, infoTitle);
         GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL));
         GuiSetStyle(DEFAULT, TEXT_SIZE, GuiGetFont().baseSize*2);
-        GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, GuiGetFont().baseSize*3);
+        GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 10);
         GuiLabel((Rectangle){ 0, screenHeight/2 - textSize.y - 20, screenWidth + 20, 100 }, infoMessage);
-        GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, GuiGetFont().baseSize);
+        GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 8);
 
         if (GuiButton((Rectangle){ screenWidth/4, screenHeight/2 + 40, screenWidth/2, 40 }, infoButton))
         {
