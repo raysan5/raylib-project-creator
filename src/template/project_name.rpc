@@ -69,15 +69,16 @@ BUILD_TARGET_MODE                       "RELEASE"                           # Bu
 
 BUILD_FLAG_ASSETS_VALIDATION            1                                   # Flag: request assets validation on building
 BUILD_FLAG_ASSETS_PACKAGING             0                                   # Flag: request assets packaging on building
-
 BUILD_RRES_PACKER_PATH                  "tools/rrespacker.exe"              # Path to [rrespacker] tool to package assets
 #------------------------------------------------------------------------------------
 
 # Platform-specific settings
 #------------------------------------------------------------------------------------
 # Platform: Windows
+PLATFORM_WINDOWS_DEFAULT_TOOLCHAIN      "W64DEVKIT"                         # Default toolchain for building: MSBUILD, W64DEVKIT
 PLATFORM_WINDOWS_MSBUILD_PATH           "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Msbuild\\Current\\Bin"   # Path to MSBuild system, required to build VS2022 solution
 PLATFORM_WINDOWS_W64DEVKIT_PATH         "C:\\raylib\\w64devkit\\bin"        # Path to w64devkit compiler (GCC), required to use Makefile building
+PLATFORM_WINDOWS_WSL_PATH               "C:\\Windows\\System32"             # Path to WSL (Windows Subsystem for Linux) to build for Linux
 PLATFORM_WINDOWS_SIGNTOOL_PATH          "path\\to\\signtool"                # Path to signtool in case program needs to be signed (certificate required)
 PLATFORM_WINDOWS_SIGNCERT_FILE          "path\\to\\signcert"                # Path to a valid signature certificate to sign executable
 
