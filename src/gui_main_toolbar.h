@@ -53,6 +53,7 @@ typedef struct {
     bool btnGenProjectPressed;
 
     bool btnAddInputFolderPressed;
+    bool btnRemoveInputFilePressed;
     bool btnAddInputFilePressed;
     bool btnClearFilesPressed;
 
@@ -123,7 +124,7 @@ GuiMainToolbarState InitGuiMainToolbar(void)
     // Anchors for panels
     state.anchorFile = (Vector2){ 0, 0 };
     //state.anchorEdit = (Vector2){ state.anchorFile.x + 132 - 1, 0 };
-    state.anchorTools = (Vector2){ state.anchorFile.x + 220 - 1, 0 };
+    state.anchorTools = (Vector2){ state.anchorFile.x + 250 - 1, 0 };
     state.anchorVisuals = (Vector2){ 0, 0 };    // Anchor right, depends on screen width
     state.anchorRight = (Vector2){ 0, 0 };      // Anchor right, depends on screen width
 
@@ -134,6 +135,7 @@ GuiMainToolbarState InitGuiMainToolbar(void)
     state.btnGenProjectPressed = false;
 
     state.btnAddInputFilePressed = false;
+    state.btnRemoveInputFilePressed = false;
     state.btnAddInputFolderPressed = false;
     state.btnClearFilesPressed = false;
 
@@ -164,7 +166,7 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     state->anchorRight.x = (float)GetScreenWidth() - 104;       // Update right-anchor panel
     state->anchorVisuals.x = state->anchorRight.x - 192 + 1;    // Update right-anchor panel
 
-    GuiPanel((Rectangle){ state->anchorFile.x, state->anchorFile.y, 220, 40 }, NULL);
+    GuiPanel((Rectangle){ state->anchorFile.x, state->anchorFile.y, 250, 40 }, NULL);
     //GuiPanel((Rectangle){ state->anchorEdit.x, state->anchorEdit.y, 188, 40 }, NULL);
     GuiPanel((Rectangle){ state->anchorTools.x, state->anchorTools.y, state->anchorVisuals.x - state->anchorTools.x + 1, 40 }, NULL);
     GuiPanel((Rectangle){ state->anchorVisuals.x, state->anchorVisuals.y, 192, 40 }, NULL);
@@ -180,10 +182,12 @@ void GuiMainToolbar(GuiMainToolbarState *state)
 
     GuiSetTooltip("Add source/assets file to project (LCTRL+A)");
     state->btnAddInputFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 84 + 4, state->anchorFile.y + 8, 24, 24 }, "#8#");
+    GuiSetTooltip("Remove selected source/assets file from project (SUP)");
+    state->btnRemoveInputFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 108 + 8, state->anchorFile.y + 8, 24, 24 }, "#9#");
     GuiSetTooltip("Add source/assets directory to project (LCTRL+SHIFT+A)");
-    state->btnAddInputFolderPressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 108 + 8, state->anchorFile.y + 8, 24, 24 }, "#204#");
+    state->btnAddInputFolderPressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 132 + 12, state->anchorFile.y + 8, 24, 24 }, "#204#");
     GuiSetTooltip("Clear project files");
-    state->btnClearFilesPressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 132 + 12, state->anchorFile.y + 8, 24, 24 }, "#143#");
+    state->btnClearFilesPressed = GuiButton((Rectangle){ state->anchorFile.x + 40 + 156 + 16, state->anchorFile.y + 8, 24, 24 }, "#143#");
 
     // Edit options
     GuiSetTooltip("Generate project structure (LCTRL+G)");
