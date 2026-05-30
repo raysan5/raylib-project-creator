@@ -124,7 +124,9 @@ DEPLOY_RIF_INSTALLER_PATH               "tools/rinstallfriendly.exe"        # Pa
 
 DEPLOY_FLAG_INCUDE_README               1                                   # Flag: request including README file on package
 DEPLOY_README_FILE                      "README.md"                         # Project README file path, contains product information
-DEPLOY_FLAG_INCUDE_EULA                 1                                   # Flag: request including EULA file on package (vs LICENSE file for FOSS)
+DEPLOY_FLAG_INCUDE_LICENSE              1                                   # Flag: request including LICENSE file on package
+DEPLOY_LICENSE_FILE                     "LICENSE"                           # Project LICENSE file (usually for source-code) file path
+DEPLOY_FLAG_INCUDE_EULA                 1                                   # Flag: request including EULA file on package
 DEPLOY_EULA_FILE                        "EULA.txt"                          # Project EULA (End-User-License-Agreement) file path
 # TODO: Itchio, Steam, other stores deploy info
 #------------------------------------------------------------------------------------
