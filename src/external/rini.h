@@ -675,7 +675,7 @@ char *rini_save_to_memory(rini_data data)
             else
             {
                 // No description required
-                int expectedByteWritten = snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %s\n", RINI_KEY_SPACING, data.entries[i].key, RINI_VALUE_DELIMITER,
+                expectedByteWritten = snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %s\n", RINI_KEY_SPACING, data.entries[i].key, RINI_VALUE_DELIMITER,
                         data.entries[i].is_text? valuestr : data.entries[i].text);
             }
         }
