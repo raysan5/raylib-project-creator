@@ -23,7 +23,7 @@
               }
             ],
             "windows": {
-              "miDebuggerPath": "C:\raylib\w64devkit\bin/gdb.exe",
+              "miDebuggerPath": "C:\\raylib\\w64devkit\\bin\\gdb.exe",
             },
             "osx": {
               "MIMode": "lldb"
@@ -45,8 +45,8 @@
             "program": "${workspaceFolder}/raylib_project_creator",
             "MIMode": "gdb",
             "windows": {
-              "program": "${workspaceFolder}/raylib_project_creator.exe",
-              "miDebuggerPath": "C:\raylib\w64devkit\bin/gdb.exe"
+              "program": "${workspaceFolder}/rpb.exe",
+              "miDebuggerPath": "C:\\raylib\\w64devkit\\bin/gdb.exe"
             },
             "osx": {
               "MIMode": "lldb"
