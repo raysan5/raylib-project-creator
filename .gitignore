@@ -39,7 +39,7 @@ src/*.js
 *.lo
 
 # Shared objects (inc. Windows DLLs)
-.DS_sStore
+.DS_Store
 *.dll
 *.so
 *.so.*
