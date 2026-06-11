@@ -23,7 +23,7 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:\\GitHub\\raylib\\src/**",
+                "../../../raylib/src/**",
                 "../../src/"
             ],
             "defines": [
@@ -33,19 +33,16 @@
                 "GRAPHICS_API_OPENGL_33",
                 "PLATFORM_DESKTOP"
             ],
-            "macFrameworkPath": [
-                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
-            ],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++14",
-            "intelliSenseMode": "clang-x64"
+            "intelliSenseMode": "macos-clang-arm64"
         },
         {
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:\\GitHub\\raylib\\src/**",
+                "../../../raylib/src/**",
                 "../../src/"
             ],
             "defines": [
