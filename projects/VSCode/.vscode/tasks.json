@@ -11,29 +11,25 @@
                 "PLATFORM=PLATFORM_DESKTOP",
                 "BUILD_MODE=DEBUG",
                 "PROJECT_NAME=rpc",
-                "OBJS=rpc.c"
+                "OBJS=rpc.c external/tinyfiledialogs.c",
+                "-B"
             ],
             "windows": {
-                "command": "mingw32-make.exe",
                 "args": [
-                    "-f ../../src/Makefile",
-                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
-                    "PROJECT_NAME=rpc",
-                    "OBJS=rpc.c",
-                    "BUILD_MODE=DEBUG"
+                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src"
                 ],
             },
             "osx": {
                 "args": [
-                    "RAYLIB_SRC_PATH=../../../raylib/src",
-                    "PROJECT_NAME=rpc",
-                    "OBJS=rpc.c external/tinyfiledialogs.c",
-                    "BUILD_MODE=DEBUG"
+                    "RAYLIB_SRC_PATH=../../../raylib/src"
                 ],
             },
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/../../src"
             },
         },
         {
@@ -43,25 +39,22 @@
             "args": [
                 "PLATFORM=PLATFORM_DESKTOP",
                 "PROJECT_NAME=rpc",
-                "OBJS=rpc.c"
+                "OBJS=rpc.c external/tinyfiledialogs.c"
             ],
             "windows": {
-                "command": "mingw32-make.exe",
                 "args": [
-                    "-f ../../src/Makefile",
-                    "RAYLIB_SRC_PATH=../../../raylib/src",
-                    "PROJECT_NAME=rpc",
-                    "OBJS=rpc.c"
+                    "RAYLIB_SRC_PATH=../../../raylib/src"
                 ],
             },
             "osx": {
                 "args": [
-                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
-                    "PROJECT_NAME=rpc",
-                    "OBJS=rpc.c"
+                    "RAYLIB_SRC_PATH=../../../raylib/src",
                 ],
             },
             "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/../../src"
+            },
         }
     ]
 }
