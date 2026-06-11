@@ -25,9 +25,9 @@
             },
             "osx": {
                 "args": [
-                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
+                    "RAYLIB_SRC_PATH=../../../raylib/src",
                     "PROJECT_NAME=rpc",
-                    "OBJS=rpc.c",
+                    "OBJS=rpc.c external/tinyfiledialogs.c",
                     "BUILD_MODE=DEBUG"
                 ],
             },
@@ -49,7 +49,7 @@
                 "command": "mingw32-make.exe",
                 "args": [
                     "-f ../../src/Makefile",
-                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
+                    "RAYLIB_SRC_PATH=../../../raylib/src",
                     "PROJECT_NAME=rpc",
                     "OBJS=rpc.c"
                 ],
