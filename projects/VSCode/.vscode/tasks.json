@@ -7,21 +7,33 @@
             "label": "build debug",
             "type": "process",
             "command": "make",
-            "args": [
-                "PLATFORM=PLATFORM_DESKTOP",
-                "BUILD_MODE=DEBUG",
-                "PROJECT_NAME=rpc",
-                "OBJS=rpc.c external/tinyfiledialogs.c",
-                "-B"
-            ],
             "windows": {
                 "args": [
-                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src"
+                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=DEBUG",
+                    "PROJECT_NAME=rpc",
+                    "OBJS=rpc.c external/tinyfiledialogs.c",
+                    "-B"
+                ],
+            },
+            "linux": {
+                "args": [
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=DEBUG",
+                    "PROJECT_NAME=rpc",
+                    "OBJS=rpc.c external/tinyfiledialogs.c",
+                    "-B"
                 ],
             },
             "osx": {
                 "args": [
-                    "RAYLIB_SRC_PATH=../../../raylib/src"
+                    "RAYLIB_SRC_PATH=../../../raylib/src",
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=DEBUG",
+                    "PROJECT_NAME=rpc",
+                    "OBJS=rpc.c external/tinyfiledialogs.c",
+                    "-B"
                 ],
             },
             "group": {
