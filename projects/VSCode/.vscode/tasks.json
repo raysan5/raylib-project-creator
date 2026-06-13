@@ -10,7 +10,6 @@
                     "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
                     "PLATFORM=PLATFORM_DESKTOP",
                     "BUILD_MODE=DEBUG",
-                    "PROJECT_NAME=rpc",
                     "-B"
                 ],
             },
@@ -18,7 +17,6 @@
                 "args": [
                     "PLATFORM=PLATFORM_DESKTOP",
                     "BUILD_MODE=DEBUG",
-                    "PROJECT_NAME=rpc",
                     "-B"
                 ],
             },
@@ -27,7 +25,6 @@
                     "RAYLIB_SRC_PATH=../../../raylib/src",
                     "PLATFORM=PLATFORM_DESKTOP",
                     "BUILD_MODE=DEBUG",
-                    "PROJECT_NAME=rpc",
                     "-B"
                 ],
             },
@@ -48,7 +45,6 @@
                     "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
                     "PLATFORM=PLATFORM_DESKTOP",
                     "BUILD_MODE=RELEASE",
-                    "PROJECT_NAME=rpc",
                     "-B"
                 ],
             },
@@ -56,7 +52,6 @@
                 "args": [
                     "PLATFORM=PLATFORM_DESKTOP",
                     "BUILD_MODE=RELEASE",
-                    "PROJECT_NAME=rpc",
                     "-B"
                 ],
             },
@@ -65,7 +60,6 @@
                     "RAYLIB_SRC_PATH=../../../raylib/src",
                     "PLATFORM=PLATFORM_DESKTOP",
                     "BUILD_MODE=RELEASE",
-                    "PROJECT_NAME=rpc",
                     "-B"
                 ],
             },
