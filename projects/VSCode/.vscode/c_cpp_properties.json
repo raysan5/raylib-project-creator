@@ -11,8 +11,8 @@
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                "GRAPHICS_API_OPENGL_33",
-                "PLATFORM_DESKTOP"
+                "PLATFORM_DESKTOP",
+                "GRAPHICS_API_OPENGL_33"
             ],
             "compilerPath": "C:/raylib/w64devkit/bin/gcc.exe",
             "cStandard": "c99",
@@ -22,9 +22,9 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
-                "../../../raylib/src/**",
-                "../../src/"
+                "${workspaceFolder}/../../src",
+                "${workspaceFolder}/../../src/external",
+                "${workspaceFolder}/../../../raylib/src/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -41,9 +41,9 @@
         {
             "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/**",
-                "../../../raylib/src/**",
-                "../../src/"
+                "${workspaceFolder}/../../src",
+                "${workspaceFolder}/../../src/external",
+                "${workspaceFolder}/../../../raylib/src/**"
             ],
             "defines": [
                 "_DEBUG",
