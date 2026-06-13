@@ -2354,7 +2354,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         // Update projects/VSCode/.vscode/launch.json
         fileText = LoadFileText(TextFormat("%s/projects/VSCode/.vscode/launch.json", templatePath));
         fileTextUpdated[0] = TextReplaceAlloc(fileText, "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
-        fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "C:/raylib/w64devkit/bin", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
+        fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "C:\\raylib\\w64devkit\\bin", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
         SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/launch.json", outPath, rpcGetText(project, "PROJECT_REPO_NAME")), fileTextUpdated[1]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
@@ -2369,34 +2369,8 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 
         // Update projects/VSCode/.vscode/tasks.json
         fileText = LoadFileText(TextFormat("%s/projects/VSCode/.vscode/tasks.json", templatePath));
-
-        // Get names for the input source paths (only filename, without path)
-        char **srcFileNames = (char **)RL_CALLOC(RPC_MAX_SOURCE_FILES, sizeof(char *));
-        for (int i = 0; i < RPC_MAX_SOURCE_FILES; i++) srcFileNames[i] = (char *)RL_CALLOC(RPC_SOURCE_PATH_LENGTH, sizeof(char));
-
-        int srcFileCount = 0;
-        for (int j = 0; j < input.srcFileCount; j++)
-        {
-            if (IsFileExtension(input.srcFilePaths[j], ".c"))
-            {
-                // TODO: WARNING: Some code files could be inside a directory structure,
-                // but on copy it will be eliminated
-                strcpy(srcFileNames[srcFileCount], GetFileName(input.srcFilePaths[j]));
-                srcFileCount++;
-            }
-        }
-
-        // Add all project required sources concatenated
-        fileTextUpdated[0] = TextReplaceAlloc(fileText, "project_name.c", TextJoin(srcFileNames, srcFileCount, " "));
-
-        for (int i = 0; i < RPC_MAX_SOURCE_FILES; i++) RL_FREE(srcFileNames[i]);
-        RL_FREE(srcFileNames);
-
-        fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
-        fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "C:/raylib/raylib/src", raylibSrcPath);
-        fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "C:/raylib/w64devkit/bin", rpcGetText(project, "PLATFORM_WINDOWS_W64DEVKIT_PATH"));
-
-        SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/tasks.json", outPath, rpcGetText(project, "PROJECT_REPO_NAME")), fileTextUpdated[3]);
+        fileTextUpdated[0] = TextReplaceAlloc(fileText, "C:/raylib/raylib/src", raylibSrcPath);
+        SaveFileText(TextFormat("%s/%s/projects/VSCode/.vscode/tasks.json", outPath, rpcGetText(project, "PROJECT_REPO_NAME")), fileTextUpdated[0]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
 

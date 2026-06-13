@@ -1,67 +1,72 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
         {
             "label": "build debug",
             "type": "process",
             "command": "make",
-            "args": [
-                "PLATFORM=PLATFORM_DESKTOP",
-                "BUILD_MODE=DEBUG",
-                "PROJECT_NAME=project_name",
-                "OBJS=project_name.c"
-            ],
             "windows": {
-                "command": "mingw32-make.exe",
                 "args": [
-                    "-f ../../src/Makefile",
-                    "RAYLIB_SRC_PATH=C:/raylib/raylib",
-                    "PROJECT_NAME=project_name",
-                    "OBJS=project_name.c",
-                    "BUILD_MODE=DEBUG"
+                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=DEBUG",
+                    "-B"
+                ],
+            },
+            "linux": {
+                "args": [
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=DEBUG",
+                    "-B"
                 ],
             },
             "osx": {
                 "args": [
-                    "RAYLIB_SRC_PATH=C:/raylib/raylib",
-                    "PROJECT_NAME=project_name",
-                    "OBJS=project_name.c",
-                    "BUILD_MODE=DEBUG"
+                    "RAYLIB_SRC_PATH=../../../raylib/src",
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=DEBUG",
+                    "-B"
                 ],
             },
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
+            "options": {
+                "cwd": "${workspaceFolder}/../../src"
+            },
         },
         {
             "label": "build release",
             "type": "process",
             "command": "make",
-            "args": [
-                "PLATFORM=PLATFORM_DESKTOP",
-                "PROJECT_NAME=project_name",
-                "OBJS=project_name.c"
-            ],
             "windows": {
-                "command": "mingw32-make.exe",
                 "args": [
-                    "-f ../../src/Makefile",
                     "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
-                    "PROJECT_NAME=project_name",
-                    "OBJS=project_name.c"
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=RELEASE",
+                    "-B"
+                ],
+            },
+            "linux": {
+                "args": [
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=RELEASE",
+                    "-B"
                 ],
             },
             "osx": {
                 "args": [
-                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
-                    "PROJECT_NAME=project_name",
-                    "OBJS=project_name.c"
+                    "RAYLIB_SRC_PATH=../../../raylib/src",
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=RELEASE",
+                    "-B"
                 ],
             },
             "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/../../src"
+            },
         }
     ]
 }

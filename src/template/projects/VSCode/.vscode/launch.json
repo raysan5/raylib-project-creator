@@ -1,60 +1,56 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-        "version": "0.2.0",
-        "configurations": [
-          {
+    "version": "0.2.0",
+    "configurations": [
+        {
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/project_name",
+            "program": "${workspaceFolder}/../../src/project_name",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/../../src",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
-              {
-                "description": "Enable pretty-printing for gdb",
-                "text": "-enable-pretty-printing",
-                "ignoreFailures": false
-              }
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": false
+                }
             ],
             "windows": {
-              "miDebuggerPath": "C:/raylib/w64devkit/bin/gdb.exe",
-            },
-            "osx": {
-              "MIMode": "lldb"
+                "miDebuggerPath": "C:\\raylib\\w64devkit\\bin\\gdb.exe",
             },
             "linux": {
-              "miDebuggerPath": "/usr/bin/gdb",
+                "miDebuggerPath": "/usr/bin/gdb",
+            },
+            "osx": {
+                "MIMode": "lldb"
             },
             "preLaunchTask": "build debug"
-          },
-          {
+        },
+        {
             "name": "Run",
             "type": "cppdbg",
             "request": "launch",
+            "program": "${workspaceFolder}/../../src/project_name",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/../../src",
             "environment": [],
             "externalConsole": false,
-            "program": "${workspaceFolder}/project_name",
             "MIMode": "gdb",
             "windows": {
-              "program": "${workspaceFolder}/project_name.exe",
-              "miDebuggerPath": "C:/raylib/w64devkit/bin/gdb.exe"
-            },
-            "osx": {
-              "MIMode": "lldb"
+                "miDebuggerPath": "C:\\raylib\\w64devkit\\bin\\gdb.exe"
             },
             "linux": {
-              "miDebuggerPath": "/usr/bin/gdb"
+                "miDebuggerPath": "/usr/bin/gdb"
+            },
+            "osx": {
+                "MIMode": "lldb"
             },
             "preLaunchTask": "build release",
-          }
-        ]
-      }
+        }
+    ]
+}

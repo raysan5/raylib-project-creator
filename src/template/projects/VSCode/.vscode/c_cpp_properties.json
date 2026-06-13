@@ -3,16 +3,16 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
-                "C:/raylib/raylib/src/**",
-                "../../src"
+                "${workspaceFolder}/../../src",
+                "${workspaceFolder}/../../src/external",
+                "C:/raylib/raylib/src"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                "GRAPHICS_API_OPENGL_33",
-                "PLATFORM_DESKTOP"
+                "PLATFORM_DESKTOP",
+                "GRAPHICS_API_OPENGL_33"
             ],
             "compilerPath": "C:/raylib/w64devkit/bin/gcc.exe",
             "cStandard": "c99",
@@ -20,11 +20,11 @@
             "intelliSenseMode": "gcc-x64"
         },
         {
-            "name": "Mac",
+            "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
-                "C:/raylib/raylib/src/**",
-                "../../src/"
+                "${workspaceFolder}/../../src",
+                "${workspaceFolder}/../../src/external",
+                "${workspaceFolder}/../../../raylib/src/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -32,9 +32,6 @@
                 "_UNICODE",
                 "GRAPHICS_API_OPENGL_33",
                 "PLATFORM_DESKTOP"
-            ],
-            "macFrameworkPath": [
-                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
             ],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
@@ -42,11 +39,11 @@
             "intelliSenseMode": "clang-x64"
         },
         {
-            "name": "Linux",
+            "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/**",
-                "C:/raylib/raylib/src/**",
-                "../../src/"
+                "${workspaceFolder}/../../src",
+                "${workspaceFolder}/../../src/external",
+                "${workspaceFolder}/../../../raylib/src/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -58,8 +55,7 @@
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++14",
-            "intelliSenseMode": "clang-x64"
-
+            "intelliSenseMode": "macos-clang-arm64"
         }
     ],
     "version": 4
