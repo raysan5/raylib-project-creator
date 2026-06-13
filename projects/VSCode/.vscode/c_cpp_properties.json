@@ -19,26 +19,7 @@
             "cppStandard": "c++14",
             "intelliSenseMode": "gcc-x64"
         },
-        {
-            "name": "Mac",
-            "includePath": [
-                "${workspaceFolder}/**",
-                "../../../raylib/src/**",
-                "../../src/"
-            ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE",
-                "GRAPHICS_API_OPENGL_33",
-                "PLATFORM_DESKTOP"
-            ],
-            "compilerPath": "/usr/bin/clang",
-            "cStandard": "c11",
-            "cppStandard": "c++14",
-            "intelliSenseMode": "macos-clang-arm64"
-        },
-        {
+                {
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
@@ -57,6 +38,25 @@
             "cppStandard": "c++14",
             "intelliSenseMode": "clang-x64"
 
+        },
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "../../../raylib/src/**",
+                "../../src/"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "GRAPHICS_API_OPENGL_33",
+                "PLATFORM_DESKTOP"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "macos-clang-arm64"
         }
     ],
     "version": 4

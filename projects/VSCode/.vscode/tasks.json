@@ -1,6 +1,4 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
         {
@@ -13,7 +11,6 @@
                     "PLATFORM=PLATFORM_DESKTOP",
                     "BUILD_MODE=DEBUG",
                     "PROJECT_NAME=rpc",
-                    "OBJS=rpc.c external/tinyfiledialogs.c",
                     "-B"
                 ],
             },
@@ -22,7 +19,6 @@
                     "PLATFORM=PLATFORM_DESKTOP",
                     "BUILD_MODE=DEBUG",
                     "PROJECT_NAME=rpc",
-                    "OBJS=rpc.c external/tinyfiledialogs.c",
                     "-B"
                 ],
             },
@@ -32,7 +28,6 @@
                     "PLATFORM=PLATFORM_DESKTOP",
                     "BUILD_MODE=DEBUG",
                     "PROJECT_NAME=rpc",
-                    "OBJS=rpc.c external/tinyfiledialogs.c",
                     "-B"
                 ],
             },
@@ -48,19 +43,30 @@
             "label": "build release",
             "type": "process",
             "command": "make",
-            "args": [
-                "PLATFORM=PLATFORM_DESKTOP",
-                "PROJECT_NAME=rpc",
-                "OBJS=rpc.c external/tinyfiledialogs.c"
-            ],
             "windows": {
                 "args": [
-                    "RAYLIB_SRC_PATH=../../../raylib/src"
+                    "RAYLIB_SRC_PATH=C:/raylib/raylib/src",
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=RELEASE",
+                    "PROJECT_NAME=rpc",
+                    "-B"
+                ],
+            },
+            "linux": {
+                "args": [
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=RELEASE",
+                    "PROJECT_NAME=rpc",
+                    "-B"
                 ],
             },
             "osx": {
                 "args": [
                     "RAYLIB_SRC_PATH=../../../raylib/src",
+                    "PLATFORM=PLATFORM_DESKTOP",
+                    "BUILD_MODE=RELEASE",
+                    "PROJECT_NAME=rpc",
+                    "-B"
                 ],
             },
             "group": "build",
