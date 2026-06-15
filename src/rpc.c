@@ -1611,25 +1611,27 @@ static void ShowCommandLineInfo(void)
     printf("// more info and bugs-report: github.com/raysan5/raylib-project-creator         //\n");
     printf("// feedback and support:      ray[at]raylib.com                                 //\n");
     printf("//                                                                              //\n");
-    printf("// Copyright (c) 2024-%i Ramon Santamaria (@raysan5)                          //\n", currentYear);
+    printf("// Copyright (c) 2024-2026 Ramon Santamaria (@raysan5)                          //\n");
     printf("//                                                                              //\n");
     printf("//////////////////////////////////////////////////////////////////////////////////\n\n");
 
     printf("USAGE:\n\n");
-    printf("    > rpc [--help] --i <src_dir>,<assets_dir> --rpc <project_config.rpc>\n");
-    printf("          [--pn <project_name>] [--rn <repo-name>]\n");
-    printf("          [--cn <commercial_name>] [--pv <version>]\n");
+    printf("    > rpc [--help] --input <src_dir>,<assets_dir> --config <project_config.rpc>\n");
+    printf("          [-pn <project_name>] [-rn <repo-name>]\n");
+    printf("          [-cn <commercial_name>] [-pv <version>]\n");
     printf("          [--desc <project_description>] [--dev <developer_name>]\n");
     printf("          [--devurl <developer_webpage>] [--devmail <developer_email>]\n");
-    printf("          [--out <output_path>]\n");
+    printf("          [--output <output_path>]\n");
 
     printf("\nOPTIONS:\n\n");
     printf("    -h, --help                          : Show tool version and command line usage help\n\n");
     printf("    -i, --input <path_dir>,<file01.xxx>,<file02.xxx>\n");
     printf("                                        : Define inputs, directory or files(s), comma separated\n");
     printf("                                        : NOTE: Provide full paths or prepend './' for relative paths\n");
-    printf("    -rpc <config_file.rpc>              : Define raylib project configuration file\n");
-    printf("    -t, --template <template_id>        : Define raylib template to be used:\n");
+    printf("    -o, --output <output_path>          : Define output path for project generation\n");
+    printf("    -c, --config <config_file.rpc>      : Define input project configuration file\n");
+    printf("                                        : NOTE: Use as base properties, override by cli properties\n");
+    printf("    -t, --template <template_id>        : Define project template to be used:\n");
     printf("                                          Supported values:\n");
     printf("                                            0 - None, custom input files (default)\n");
     printf("                                            1 - Basic Window\n");
@@ -1637,6 +1639,7 @@ static void ShowCommandLineInfo(void)
     printf("                                            3 - Platformer 2D\n");
     printf("                                            4 - First Person 3D\n\n");
 
+    // Project configuration properties
     printf("    -pn, --project-name <project_name>  : Define project internal name\n");
     printf("    -rn, --repo-name <repository_name>  : Define project repository name\n");
     printf("    -cn, --commercial-name <commercial_name>  : Define project commercial name\n");
@@ -1645,10 +1648,9 @@ static void ShowCommandLineInfo(void)
     printf("    --dev <developer_name>              : Define developer name\n");
     printf("    --devurl <developer_webpage>        : Define developer webpage\n");
     printf("    --devmail <developer_email>         : Define developer email\n");
-    printf("    -o, --out <output_path>             : Define output path for project generation\n");
 
     printf("\nEXAMPLES:\n\n");
-    printf("    > rpc -i src_dir -rpc my_project_config.rpc -pn cool_game -rn cool-game-repo -cn \"Cool Game\" -pv 1.0\n");
+    printf("    > rpc -i src_dir -c my_project_config.rpc -pn cool_game -rn cool-game-repo -cn \"Cool Game\" -pv 1.0\n");
     printf("        Generates project <cool_game> in output directory <cool-game-repo>\n");
 }
 
@@ -1730,7 +1732,7 @@ static void ProcessCommandLine(int argc, char *argv[])
             }
             else LOG("WARNING: No input file provided\n");
         }
-        else if (strcmp(argv[i], "-rpc") == 0)
+        else if ((strcmp(argv[i], "-c") == 0) || (strcmp(argv[i], "--config") == 0))
         {
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
@@ -2563,7 +2565,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
     fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "ProjectDescription", rpcGetText(project, "PROJECT_DESCRIPTION"));
     fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "ProjectDeveloper", rpcGetText(project, "PROJECT_DEVELOPER_NAME"));
-    fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "project_developer", TextToLower(rpcGetText(project, "PROJECT_DEVELOPER_NAME")));
+    fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "project_developer", TextToSnake(rpcGetText(project, "PROJECT_DEVELOPER_NAME")));
     fileTextUpdated[5] = TextReplaceAlloc(fileTextUpdated[4], "ProjectYear", TextFormat("%i", currentYear));
     SaveFileText(TextFormat("%s/%s/%s/Info.plist", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_SOURCE_PATH")), fileTextUpdated[5]);
     for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
