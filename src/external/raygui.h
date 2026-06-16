@@ -563,77 +563,81 @@ typedef enum {
 // NOTE: Up to 16 controls supported or 32 controls (v500)
 typedef enum {
     // Default -> populates to all controls when set
-    DEFAULT = 0,
+    DEFAULT         = 0,
 
     // Basic controls
-    LABEL,          // Used also for: LABELBUTTON
-    BUTTON,
-    TOGGLE,         // Used also for: TOGGLEGROUP
-    SLIDER,         // Used also for: SLIDERBAR, TOGGLESLIDER
-    PROGRESSBAR,
-    CHECKBOX,
-    COMBOBOX,
-    DROPDOWNBOX,
-    TEXTBOX,        // Used also for: TEXTBOXMULTI
-    VALUEBOX,
-    TABBAR,
-    LISTVIEW,
-    COLORPICKER,
-    SCROLLBAR,
-    STATUSBAR
+    LABEL           = 1,        // Used also for: LABELBUTTON
+    BUTTON          = 2,
+    TOGGLE          = 3,        // Used also for: TOGGLEGROUP
+    SLIDER          = 4,        // Used also for: SLIDERBAR, TOGGLESLIDER
+    PROGRESSBAR     = 5,
+    CHECKBOX        = 6,
+    COMBOBOX        = 7,
+    DROPDOWNBOX     = 8,
+    TEXTBOX         = 9,        // Used also for: TEXTBOXMULTI
+    VALUEBOX        = 10,
+    TABBAR          = 11,
+    LISTVIEW        = 12,
+    COLORPICKER     = 13,
+    SCROLLBAR       = 14,
+    STATUSBAR       = 15
     // NOTE: More controls can be added if required
 } GuiControl;
 
-// Gui base properties for every control
-// NOTE: RAYGUI_MAX_PROPS_BASE properties (by default 16 properties)
+// Controls BASE properties for every control (RAYGUI_MAX_PROPS_BASE = 16)
+// NOTE: Properties required for all controls, DEFAULT control sets
+// default values for them but they can be overriden per control
 typedef enum {
-    BORDER_COLOR_NORMAL = 0,    // Control border color in STATE_NORMAL
-    BASE_COLOR_NORMAL,          // Control base color in STATE_NORMAL
-    TEXT_COLOR_NORMAL,          // Control text color in STATE_NORMAL
-    BORDER_COLOR_FOCUSED,       // Control border color in STATE_FOCUSED
-    BASE_COLOR_FOCUSED,         // Control base color in STATE_FOCUSED
-    TEXT_COLOR_FOCUSED,         // Control text color in STATE_FOCUSED
-    BORDER_COLOR_PRESSED,       // Control border color in STATE_PRESSED
-    BASE_COLOR_PRESSED,         // Control base color in STATE_PRESSED
-    TEXT_COLOR_PRESSED,         // Control text color in STATE_PRESSED
-    BORDER_COLOR_DISABLED,      // Control border color in STATE_DISABLED
-    BASE_COLOR_DISABLED,        // Control base color in STATE_DISABLED
-    TEXT_COLOR_DISABLED,        // Control text color in STATE_DISABLED
-    BORDER_WIDTH = 12,          // Control border size, 0 for no border
-    //TEXT_SIZE,                  // Control text size (glyphs max height) -> GLOBAL for all controls
-    //TEXT_SPACING,               // Control text spacing between glyphs -> GLOBAL for all controls
-    //TEXT_LINE_SPACING,          // Control text spacing between lines -> GLOBAL for all controls
-    TEXT_PADDING = 13,          // Control text padding, not considering border
-    TEXT_ALIGNMENT = 14,        // Control text horizontal alignment inside control text bound (after border and padding)
-    //TEXT_WRAP_MODE              // Control text wrap-mode inside text bounds -> GLOBAL for all controls
+    BORDER_COLOR_NORMAL   = 0,      // Control border color in STATE_NORMAL
+    BASE_COLOR_NORMAL     = 1,      // Control base color in STATE_NORMAL
+    TEXT_COLOR_NORMAL     = 2,      // Control text color in STATE_NORMAL
+    BORDER_COLOR_FOCUSED  = 3,      // Control border color in STATE_FOCUSED
+    BASE_COLOR_FOCUSED    = 4,      // Control base color in STATE_FOCUSED
+    TEXT_COLOR_FOCUSED    = 5,      // Control text color in STATE_FOCUSED
+    BORDER_COLOR_PRESSED  = 6,      // Control border color in STATE_PRESSED
+    BASE_COLOR_PRESSED    = 7,      // Control base color in STATE_PRESSED
+    TEXT_COLOR_PRESSED    = 8,      // Control text color in STATE_PRESSED
+    BORDER_COLOR_DISABLED = 9,      // Control border color in STATE_DISABLED
+    BASE_COLOR_DISABLED   = 10,     // Control base color in STATE_DISABLED
+    TEXT_COLOR_DISABLED   = 11,     // Control text color in STATE_DISABLED
+    BORDER_WIDTH          = 12,     // Control border size, 0 for no border
+    TEXT_PADDING          = 13,     // Control text padding, not considering border
+    TEXT_ALIGNMENT        = 14,     // Control text horizontal alignment inside control text bound (after border and padding)
+    BASEPROP16            = 15      // Not used yet...
 } GuiControlProperty;
 
-// TODO: Which text styling properties should be global or per-control?
-// At this moment TEXT_PADDING and TEXT_ALIGNMENT is configured and saved per control while
-// TEXT_SIZE, TEXT_SPACING, TEXT_LINE_SPACING, TEXT_ALIGNMENT_VERTICAL, TEXT_WRAP_MODE are global and
-// should be configured by user as needed while defining the UI layout
 
-// Gui extended properties depend on control
-// NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default, max 8 properties)
+// WARNING: Some properties have been chosen to be global with DEFAULT - EXTENDED properties:
+//    - TEXT_SIZE,                  // Control text size (glyphs max height)
+//    - TEXT_SPACING,               // Control text spacing between glyphs
+//    - TEXT_LINE_SPACING,          // Control text spacing between lines
+//    - TEXT_WRAP_MODE              // Control text wrap-mode inside text bounds
+// 
+// While other properties can be setup per globally (DEFAULT) or per control: 
+//    - TEXT_PADDING                // Control text padding, not considering border
+//    - TEXT_ALIGNMENT              // Control text horizontal alignment inside control text bound
+
+
+// Controls EXTENDED properties (RAYGUI_MAX_PROPS_EXTENDED = 8)
 //----------------------------------------------------------------------------------
-// DEFAULT extended properties
-// NOTE: Those properties are common to all controls or global
+// DEFAULT control, extended properties
+// NOTE: Those properties are global for all controls, they can not be setup per control
 // WARNING: Only 8 slots vailable for those properties by default
 typedef enum {
-    TEXT_SIZE = 16,             // Text size (glyphs max height)
-    TEXT_SPACING,               // Text spacing between glyphs
-    LINE_COLOR,                 // Line control color
-    BACKGROUND_COLOR,           // Background color
-    TEXT_LINE_SPACING,          // Text spacing between lines
-    TEXT_ALIGNMENT_VERTICAL,    // Text vertical alignment inside text bounds (after border and padding)
-    TEXT_WRAP_MODE              // Text wrap-mode inside text bounds
-    //TEXT_DECORATION             // Text decoration: 0-None, 1-Underline, 2-Line-through, 3-Overline
-    //TEXT_DECORATION_THICK       // Text decoration line thickness
+    TEXT_SIZE             = 16,     // Text size (glyphs max height)
+    TEXT_SPACING          = 17,     // Text spacing between glyphs
+    LINE_COLOR            = 18,     // Line control color
+    BACKGROUND_COLOR      = 19,     // Background color
+    TEXT_LINE_SPACING     = 20,     // Text spacing between lines
+    TEXT_ALIGNMENT_VERTICAL = 21,   // Text vertical alignment inside text bounds (after border and padding)
+    TEXT_WRAP_MODE        = 22,     // Text wrap-mode inside text bounds
+    EXTPROP08             = 23      // Not used yet...
 } GuiDefaultProperty;
 
-// Other possible text properties:
-// TEXT_WEIGHT                  // Normal, Italic, Bold -> Requires specific font change
-// TEXT_INDENT                  // Text indentation -> Now using TEXT_PADDING...
+// Other possible text extended properties:
+// TEXT_DECORATION               // Text decoration: 0-None, 1-Underline, 2-Line-through, 3-Overline
+// TEXT_DECORATION_THICK         // Text decoration line thickness
+// TEXT_FONT_WEIGHT              // Text font weight: Normal, Italic, Bold -> Requires specific font change
 
 // Label
 //typedef enum { } GuiLabelProperty;
@@ -699,9 +703,16 @@ typedef enum {
 } GuiValueBoxProperty;
 
 // TabBar
-//typedef enum { } GuiTabBarProperty;
+typedef enum { 
+    TAB_ITEMS_WIDTH = 16,       // TabBar tab items width
+    TAB_CLOSE_BUTTON,           // TabBar tab close button (0-Not shown, 1-Shown)
+    TAB_LINE_SIDE,              // TabBar tabs side (0-Bottom, 1-Top)       
+} GuiTabBarProperty;
 
 // ListView
+#define SCROLLBAR_LEFT_SIDE     0
+#define SCROLLBAR_RIGHT_SIDE    1
+
 typedef enum {
     LIST_ITEMS_HEIGHT = 16,     // ListView items height
     LIST_ITEMS_SPACING,         // ListView items separation
@@ -719,9 +730,6 @@ typedef enum {
     HUEBAR_SELECTOR_HEIGHT,     // ColorPicker right hue bar selector height
     HUEBAR_SELECTOR_OVERFLOW    // ColorPicker right hue bar selector overflow
 } GuiColorPickerProperty;
-
-#define SCROLLBAR_LEFT_SIDE     0
-#define SCROLLBAR_RIGHT_SIDE    1
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
@@ -770,6 +778,7 @@ RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text wit
 RAYGUIAPI void GuiSetIconScale(int scale);                      // Set default icon drawing size
 RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get raygui icons data pointer
 RAYGUIAPI char **GuiLoadIcons(const char *fileName, bool loadIconsName); // Load raygui icons file (.rgi) into internal icons data
+RAYGUIAPI char **GuiLoadIconsFromMemory(const unsigned char *fileData, int dataSize, bool loadIconsName); // Load raygui icons file (.rgi) from memory into internal icons data
 RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color); // Draw icon using pixel size at specified position
 #endif
 
@@ -1089,7 +1098,7 @@ typedef enum {
 } GuiIconName;
 #endif
 
-#endif
+#endif // RAYGUI_NO_ICONS
 
 #if defined(__cplusplus)
 }            // Prevents name mangling of functions
@@ -1424,7 +1433,7 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
 // NOTE: A pointer to current icons array should be defined
 static unsigned int *guiIconsPtr = guiIcons;
 
-#endif      // !RAYGUI_NO_ICONS && !RAYGUI_CUSTOM_ICONS
+#endif // !RAYGUI_NO_ICONS && !RAYGUI_CUSTOM_ICONS
 
 #ifndef RAYGUI_ICON_SIZE
     #define RAYGUI_ICON_SIZE             0
@@ -1797,20 +1806,17 @@ int GuiPanel(Rectangle bounds, const char *text)
 // NOTE: Using GuiToggle() for the TABS
 int GuiTabBar(Rectangle bounds, char **text, int count, int *active)
 {
-    #if !defined(RAYGUI_TABBAR_ITEM_WIDTH)
-        #define RAYGUI_TABBAR_ITEM_WIDTH    148
-    #endif
-
     int result = -1;
     //GuiState state = guiState;
-
-    Rectangle tabBounds = { bounds.x, bounds.y, RAYGUI_TABBAR_ITEM_WIDTH, bounds.height };
+    
+    int tabItemsWidth = GuiGetStyle(TABBAR, TAB_ITEMS_WIDTH);
+    Rectangle tabBounds = { bounds.x, bounds.y, tabItemsWidth, bounds.height };
 
     if (*active < 0) *active = 0;
     else if (*active > count - 1) *active = count - 1;
 
     int offsetX = 0;    // Required in case tabs go out of screen
-    offsetX = (*active*RAYGUI_TABBAR_ITEM_WIDTH) - GetScreenWidth();
+    offsetX = (*active*tabItemsWidth) - GetScreenWidth();
     if (offsetX < 0) offsetX = 0;
 
     bool toggle = false;    // Required for individual toggles
@@ -1819,7 +1825,7 @@ int GuiTabBar(Rectangle bounds, char **text, int count, int *active)
     //--------------------------------------------------------------------
     for (int i = 0; i < count; i++)
     {
-        tabBounds.x = bounds.x + (RAYGUI_TABBAR_ITEM_WIDTH + 4)*i + offsetX;
+        tabBounds.x = bounds.x + (tabItemsWidth + 4)*i + offsetX;
 
         if (tabBounds.x < GetScreenWidth())
         {
@@ -1847,19 +1853,23 @@ int GuiTabBar(Rectangle bounds, char **text, int count, int *active)
             GuiSetStyle(TOGGLE, TEXT_PADDING, textPadding);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, textAlignment);
 
-            // Draw tab close button
-            // NOTE: Only draw close button for current tab: if (CheckCollisionPointRec(mousePosition, tabBounds))
-            int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
-            int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
-            GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
-            GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-#if defined(RAYGUI_NO_ICONS)
-            if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, "x")) result = i;
-#else
-            if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, GuiIconText(ICON_CROSS_SMALL, NULL))) result = i;
-#endif
-            GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
-            GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
+            if (GuiGetStyle(TABBAR, TAB_CLOSE_BUTTON))
+            {
+                // Draw tab close button
+                // NOTE: Only draw close button for current tab: if (CheckCollisionPointRec(mousePosition, tabBounds))
+                int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
+                int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+                GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
+                GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+            #if defined(RAYGUI_NO_ICONS)
+                if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, "x")) result = i;
+            #else
+                if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, 
+                    GuiIconText(ICON_CROSS_SMALL, NULL))) result = i;
+            #endif
+                GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
+                GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
+            }
         }
     }
 
@@ -4784,7 +4794,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, TEXT_SPACING, 1);              // DEFAULT, shared by all controls
     GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);       // DEFAULT specific property
     GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property
-    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 5);         // DEFAULT, pixels between lines, from bottom of first line to top of second
+    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 12);        // DEFAULT, pixels between lines, from bottom of first line to top of second
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);   // DEFAULT, text aligned vertically to middle of text-bounds
 
     // Initialize control-specific property values
@@ -4803,6 +4813,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
     GuiSetStyle(STATUSBAR, TEXT_PADDING, 8);
     GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+    GuiSetStyle(TABBAR, TAB_ITEMS_WIDTH, 160);
 
     // Initialize extended property values
     // NOTE: By default, extended property values are initialized to 0
@@ -4893,8 +4904,6 @@ const char *GuiIconText(int iconId, const char *text)
 unsigned int *GuiGetIcons(void) { return guiIconsPtr; }
 
 // Load raygui icons file (.rgi)
-// NOTE: In case nameIds are required, they can be requested with loadIconsName,
-// they are returned as a guiIconsName[iconCount][RAYGUI_ICON_MAX_NAME_LENGTH],
 // WARNING: guiIconsName[]][] memory should be manually freed!
 char **GuiLoadIcons(const char *fileName, bool loadIconsName)
 {
@@ -4903,11 +4912,11 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
     // Offset  | Size    | Type       | Description
     // ------------------------------------------------------
     // 0       | 4       | char       | Signature: "rGI "
-    // 4       | 2       | short      | Version: 100
+    // 4       | 2       | short      | Version: 100, 500 (raygui 5.0)
     // 6       | 2       | short      | reserved
 
     // 8       | 2       | short      | Num icons (N)
-    // 10      | 2       | short      | Icons size (Options: 16, 32, 64) (S)
+    // 10      | 2       | short      | Icons Size (Options: 16, 32, 64)
 
     // Icons name id (32 bytes per name id)
     // foreach (icon)
@@ -4916,50 +4925,33 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
     // }
 
     // Icons data: One bit per pixel, stored as unsigned int array (depends on icon size)
-    // S*S pixels/32bit per unsigned int = K unsigned int per icon
+    // Size*Size pixels/32bit per unsigned int = K unsigned int per icon
     // foreach (icon)
     // {
     //   ...   | K       | unsigned int | Icon Data
     // }
 
     FILE *rgiFile = fopen(fileName, "rb");
-
     char **guiIconsName = NULL;
 
     if (rgiFile != NULL)
     {
-        char signature[5] = { 0 };
-        short version = 0;
-        short reserved = 0;
-        short iconCount = 0;
-        short iconSize = 0;
+        unsigned char *fileData = NULL;
+        int dataSize = 0;
+        
+        fseek(rgiFile, 0, SEEK_END);
+        int size = (int)ftell(rgiFile);
+        fseek(rgiFile, 0, SEEK_SET);
 
-        fread(signature, 1, 4, rgiFile);
-        fread(&version, sizeof(short), 1, rgiFile);
-        fread(&reserved, sizeof(short), 1, rgiFile);
-        fread(&iconCount, sizeof(short), 1, rgiFile);
-        fread(&iconSize, sizeof(short), 1, rgiFile);
-
-        if ((signature[0] == 'r') &&
-            (signature[1] == 'G') &&
-            (signature[2] == 'I') &&
-            (signature[3] == ' '))
+        if (size > 0)
         {
-            if (loadIconsName)
-            {
-                guiIconsName = (char **)RAYGUI_CALLOC(iconCount, sizeof(char *));
-                for (int i = 0; i < iconCount; i++)
-                {
-                    guiIconsName[i] = (char *)RAYGUI_CALLOC(RAYGUI_ICON_MAX_NAME_LENGTH, sizeof(char));
-                    fread(guiIconsName[i], 1, RAYGUI_ICON_MAX_NAME_LENGTH, rgiFile);
-                }
-            }
-            else fseek(rgiFile, iconCount*RAYGUI_ICON_MAX_NAME_LENGTH, SEEK_CUR);
-
-            // Read icons data directly over internal icons array
-            fread(guiIconsPtr, sizeof(unsigned int), (int)iconCount*((int)iconSize*(int)iconSize/32), rgiFile);
+            fileData = (unsigned char *)RL_CALLOC(size, sizeof(unsigned char));
+            // WARNING: File can be partially loaded but ignoring it for simplicity
+            dataSize = fread(fileData, sizeof(unsigned char), size, rgiFile);
+        
+            guiIconsName = GuiLoadIconsFromMemory(fileData, dataSize, loadIconsName);
         }
-
+        
         fclose(rgiFile);
     }
 
@@ -4967,7 +4959,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
 }
 
 // Load icons from memory
-// WARNING: Binary files only
+// GLOBAL: Updates global variable: guiIconsPtr
 char **GuiLoadIconsFromMemory(const unsigned char *fileData, int dataSize, bool loadIconsName)
 {
     unsigned char *fileDataPtr = (unsigned char *)fileData;
@@ -4993,7 +4985,8 @@ char **GuiLoadIconsFromMemory(const unsigned char *fileData, int dataSize, bool 
     {
         if (loadIconsName)
         {
-            guiIconsName = (char **)RAYGUI_CALLOC(iconCount, sizeof(char *));
+            // NOTE: Always allocating RAYGUI_ICON_MAX_ICONS names slots
+            guiIconsName = (char **)RAYGUI_CALLOC(RAYGUI_ICON_MAX_ICONS, sizeof(char *));
             for (int i = 0; i < iconCount; i++)
             {
                 guiIconsName[i] = (char *)RAYGUI_CALLOC(RAYGUI_ICON_MAX_NAME_LENGTH, sizeof(char));
