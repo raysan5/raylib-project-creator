@@ -1066,7 +1066,7 @@ static void UpdateDrawFrame(void)
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
             GuiToggle((Rectangle){ 16, 500 + 26 + (28 + 2)*i + filesPanelScroll.y, GetScreenWidth() - 24 - 24, 28 },
-                TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))), 
+                TextFormat("#10#%s", TextReplace(input.srcFilePaths[i], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"))),
                     &input.srcFileSelected[i]);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 0);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
@@ -2184,7 +2184,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 #else
     strcpy(raylibSrcPath, rpcGetText(project, "RAYLIB_SRC_PATH"));
 #endif
-    
+
     LOG("INFO: Starting project generation: %s\n", rpcGetText(project, "PROJECT_REPO_NAME")? rpcGetText(project, "PROJECT_REPO_NAME") : "-");
 
     //mz_bool mz_zip_reader_init_mem(mz_zip_archive *pZip, const void *pMem, size_t size, mz_uint flags); // Read file from memory zip data
@@ -2205,7 +2205,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 
     // Copy project source file(s) provided
     //--------------------------------------------------------------------------
-    LOG("INFO: Copying input source files to project sources path: %s/%s\n", 
+    LOG("INFO: Copying input source files to project sources path: %s/%s\n",
         rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_SOURCE_PATH"));
 
     // Create required output directories (src/external)
@@ -2214,7 +2214,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     for (int i = 0; i < input.srcFileCount; i++)
     {
         // Get expected destination file path for source input files
-        const char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), 
+        const char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, rpcGetText(project, "PROJECT_REPO_NAME"),
             rpcGetText(project, "PROJECT_SOURCE_PATH"), GetFileName(input.srcFilePaths[i]));
 
         // NOTE: In case file name contains "project_name", replacing it by user defined project internal name
@@ -2237,7 +2237,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         for (int i = 0; i < input.assetFileCount; i++)
         {
             // Get expected destination file path
-            const char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), 
+            const char *dstFilePath = TextFormat("%s/%s/%s/%s", outPath, rpcGetText(project, "PROJECT_REPO_NAME"),
                 rpcGetText(project, "PROJECT_ASSETS_PATH"), GetFileName(input.assetFilePaths[i]));
             FileCopy(input.assetFilePaths[i], dstFilePath); // Copy always with original name
 
@@ -2450,14 +2450,14 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 
         fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
         fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "C:\\raylib\\raylib\\src", raylibSrcPath);
-        SaveFileText(TextFormat("%s/%s/projects/VS2022/%s/%s.vcxproj", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), 
+        SaveFileText(TextFormat("%s/%s/projects/VS2022/%s/%s.vcxproj", outPath, rpcGetText(project, "PROJECT_REPO_NAME"),
             rpcGetText(project, "PROJECT_INTERNAL_NAME"), rpcGetText(project, "PROJECT_INTERNAL_NAME")), fileTextUpdated[3]);
         for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
         UnloadFileText(fileText);
 
-        // Copy user file to set working directory to src path, so resources can be found 
+        // Copy user file to set working directory to src path, so resources can be found
         FileCopy(TextFormat("%s/projects/VS2022/project_name/project_name.vcxproj.user", templatePath),
-            TextFormat("%s/%s/projects/VS2022/%s/%s.vcxproj.user", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), 
+            TextFormat("%s/%s/projects/VS2022/%s/%s.vcxproj.user", outPath, rpcGetText(project, "PROJECT_REPO_NAME"),
                 rpcGetText(project, "PROJECT_INTERNAL_NAME"), rpcGetText(project, "PROJECT_INTERNAL_NAME")));
 
         // Update projects/VS2022/project_name.sln
