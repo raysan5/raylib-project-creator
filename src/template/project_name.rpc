@@ -47,7 +47,7 @@ PROJECT_ICON_FILE                       "template/src/project_name.ico"     # Pr
 PROJECT_SOURCE_PATH                     "src"                               # Project source directory, including all required code files (C/C++)
 PROJECT_ASSETS_PATH                     "src/resources"                     # Project assets directory, including all required assets
 
-PROJECT_ASSETS_OUTPUT_PATH              "resources"                         # Project assets destination path
+PROJECT_ASSETS_OUTPUT_PATH              "resources"                         # Project assets destination path, relative to BUILD_OUTPUT_PATH
 #------------------------------------------------------------------------------------
 
 # raylib settings
@@ -60,10 +60,10 @@ RAYLIB_OPENGL_VERSION                   "3.3"                               # Op
 
 # Build settings
 # NOTE: General settings, common to all platforms
+# NOTE: Build target platform is selected on building, if no platform selected defaults to host platform
 #------------------------------------------------------------------------------------
 BUILD_OUTPUT_PATH                       "build"                             # Build output path
 
-BUILD_TARGET_PLATFORM                   "Windows"                           # Build target platform (Supported: Windows, Linux, macOS, Android, Web)
 BUILD_TARGET_ARCHITECTURE               "x86-64"                            # Build target architecture (Supported: x86-64, Win32, arm64)
 BUILD_TARGET_MODE                       "RELEASE"                           # Build target mode (Supported: DEBUG, RELEASE, DEBUG_DLL, RELEASE_DLL)
 
