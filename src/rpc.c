@@ -2340,6 +2340,10 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
         for (int i = 0; i < RPC_MAX_SOURCE_FILES; i++) RL_FREE(srcFileNames[i]);
         RL_FREE(srcFileNames);
 
+        // Add Makefile.Android for Android APK building target
+        FileCopy(TextFormat("%s/src/Makefile.Android", templatePath),
+            TextFormat("%s/%s/%s/Makefile.Android", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_SOURCE_PATH")));
+
         LOG("INFO: Build system generated successfully: Makefile\n");
     }
     //-------------------------------------------------------------------------------------

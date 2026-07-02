@@ -269,8 +269,6 @@ ifeq ($(PLATFORM),PLATFORM_DESKTOP)
         # Libraries for Windows desktop compilation
         # NOTE: WinMM library required to set high-res timer resolution
         LDLIBS = -lraylib -lopengl32 -lgdi32 -lwinmm -lcomdlg32 -lole32
-        # Required for physac examples
-        LDLIBS += -static -lpthread
     endif
     ifeq ($(PLATFORM_OS),LINUX)
         # Libraries for Debian GNU/Linux desktop compiling
@@ -322,9 +320,18 @@ OBJS = $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))
 
 # Define processes to execute
 #------------------------------------------------------------------------------------------------
+# For Android platform we call a custom Makefile.Android
+ifeq ($(PLATFORM),PLATFORM_ANDROID)
+    MAKEFILE_TARGET = -f Makefile.Android
+    export PROJECT_NAME
+    export PROJECT_SOURCE_FILES
+else
+    MAKEFILE_TARGET = $(PROJECT_NAME)
+endif
+
 # Default target entry
 all:
-	$(MAKE) $(PROJECT_NAME)
+	$(MAKE) $(MAKEFILE_TARGET)
 
 # Project target defined by PROJECT_NAME
 $(PROJECT_NAME): $(OBJS)
@@ -339,14 +346,14 @@ $(PROJECT_NAME): $(OBJS)
 clean:
 ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     ifeq ($(PLATFORM_OS),WINDOWS)
-		del *.o *.exe /s
+	del *.o *.exe /s
     endif
     ifeq ($(PLATFORM_OS),LINUX)
-		find . -type f -executable -delete
-		rm -fv *.o
+	find . -type f -executable -delete
+	rm -fv *.o
     endif
     ifeq ($(PLATFORM_OS),OSX)
-		rm -f *.o external/*.o $(PROJECT_NAME)
+	rm -f *.o external/*.o $(PROJECT_NAME)
     endif
 endif
 ifeq ($(PLATFORM),PLATFORM_DRM)
@@ -354,7 +361,15 @@ ifeq ($(PLATFORM),PLATFORM_DRM)
 	rm -fv *.o
 endif
 ifeq ($(PLATFORM),PLATFORM_WEB)
+    ifeq ($(PLATFORM_OS),WINDOWS)
 	del *.o *.html *.js
+    endif
+    ifeq ($(PLATFORM_OS),LINUX)
+	rm -fv *.o $(PROJECT_NAME).data $(PROJECT_NAME).html $(PROJECT_NAME).js $(PROJECT_NAME).wasm
+    endif
+    ifeq ($(PLATFORM_OS),OSX)
+	rm -f *.o $(PROJECT_NAME).data $(PROJECT_NAME).html $(PROJECT_NAME).js $(PROJECT_NAME).wasm
+    endif
 endif
 	@echo Cleaning done
 
