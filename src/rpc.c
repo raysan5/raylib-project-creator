@@ -212,29 +212,28 @@ const char *templateNames[] = { "Custom", "Basic Window", "Screen Manager", "Pla
 
 // Basic program variables
 //----------------------------------------------------------------------------------
-static const int screenWidth = 1070;        // Default screen width (at initialization)
-static const int screenHeight = 900;        // Default screen height (at initialization)
+static const int screenWidth = 1070;            // Default screen width (at initialization)
+static const int screenHeight = 900;            // Default screen height (at initialization)
 
 // NOTE: Max length depends on OS, in Windows MAX_PATH = 256
-static char inFileName[256] = { 0 };        // Input file name (required in case of drag & drop over executable)
-static char outFileName[256] = { 0 };       // Output file name (required for file save/export)
+static char inFileName[256] = { 0 };            // Input file name (required in case of drag & drop over executable)
+static char outFileName[256] = { 0 };           // Output file name (required for file save/export)
 
-static char inDirectoryPath[256] = { 0 };   // Input directory path
-static char outProjectPath[256] = { 0 };    // Output project path, initializeed to working directory
+static char inDirectoryPath[256] = { 0 };       // Input directory path
+static char outProjectPath[256] = { 0 };        // Output project path, initializeed to working directory
 
-//static int framesCounter = 0;               // General pourpose frames counter (not used)
-//static Vector2 mousePoint = { 0 };          // Mouse position
-static bool lockBackground = false;         // Toggle lock background (controls locked)
-static bool saveChangesRequired = false;    // Flag to notice save changes are required
+//static int framesCounter = 0;                 // General pourpose frames counter (not used)
+//static Vector2 mousePoint = { 0 };            // Mouse position
+static bool lockBackground = false;             // Toggle lock background (controls locked)
+static bool saveChangesRequired = false;        // Flag to notice save changes are required
 
-static RenderTexture2D target = { 0 };      // Render texture to render the tool (if required)
+static RenderTexture2D target = { 0 };          // Render texture to render the tool (if required)
 
 static Vector2 propPanelScroll = { 0, -10 };    // Project properties panel scroll offset
-//static Rectangle propPanelView = { 0 };         // Project properties panel view (for scissoring)
-static Vector2 filesPanelScroll = { 0 };
-static Rectangle filesPanelView = { 0 };
+static Vector2 filesPanelScroll = { 0 };        // Files panel scroll offset
+static Rectangle filesPanelView = { 0 };        // Files panel view rectangle (required for scissoring)
 
-// Info panel customizable variables
+// Info message panel, customizable variables
 static bool showInfoMessagePanel = false;       // Flag: request info message panel
 static const char *infoTitle = NULL;            // Info panel: title
 static const char *infoMessage = NULL;          // Info panel: message
