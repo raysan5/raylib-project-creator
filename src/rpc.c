@@ -2565,7 +2565,7 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
     fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "ProjectDescription", rpcGetText(project, "PROJECT_DESCRIPTION"));
     fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "ProjectDeveloper", rpcGetText(project, "PROJECT_DEVELOPER_NAME"));
-    fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "project_developer", TextToSnake(rpcGetText(project, "PROJECT_DEVELOPER_NAME")));
+    fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "project_developer", TextToSnake(rpcGetText(project, "PROJECT_PUBLISHER_NAME")));
     fileTextUpdated[5] = TextReplaceAlloc(fileTextUpdated[4], "ProjectYear", TextFormat("%i", currentYear));
     SaveFileText(TextFormat("%s/%s/%s/Info.plist", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_SOURCE_PATH")), fileTextUpdated[5]);
     for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
