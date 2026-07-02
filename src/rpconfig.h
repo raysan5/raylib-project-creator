@@ -29,7 +29,7 @@
 #ifndef RPCONFIG_H
 #define RPCONFIG_H
 
-#include "raylib.h"
+#include "raylib.h"     // Required for: Image type
 
 #define RPC_MAX_PROPERTY_ENTRIES    256
 
@@ -81,15 +81,17 @@ typedef enum {
 
 // Property platform type
 typedef enum {
+    RPC_PLATFORM_NONE = -1,
     RPC_PLATFORM_WINDOWS = 0,
     RPC_PLATFORM_LINUX,
     RPC_PLATFORM_MACOS,
-    RPC_PLATFORM_HTML5,
+    RPC_PLATFORM_WASM,
     RPC_PLATFORM_ANDROID,
-    RPC_PLATFORM_DRM,
-    RPC_PLATFORM_SWITCH,
-    RPC_PLATFORM_DREAMCAST,
     RPC_PLATFORM_FREEBSD,
+    RPC_PLATFORM_DRM,
+    RPC_PLATFORM_ESP32,
+    RPC_PLATFORM_DREAMCAST,
+    RPC_PLATFORM_SWITCH,
     RPC_PLATFORM_ANY
 } rpcPlatform;
 
@@ -132,10 +134,11 @@ RPCAPI void rpcUnloadProjectConfig(rpcProjectConfig config); // Unload project c
 RPCAPI void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, int flags); // Save project config data to .rpc file
 
 RPCAPI char *rpcGetText(rpcProjectConfig config, const char *key); // Get project config text by key
-RPCAPI int *rpcGetValue(rpcProjectConfig config, const char *key); // Get project config pointer to value by key
 RPCAPI int rpcSetText(rpcProjectConfig config, const char *key, const char *text); // Set project config text by key
+RPCAPI int rpcGetValue(rpcProjectConfig config, const char *key); // Get project config pointer to value by key
 RPCAPI int rpcSetValue(rpcProjectConfig config, const char *key, int value); // Set project config value by key
 RPCAPI rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfig config, const char *key); // Get project property entry from key
+RPCAPI int rpcSetPropertyEntry(rpcProjectConfig config, rpcPropertyEntry *entry); // Set project property entry (only if entry->key is found)
 
 #if defined(__cplusplus)
 }               // Prevents name mangling of functions
@@ -199,7 +202,7 @@ rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
                 if (TextIsEqual(platform, "WINDOWS")) project.entries[i].platform = RPC_PLATFORM_WINDOWS;
                 else if (TextIsEqual(platform, "LINUX")) project.entries[i].platform = RPC_PLATFORM_LINUX;
                 else if (TextIsEqual(platform, "MACOS")) project.entries[i].platform = RPC_PLATFORM_MACOS;
-                else if (TextIsEqual(platform, "HTML5")) project.entries[i].platform = RPC_PLATFORM_HTML5;
+                else if (TextIsEqual(platform, "WEB")) project.entries[i].platform = RPC_PLATFORM_WASM;
                 else if (TextIsEqual(platform, "ANDROID")) project.entries[i].platform = RPC_PLATFORM_ANDROID;
                 else if (TextIsEqual(platform, "DRM")) project.entries[i].platform = RPC_PLATFORM_DRM;
                 else if (TextIsEqual(platform, "SWITCH")) project.entries[i].platform = RPC_PLATFORM_SWITCH;
@@ -260,7 +263,7 @@ void rpcUnloadProjectConfig(rpcProjectConfig config)
 // NOTE: Same function as [rpc] tool but adding more data
 void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, int flags)
 {
-    rini_data data = rini_load(NULL);   // Create empty config with RINI_MAX_ENTRY_CAPACITY entries
+    rini_data data = rini_load(NULL);   // Create empty config with RINI_MAX_VALUE_CAPACITY entries
 
     // Define header comment lines
     rini_set_comment_line(&data, NULL); // Empty comment line, but including comment prefix delimiter
@@ -451,30 +454,21 @@ void rpcSaveProjectConfig(rpcProjectConfig config, const char *fileName, int fla
 }
 
 // Get project config text by key
-// NOTE: A pointer to the text is returned to allow modifying it
+// NOTE: A pointer to the text is returned to allow modifying it (instead of a text copy)
 char *rpcGetText(rpcProjectConfig config, const char *key)
 {
+    char *text = NULL;
+
     for (int i = 0; i < config.entryCount; i++)
     {
-        if (TextIsEqual(config.entries[i].key, key)) return config.entries[i].text;
+        if (TextIsEqual(config.entries[i].key, key)) text = config.entries[i].text;
     }
 
-    return NULL;
-}
-
-// Get project config value by key
-// NOTE: A pointer to the value is returned to allow modifying it
-int *rpcGetValue(rpcProjectConfig config, const char *key)
-{
-    for (int i = 0; i < config.entryCount; i++)
-    {
-        if (TextIsEqual(config.entries[i].key, key)) return &config.entries[i].value;
-    }
-
-    return NULL;
+    return text;
 }
 
 // Set project config text by key
+// WARNING: Only entries[i].text is set but key not parsed to fill additional data
 int rpcSetText(rpcProjectConfig config, const char *key, const char *text)
 {
     int result = -1;
@@ -494,7 +488,21 @@ int rpcSetText(rpcProjectConfig config, const char *key, const char *text)
     return result;
 }
 
+// Get project config value by key
+int rpcGetValue(rpcProjectConfig config, const char *key)
+{
+    int value = -1;
+
+    for (int i = 0; i < config.entryCount; i++)
+    {
+        if (TextIsEqual(config.entries[i].key, key)) value = config.entries[i].value;
+    }
+
+    return value;
+}
+
 // Set project config value by key
+// WARNING: Only entries[i].value/text is set but key not parsed to fill additional data
 int rpcSetValue(rpcProjectConfig config, const char *key, int value)
 {
     int result = -1;
@@ -522,6 +530,38 @@ rpcPropertyEntry *rpcGetPropertyEntry(rpcProjectConfig config, const char *key)
     }
 
     return NULL;
+}
+
+// Set project property entry (only if entry->key is found)
+int rpcSetPropertyEntry(rpcProjectConfig config, rpcPropertyEntry *entry)
+{
+    int result = -1;
+
+    for (int i = 0; i < config.entryCount; i++)
+    {
+        // Update property entry if key found and different content
+        if (TextIsEqual(config.entries[i].key, entry->key) &&
+            (memcmp(&config.entries[i], entry, sizeof(rpcPropertyEntry)) != 0))
+        {
+            memset(&config.entries[i], 0, sizeof(rpcPropertyEntry));
+
+            memcpy(config.entries[i].key, entry->key, 64);      // Entry key (as read from .rpc)
+            memcpy(config.entries[i].text, entry->text, 256);   // Entry text data (type: TEXT, FILE, PATH) - WARNING: Max len defined for rini
+            memcpy(config.entries[i].desc, entry->desc, 128);   // Entry data description, useful for tooltips
+
+            // Data extracted from key
+            memcpy(config.entries[i].name, entry->name, 64);    // Entry name label for display, computed from key
+            config.entries[i].category = entry->category;       // Entry category: PROJECT, BUILDING, PLATFORM, DEPLOY, IMAGERY, raylib
+            config.entries[i].platform = entry->platform;       // Entry platform: WINDOWS, LINUX, MACOS, HTML5, ANDROID, DRM, SWITCH, DREAMCAST, FREEBSD...
+            config.entries[i].type = entry->type;               // Entry type of data: VALUE (int), BOOL (int), TEXT (string), FILE (string-file), PATH (string-path)
+            config.entries[i].value = entry->value;             // Entry value, integer from text
+
+            result = i;
+            break;
+        }
+    }
+
+    return result;
 }
 
 #endif // RPCDATA_IMPLEMENTATION
