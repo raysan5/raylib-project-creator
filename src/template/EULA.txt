@@ -1,0 +1,44 @@
+END USER LICENSE AGREEMENT
+
+By installing or using CommercialName ("Software"), you agree to be bound by the terms of this End User License Agreement ("EULA"). 
+If you do not agree to all of the following terms, do not download or install the software or discontinue use immediately.
+
+1. License Grant
+
+ - You are granted a non-exclusive, non-transferable license to use the Software for personal or business purposes.
+ - The license allows you to install the Software on one or more computers or devices that you own or control, 
+   as long as each copy of the Software is used by only one user at a time.
+
+2. Restrictions
+
+ - You may not copy, modify, distribute, sell, transfer, sublicense, or reverse engineer the Software.
+ - You may not use the Software to create derivative works based on the Software.
+ - You may not remove or alter any copyright or other proprietary notices from the Software.
+
+3. Ownership
+
+ - The Software is owned by PublisherName and protected by copyright laws and international treaty provisions.
+
+4. Disclaimer of Warranty
+
+ - The Software is provided "AS IS" without warranty of any kind, either express or implied, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose.
+ - PublisherName does not warrant that the Software will meet your requirements or that the operation of the Software will be uninterrupted or error-free.
+
+5. Limitation of Liability
+
+ - In no event shall PublisherName be liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use or inability to use the Software, even if PublisherName has been advised of the possibility of such damages.
+
+6. Termination
+
+ - This Agreement will terminate automatically if you fail to comply with any of the terms and conditions of this Agreement. Upon termination, you must immediately cease all use of the Software and destroy all copies of the Software in your possession.
+
+7. Governing Law
+
+ - This Agreement shall be governed by and construed in accordance with the Spanish laws, without giving effect to its conflicts of laws provisions.
+ - You agree that any legal action or proceeding arising out of or relating to this Agreement shall be brought exclusively in the Spanish courts.
+
+8. Entire Agreement
+
+ - This Agreement constitutes the entire agreement between you and PublisherName and supersedes all prior or contemporaneous negotiations, discussions, or agreements, whether written or oral, between the parties regarding the subject matter hereof.
+ 
+If you have any questions or concerns about this EULA, please contact PublisherName at DeveloperEmail.

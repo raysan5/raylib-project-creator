@@ -1251,7 +1251,7 @@ static void UpdateDrawFrame(void)
             // Check for valid extension and make sure it is
             if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".rpc")) strcat(outFileName, ".rpc\0");
 
-            //rpcSyncProjectConfigTyped(project, project); // TODO: Currently UI modifies [project], review if changed to project
+            // TODO: Currently UI modifies [project], review if changed to project
             rpcSaveProjectConfig(project, outFileName, 0);
 
 #if defined(PLATFORM_WEB)
@@ -2263,7 +2263,8 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     rini_set_value_text(&data, "PROJECT_DEVELOPER_NAME", rpcGetText(project, "PROJECT_DEVELOPER_NAME"), NULL);
     rini_set_value_text(&data, "PROJECT_DEVELOPER_URL", rpcGetText(project, "PROJECT_DEVELOPER_URL"), NULL);
     rini_set_value_text(&data, "PROJECT_DEVELOPER_EMAIL", rpcGetText(project, "PROJECT_DEVELOPER_EMAIL"), NULL);
-    rini_set_value_text(&data, "PROJECT_ICON_FILE", rpcGetText(project, "PROJECT_ICON_FILE"), NULL);
+    if (FileExists(rpcGetText(project, "PROJECT_ICON_FILE"))) rini_set_value_text(&data, "PROJECT_ICON_FILE", rpcGetText(project, "PROJECT_ICON_FILE"), NULL);
+    else rini_set_value_text(&data, "PROJECT_ICON_FILE", TextFormat("src/%s.ico", rpcGetText(project, "PROJECT_INTERNAL_NAME")), NULL);
     rini_save(data, TextFormat("%s/%s/%s.rpc", outPath, rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_INTERNAL_NAME")));
 
     LOG("INFO: Project config file (.rpc) generated successfully\n");
@@ -2581,9 +2582,9 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     fileTextUpdated[0] = TextReplaceAlloc(fileText, "CommercialName", rpcGetText(project, "PROJECT_COMMERCIAL_NAME"));
     fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "project_name", rpcGetText(project, "PROJECT_INTERNAL_NAME"));
     fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "ProjectDescription", rpcGetText(project, "PROJECT_DESCRIPTION"));
-    fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "ProjectDeveloper", rpcGetText(project, "PROJECT_DEVELOPER_NAME"));
-    fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "project_developer", TextToLower(rpcGetText(project, "PROJECT_DEVELOPER_NAME")));
-    fileTextUpdated[5] = TextReplaceAlloc(fileTextUpdated[4], "ProjectDeveloperUrl", TextToLower(rpcGetText(project, "PROJECT_DEVELOPER_URL")));
+    fileTextUpdated[3] = TextReplaceAlloc(fileTextUpdated[2], "ProjectDeveloperUrl", TextToLower(rpcGetText(project, "PROJECT_DEVELOPER_URL")));
+    fileTextUpdated[4] = TextReplaceAlloc(fileTextUpdated[3], "ProjectDeveloper", rpcGetText(project, "PROJECT_DEVELOPER_NAME"));
+    fileTextUpdated[5] = TextReplaceAlloc(fileTextUpdated[4], "project_developer", TextToLower(rpcGetText(project, "PROJECT_DEVELOPER_NAME")));
     SaveFileText(TextFormat("%s/%s/src/minshell.html", outPath, rpcGetText(project, "PROJECT_REPO_NAME")), fileTextUpdated[5]);
     for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
     UnloadFileText(fileText);
@@ -2603,13 +2604,31 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
     LOG("INFO: Generated README.md file successfully\n");
 
     // Update LICENSE, including ProjectDeveloper
-    fileText = LoadFileText(TextFormat("%s/LICENSE", templatePath));
-    fileTextUpdated[0] = TextReplaceAlloc(fileText, "ProjectDeveloper", rpcGetText(project, "PROJECT_DEVELOPER_NAME"));
-    fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "ProjectYear", TextFormat("%i", currentYear));
-    SaveFileText(TextFormat("%s/%s/LICENSE", outPath, rpcGetText(project, "PROJECT_REPO_NAME")), fileTextUpdated[1]);
-    for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
-    UnloadFileText(fileText);
-    LOG("INFO: Generated LICENSE file successfully: zlib/libpng\n");
+    // TODO: Allow several open source licenses but also private code licenses
+    if (rpcGetValue(project, "DEPLOY_FLAG_INCUDE_LICENSE"))
+    {
+        fileText = LoadFileText(TextFormat("%s/LICENSE", templatePath));
+        fileTextUpdated[0] = TextReplaceAlloc(fileText, "ProjectDeveloper", rpcGetText(project, "PROJECT_DEVELOPER_NAME"));
+        fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "ProjectYear", TextFormat("%i", currentYear));
+        SaveFileText(TextFormat("%s/%s/LICENSE", outPath, rpcGetText(project, "PROJECT_REPO_NAME")), fileTextUpdated[1]);
+        for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
+        UnloadFileText(fileText);
+        LOG("INFO: Generated LICENSE file successfully: zlib/libpng\n");
+    }
+
+    // Update EULA, including CommercialName, PublisherName, DeveloperEmail
+    // TODO: Should be selectable by UI, some projects could require it
+    if (rpcGetValue(project, "DEPLOY_FLAG_INCUDE_EULA"))
+    {
+        fileText = LoadFileText(TextFormat("%s/EULA.txt", templatePath));
+        fileTextUpdated[0] = TextReplaceAlloc(fileText, "CommercialName", rpcGetText(project, "PROJECT_COMMERCIAL_NAME"));
+        fileTextUpdated[1] = TextReplaceAlloc(fileTextUpdated[0], "PublisherName", rpcGetText(project, "PROJECT_PUBLISHER_NAME"));
+        fileTextUpdated[2] = TextReplaceAlloc(fileTextUpdated[1], "DeveloperEmail", rpcGetText(project, "PROJECT_DEVELOPER_EMAIL"));
+        SaveFileText(TextFormat("%s/%s/EULA.txt", outPath, rpcGetText(project, "PROJECT_REPO_NAME")), fileTextUpdated[1]);
+        for (int i = 0; i < 8; i++) { MemFree(fileTextUpdated[i]); fileTextUpdated[i] = NULL; }
+        UnloadFileText(fileText);
+        LOG("INFO: Generated EULA.txt file successfully\n");
+    }
 
     // Copy from template files that do not require customization: CONVENTIONS.md, .gitignore
     FileCopy(TextFormat("%s/CONVENTIONS.md", templatePath),

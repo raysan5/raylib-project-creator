@@ -42,7 +42,7 @@ PROJECT_DEVELOPER_NAME                  "Ramon Santamaria"                  # Pr
 PROJECT_DEVELOPER_URL                   "www.raylib.com"                    # Project developer webpage url
 PROJECT_DEVELOPER_EMAIL                 "ray@raylib.com"                    # Project developer email
 
-PROJECT_ICON_FILE                       "template/src/project_name.ico"     # Project icon file
+PROJECT_ICON_FILE                       "src/project_name.ico"              # Project icon file
 
 PROJECT_SOURCE_PATH                     "src"                               # Project source directory, including all required code files (C/C++)
 PROJECT_ASSETS_PATH                     "src/resources"                     # Project assets directory, including all required assets
@@ -124,8 +124,8 @@ DEPLOY_FLAG_ZIP_PACKAGE                 0                                   # Fl
 DEPLOY_FLAG_RIF_INSTALLER               0                                   # Flag: request installer creation using rInstallFriendly tool
 DEPLOY_RIF_INSTALLER_PATH               "tools/rinstallfriendly.exe"        # Path to [rInstallFriendly] tool
 
-DEPLOY_FLAG_INCUDE_README               1                                   # Flag: request including README file on package
 DEPLOY_README_FILE                      "README.md"                         # Project README file path, contains product information
+
 DEPLOY_FLAG_INCUDE_LICENSE              1                                   # Flag: request including LICENSE file on package
 DEPLOY_LICENSE_FILE                     "LICENSE"                           # Project LICENSE file (usually for source-code) file path
 DEPLOY_FLAG_INCUDE_EULA                 1                                   # Flag: request including EULA file on package
