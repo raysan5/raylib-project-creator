@@ -482,7 +482,7 @@ int main(int argc, char *argv[])
 
     // GUI usage mode - Initialization
     //--------------------------------------------------------------------------------------
-    //SetConfigFlags(FLAG_WINDOW_RESIZABLE);      // Window configuration flags
+    //SetConfigFlags(FLAG_WINDOW_RESIZABLE); // Window configuration flags
     InitWindow(screenWidth, screenHeight, TextFormat("%s v%s | %s", toolName, toolVersion, toolDescription));
     //SetWindowMinSize(1280, 720);
     SetExitKey(0);
