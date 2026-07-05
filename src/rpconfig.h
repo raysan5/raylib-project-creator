@@ -163,94 +163,95 @@ RPCAPI int rpcSetPropertyEntry(rpcProjectConfig config, rpcPropertyEntry *entry)
 // NOTE: Data is parsed to organize by type of entry
 rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
 {
-    rpcProjectConfig project = { 0 };
+    rpcProjectConfig config = { 0 };
 
     if (FileExists(fileName))
     {
-        rini_data config = { 0 };
-        config = rini_load(fileName);
+        rini_data data = { 0 };
+        data = rini_load(fileName);
 
-        project.capacity = RPC_MAX_PROPERTY_ENTRIES;
-        project.entries = (rpcPropertyEntry *)RL_CALLOC(project.capacity, sizeof(rpcPropertyEntry));
-        project.entryCount = config.count;
+        config.capacity = RPC_MAX_PROPERTY_ENTRIES;
+        config.entries = (rpcPropertyEntry *)RL_CALLOC(config.capacity, sizeof(rpcPropertyEntry));
+        config.entryCount = data.count;
 
-        for (unsigned int i = 0; i < config.count; i++)
+        for (unsigned int i = 0; i < data.count; i++)
         {
-            TextCopy(project.entries[i].key, config.entries[i].key);
-            TextCopy(project.entries[i].desc, config.entries[i].desc);
-            project.entries[i].platform = RPC_PLATFORM_ANY;
+            TextCopy(config.entries[i].key, data.entries[i].key);
+            TextCopy(config.entries[i].desc, data.entries[i].desc);
+            config.entries[i].platform = RPC_PLATFORM_ANY;
 
             // Category is parsed from first word on key
             char category[32] = { 0 };
             int categoryLen = 0; //TextFindIndex(config.values[i].key, "_");
-            for (int c = 0; c < 128; c++) { if (config.entries[i].key[c] != '_') categoryLen++; else break; }
-            strncpy(category, config.entries[i].key, categoryLen);
-            TextCopy(project.entries[i].name, TextReplace(config.entries[i].key + categoryLen + 1, "_", " "));
+            for (int c = 0; c < 128; c++) { if (data.entries[i].key[c] != '_') categoryLen++; else break; }
+            strncpy(category, data.entries[i].key, categoryLen);
+            TextCopy(config.entries[i].name, TextReplace(data.entries[i].key + categoryLen + 1, "_", " "));
 
-            if (TextIsEqual(category, "PROJECT")) project.entries[i].category = RPC_CAT_PROJECT;
-            else if (TextIsEqual(category, "BUILD")) project.entries[i].category = RPC_CAT_BUILD;
+            if (TextIsEqual(category, "PROJECT")) config.entries[i].category = RPC_CAT_PROJECT;
+            else if (TextIsEqual(category, "BUILD")) config.entries[i].category = RPC_CAT_BUILD;
             else if (TextIsEqual(category, "PLATFORM"))
             {
-                project.entries[i].category = RPC_CAT_PLATFORM;
+                config.entries[i].category = RPC_CAT_PLATFORM;
 
                 // Get platform from key
                 char platform[32] = { 0 };
                 int platformLen = 0;//TextFindIndex(config.values[i].key + categoryLen + 1, "_");
-                for (int c = 0; c < 128; c++) { if (config.entries[i].key[c + categoryLen + 1] != '_') platformLen++; else break; }
-                memcpy(platform, config.entries[i].key + categoryLen + 1, platformLen);
+                for (int c = 0; c < 128; c++) { if (data.entries[i].key[c + categoryLen + 1] != '_') platformLen++; else break; }
+                memcpy(platform, data.entries[i].key + categoryLen + 1, platformLen);
 
-                if (TextIsEqual(platform, "WINDOWS")) project.entries[i].platform = RPC_PLATFORM_WINDOWS;
-                else if (TextIsEqual(platform, "LINUX")) project.entries[i].platform = RPC_PLATFORM_LINUX;
-                else if (TextIsEqual(platform, "MACOS")) project.entries[i].platform = RPC_PLATFORM_MACOS;
-                else if (TextIsEqual(platform, "WEB")) project.entries[i].platform = RPC_PLATFORM_WASM;
-                else if (TextIsEqual(platform, "ANDROID")) project.entries[i].platform = RPC_PLATFORM_ANDROID;
-                else if (TextIsEqual(platform, "DRM")) project.entries[i].platform = RPC_PLATFORM_DRM;
-                else if (TextIsEqual(platform, "SWITCH")) project.entries[i].platform = RPC_PLATFORM_SWITCH;
-                else if (TextIsEqual(platform, "DREAMCAST")) project.entries[i].platform = RPC_PLATFORM_DREAMCAST;
-                else if (TextIsEqual(platform, "FREEBSD")) project.entries[i].platform = RPC_PLATFORM_FREEBSD;
+                if (TextIsEqual(platform, "WINDOWS")) config.entries[i].platform = RPC_PLATFORM_WINDOWS;
+                else if (TextIsEqual(platform, "LINUX")) config.entries[i].platform = RPC_PLATFORM_LINUX;
+                else if (TextIsEqual(platform, "MACOS")) config.entries[i].platform = RPC_PLATFORM_MACOS;
+                else if (TextIsEqual(platform, "WEB")) config.entries[i].platform = RPC_PLATFORM_WASM;
+                else if (TextIsEqual(platform, "ANDROID")) config.entries[i].platform = RPC_PLATFORM_ANDROID;
+                else if (TextIsEqual(platform, "DRM")) config.entries[i].platform = RPC_PLATFORM_DRM;
+                else if (TextIsEqual(platform, "SWITCH")) config.entries[i].platform = RPC_PLATFORM_SWITCH;
+                else if (TextIsEqual(platform, "DREAMCAST")) config.entries[i].platform = RPC_PLATFORM_DREAMCAST;
+                else if (TextIsEqual(platform, "FREEBSD")) config.entries[i].platform = RPC_PLATFORM_FREEBSD;
 
-                memset(project.entries[i].name, 0, 64);
-                TextCopy(project.entries[i].name, config.entries[i].key + categoryLen + platformLen + 2);
+                memset(config.entries[i].name, 0, 64);
+                TextCopy(config.entries[i].name, data.entries[i].key + categoryLen + platformLen + 2);
             }
-            else if (TextIsEqual(category, "DEPLOY")) project.entries[i].category = RPC_CAT_DEPLOY;
-            else if (TextIsEqual(category, "IMAGERY")) project.entries[i].category = RPC_CAT_IMAGERY;
-            else if (TextIsEqual(category, "RAYLIB")) project.entries[i].category = RPC_CAT_RAYLIB;
+            else if (TextIsEqual(category, "DEPLOY")) config.entries[i].category = RPC_CAT_DEPLOY;
+            else if (TextIsEqual(category, "IMAGERY")) config.entries[i].category = RPC_CAT_IMAGERY;
+            else if (TextIsEqual(category, "RAYLIB")) config.entries[i].category = RPC_CAT_RAYLIB;
         }
 
-        for (unsigned int i = 0; i < config.count; i++)
+        for (unsigned int i = 0; i < data.count; i++)
         {
             // Type is parsed from key and value
-            if (!config.entries[i].is_text)
+            if (!data.entries[i].is_text)
             {
-                if (TextFindIndex(project.entries[i].key, "_FLAG")) project.entries[i].type = RPC_TYPE_BOOL;
-                else project.entries[i].type = RPC_TYPE_VALUE;
+                if (TextFindIndex(config.entries[i].key, "_FLAG") >= 0) config.entries[i].type = RPC_TYPE_BOOL;
+                else config.entries[i].type = RPC_TYPE_VALUE;
 
                 // Get the value
-                project.entries[i].value = TextToInteger(config.entries[i].text);
+                config.entries[i].value = TextToInteger(data.entries[i].text);
+                TextCopy(config.entries[i].text, data.entries[i].text);
             }
             else // Value is text
             {
-                if (TextFindIndex(project.entries[i].key, "_FILES") > 0)
+                if (TextFindIndex(config.entries[i].key, "_FILES") > 0)
                 {
                     // TODO: How we check if files list includes multiple files,
                     // checking for ';' separator???
-                    project.entries[i].type = RPC_TYPE_TEXT_FILE;
+                    config.entries[i].type = RPC_TYPE_TEXT_FILE;
                 }
-                else if (TextFindIndex(project.entries[i].key, "_FILE")  > 0) project.entries[i].type = RPC_TYPE_TEXT_FILE;
-                else if (TextFindIndex(project.entries[i].key, "_PATH")  > 0) project.entries[i].type = RPC_TYPE_TEXT_PATH;
+                else if (TextFindIndex(config.entries[i].key, "_FILE")  > 0) config.entries[i].type = RPC_TYPE_TEXT_FILE;
+                else if (TextFindIndex(config.entries[i].key, "_PATH")  > 0) config.entries[i].type = RPC_TYPE_TEXT_PATH;
                 else
                 {
-                    project.entries[i].type = RPC_TYPE_TEXT;
+                    config.entries[i].type = RPC_TYPE_TEXT;
                 }
 
-                TextCopy(project.entries[i].text, config.entries[i].text);
+                TextCopy(config.entries[i].text, data.entries[i].text);
             }
         }
 
-        rini_unload(&config);
+        rini_unload(&data);
     }
 
-    return project;
+    return config;
 }
 
 // Unload project data
@@ -479,7 +480,7 @@ int rpcSetText(rpcProjectConfig config, const char *key, const char *text)
             !TextIsEqual(config.entries[i].text, text))
         {
             memset(config.entries[i].text, 0, 256);
-            strcpy(config.entries[i].text, text);
+            strncpy(config.entries[i].text, text, 255);
             result = i;
             break;
         }
