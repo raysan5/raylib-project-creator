@@ -65,7 +65,7 @@ RAYLIB_OPENGL_VERSION                   "3.3"                               # Op
 BUILD_OUTPUT_PATH                       "build"                             # Build output path
 # NOTE: Toggle options are separated by ';', default one selected with []
 BUILD_TOGGLE_TARGET_MODE                "DEBUG;[RELEASE]"                   # Build target mode (Supported: DEBUG, RELEASE, DEBUG_DLL, RELEASE_DLL)
-BUILD_FLAG_RAYLIB_REBUILD               0                                   # Flag: Require raylib library rebuild
+BUILD_FLAG_RAYLIB_REBUILD               1                                   # Flag: Require raylib library rebuild
 # NOTE: Architecture currently depends on the Host platform, cross-arch not supported
 #BUILD_TARGET_ARCHITECTURE               "x86-64"                           # Build target architecture (Supported: x86-64, Win32, arm64)
 BUILD_FLAG_ASSETS_VALIDATION            0                                   # Flag: request assets validation on building
