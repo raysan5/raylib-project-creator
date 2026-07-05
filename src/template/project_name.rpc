@@ -20,6 +20,7 @@
 #    - KEY containing *_FLAG_: Value is considered a boolean, it displays with a [GuiCheckBox]
 #    - KEY ends with *_FILE: Value is considered as a text file path, it displays as [GuiTextBox] with a [BROWSE-File] button
 #    - KEY ends with *_PATH: Value is considered as a text directory path, it displays as [GuiTextBox] with a [BROWSE-Dir] button
+#    - KEY containing *_TOGGLE_: Value is considered a toggle selection. Otions separated by ';', default one selected with []
 #    - KEY does not contain any identifier and...
 #        - VALUE does contain ["]: Value is considered a text, it displays as [GuiTextBox]
 #        - VALUE does not contain ["]: Value is considered an integer, it displays as [GuiValueBox]
@@ -62,7 +63,8 @@ RAYLIB_OPENGL_VERSION                   "3.3"                               # Op
 # NOTE: Build target platform is selected on building, if no platform selected defaults to host platform
 #------------------------------------------------------------------------------------
 BUILD_OUTPUT_PATH                       "build"                             # Build output path
-BUILD_TARGET_MODE                       "RELEASE"                           # Build target mode (Supported: DEBUG, RELEASE, DEBUG_DLL, RELEASE_DLL)
+# NOTE: Toggle options are separated by ';', default one selected with []
+BUILD_TOGGLE_TARGET_MODE                "DEBUG;[RELEASE]"                   # Build target mode (Supported: DEBUG, RELEASE, DEBUG_DLL, RELEASE_DLL)
 BUILD_FLAG_RAYLIB_REBUILD               0                                   # Flag: Require raylib library rebuild
 # NOTE: Architecture currently depends on the Host platform, cross-arch not supported
 #BUILD_TARGET_ARCHITECTURE               "x86-64"                           # Build target architecture (Supported: x86-64, Win32, arm64)
@@ -74,7 +76,8 @@ BUILD_RRES_PACKER_TOOL_FILE             "rtools/rrespacker.exe"             # Pa
 # Platform-specific settings
 #------------------------------------------------------------------------------------
 # Platform: Windows
-PLATFORM_WINDOWS_DEFAULT_TOOLCHAIN      "W64DEVKIT"                         # Default toolchain for building: MSBUILD, W64DEVKIT
+# NOTE: Toggle options are separated by ';', default one selected with []
+PLATFORM_WINDOWS_TOGGLE_TOOLCHAIN       "MSBUILD;[W64DEVKIT]"               # Default toolchain for building: MSBUILD, W64DEVKIT
 PLATFORM_WINDOWS_MSBUILD_PATH           "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Current\Bin" # Path to MSBuild system, required to build VS2022 solution
 PLATFORM_WINDOWS_W64DEVKIT_PATH         "C:\raylib\w64devkit\bin"           # Path to w64devkit compiler (GCC), required to use Makefile building
 PLATFORM_WINDOWS_WSL_PATH               "C:\Windows\System32"               # Path to WSL (Windows Subsystem for Linux) to build for Linux
