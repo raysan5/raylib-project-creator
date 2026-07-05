@@ -31,12 +31,12 @@
 # Project settings
 #------------------------------------------------------------------------------------
 # NOTE: Project repo name is the base path where all project data is created
-PROJECT_REPO_NAME                       "cool_project"                      # Project repository name, used for VCS (GitHub, GitLab)
-PROJECT_INTERNAL_NAME                   "cool_project"                      # Project intenal name, used for executable and project files
-PROJECT_COMMERCIAL_NAME                 "Cool Project"                      # Project commercial name, used for docs and web
-PROJECT_SHORT_NAME                      "CP"                                # Project short name
+PROJECT_REPO_NAME                       "project-repo-name"                 # Project repository name, used for VCS (GitHub, GitLab)
+PROJECT_INTERNAL_NAME                   "project_name"                      # Project intenal name, used for executable and project files
+PROJECT_COMMERCIAL_NAME                 "Project Name"                      # Project commercial name, used for docs and web
+PROJECT_SHORT_NAME                      "PN"                                # Project short name
 PROJECT_VERSION                         "1.0"                               # Project version
-PROJECT_DESCRIPTION                     "A very cool project game"          # Project description
+PROJECT_DESCRIPTION                     "A very cool project"               # Project description
 PROJECT_PUBLISHER_NAME                  "raylib technologies"               # Project publisher name
 PROJECT_DEVELOPER_NAME                  "Ramon Santamaria"                  # Project developer name
 PROJECT_DEVELOPER_URL                   "www.raylib.com"                    # Project developer webpage url
@@ -52,7 +52,6 @@ PROJECT_ASSETS_OUTPUT_PATH              "resources"                         # Pr
 
 # raylib settings
 #------------------------------------------------------------------------------------
-RAYLIB_FLAG_BUILDING_REQUIRED           0                                   # Flag: Require raylib library rebuild
 RAYLIB_SRC_PATH                         "C:/raylib/raylib/src"              # Path to raylib source code, to be build for target platform (OS-dependant)
 RAYLIB_OPENGL_VERSION                   "3.3"                               # OpenGL version to be used by raylib, WARNING: Platform dependant!
 # TODO: Support raylib config.h options
@@ -63,26 +62,24 @@ RAYLIB_OPENGL_VERSION                   "3.3"                               # Op
 # NOTE: Build target platform is selected on building, if no platform selected defaults to host platform
 #------------------------------------------------------------------------------------
 BUILD_OUTPUT_PATH                       "build"                             # Build output path
-
 BUILD_TARGET_MODE                       "RELEASE"                           # Build target mode (Supported: DEBUG, RELEASE, DEBUG_DLL, RELEASE_DLL)
-
+BUILD_FLAG_RAYLIB_REBUILD               0                                   # Flag: Require raylib library rebuild
 # NOTE: Architecture currently depends on the Host platform, cross-arch not supported
 #BUILD_TARGET_ARCHITECTURE               "x86-64"                           # Build target architecture (Supported: x86-64, Win32, arm64)
-
-BUILD_FLAG_ASSETS_VALIDATION            1                                   # Flag: request assets validation on building
+BUILD_FLAG_ASSETS_VALIDATION            0                                   # Flag: request assets validation on building
 BUILD_FLAG_ASSETS_PACKAGING             0                                   # Flag: request assets packaging on building
-BUILD_RRES_PACKER_PATH                  "tools/rrespacker.exe"              # Path to [rrespacker] tool to package assets
+BUILD_RRES_PACKER_TOOL_FILE             "rtools/rrespacker.exe"             # Path to [rrespacker] tool to package assets
 #------------------------------------------------------------------------------------
 
 # Platform-specific settings
 #------------------------------------------------------------------------------------
 # Platform: Windows
 PLATFORM_WINDOWS_DEFAULT_TOOLCHAIN      "W64DEVKIT"                         # Default toolchain for building: MSBUILD, W64DEVKIT
-PLATFORM_WINDOWS_MSBUILD_PATH           "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Msbuild\\Current\\Bin"   # Path to MSBuild system, required to build VS2022 solution
-PLATFORM_WINDOWS_W64DEVKIT_PATH         "C:\\raylib\\w64devkit\\bin"        # Path to w64devkit compiler (GCC), required to use Makefile building
-PLATFORM_WINDOWS_WSL_PATH               "C:\\Windows\\System32"             # Path to WSL (Windows Subsystem for Linux) to build for Linux
-PLATFORM_WINDOWS_SIGNTOOL_PATH          "path\\to\\signtool"                # Path to signtool in case program needs to be signed (certificate required)
-PLATFORM_WINDOWS_SIGNCERT_FILE          "path\\to\\signcert"                # Path to a valid signature certificate to sign executable
+PLATFORM_WINDOWS_MSBUILD_PATH           "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Current\Bin" # Path to MSBuild system, required to build VS2022 solution
+PLATFORM_WINDOWS_W64DEVKIT_PATH         "C:\raylib\w64devkit\bin"           # Path to w64devkit compiler (GCC), required to use Makefile building
+PLATFORM_WINDOWS_WSL_PATH               "C:\Windows\System32"               # Path to WSL (Windows Subsystem for Linux) to build for Linux
+PLATFORM_WINDOWS_SIGNTOOL_PATH          "path\to\signtool"                  # Path to signtool in case program needs to be signed (certificate required)
+PLATFORM_WINDOWS_SIGNCERT_FILE          "path\to\signcert"                  # Path to a valid signature certificate to sign executable
 
 # Platform: Linux
 PLATFORM_LINUX_FLAG_CROSS_COMPILE       0                                   # Flag: request cross-compiler usage
@@ -101,8 +98,8 @@ PLATFORM_WEB_FLAG_USE_ASINCIFY          0                                   # Fl
 PLATFORM_WEB_FLAG_USE_WEBGL2            0                                   # Flag: use WebGL2 (OpenGL ES 3.1) instead of default WebGL1 (OpenGL ES 2.0)
 
 # Platform: Android
-PLATFORM_ANDROID_SDK_PATH               "path/to/android-sdk"               # Path to Android SDK, required for Android App building and support tools
-PLATFORM_ANDROID_NDK_PATH               "path/to/android-ndk-r28"           # Path to Android NDK, required for C native building to Android
+PLATFORM_ANDROID_SDK_PATH               "C:/android-sdk"                    # Path to Android SDK, required for Android App building and support tools
+PLATFORM_ANDROID_NDK_PATH               "C:/android-ndk"                    # Path to Android NDK, required for C native building to Android
 PLATFORM_ANDROID_JAVA_SDK_PATH          "path/to/java"                      # Path to Java SDK, required for some tools
 PLATFORM_ANDROID_MANIFEST_FILE          "src/AndroidManifest.xml"           # Path to Android manifest, including build options
 PLATFORM_ANDROID_MIN_SDK_VERSION        19                                  # Minimum SDK version required
@@ -122,13 +119,13 @@ PLATFORM_DREAMCAST_SDK_PATH             "path/to/dcdev-sdk"                 # Pa
 #------------------------------------------------------------------------------------
 DEPLOY_FLAG_ZIP_PACKAGE                 0                                   # Flag: request package to be zipped for distribution
 DEPLOY_FLAG_RIF_INSTALLER               0                                   # Flag: request installer creation using rInstallFriendly tool
-DEPLOY_RIF_INSTALLER_PATH               "tools/rinstallfriendly.exe"        # Path to [rInstallFriendly] tool
+DEPLOY_RIF_INSTALLER_TOOL_FILE          "rtools/rinstallfriendly.exe"       # Path to [rInstallFriendly] tool
 
 DEPLOY_README_FILE                      "README.md"                         # Project README file path, contains product information
 
 DEPLOY_FLAG_INCUDE_LICENSE              1                                   # Flag: request including LICENSE file on package
 DEPLOY_LICENSE_FILE                     "LICENSE"                           # Project LICENSE file (usually for source-code) file path
-DEPLOY_FLAG_INCUDE_EULA                 1                                   # Flag: request including EULA file on package
+DEPLOY_FLAG_INCUDE_EULA                 0                                   # Flag: request including EULA file on package
 DEPLOY_EULA_FILE                        "EULA.txt"                          # Project EULA (End-User-License-Agreement) file path
 # TODO: Itchio, Steam, other stores deploy info
 #------------------------------------------------------------------------------------
@@ -140,6 +137,6 @@ IMAGERY_LOGO_FILE                       "images/logo.png"                   # Pr
 IMAGERY_SPLASH_FILE                     "images/splash.png"                 # Project splash image, useful for imagery generation
 
 IMAGERY_FLAG_GENERATE                   0                                   # Flag: request project imagery generation: Social Cards, itchio, Steam...
-IMAGERY_RIP_PACKER_PATH                 "tools/riconpacker.exe"             # Path to [rIconPacker] tool
+IMAGERY_RIP_PACKER_TOOL_FILE            "rtools/riconpacker.exe"            # Path to [rIconPacker] tool
 # TODO: Options for imagery edition and generation
 #------------------------------------------------------------------------------------
