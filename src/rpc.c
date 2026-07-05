@@ -26,6 +26,18 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
+*       2.1  (05-Jul-2026)  ADDED: Support removing source/assets from input list
+*                           ADDED: EULA.txt support and fixed minshell export issues
+*                           ADDED: Support Toggle options in .rpc file
+*                           REVIEWED: Generated VSCode project, now debugging should work
+*                           REVIEWED: Fast path for single .c source files project generation on drop
+*                           REVIEWED: project_name.rpc, aligned with [rpb] v1.0
+*                           REVIEWED: rpconfig.h, aligned with [rpb] v1.0
+*                           REVIEWED: Command-line interface, fixed issues
+*                           REVIEWED: Status bar improvements
+*                           REVIEWED: w64devkit compiler paths
+*                           UPDATED: raygui 5.0 usage
+* 
 *       2.0  (14-May-2026)  ADDED: Complete internal redesign to align with [rpb] builder tool
 *                           ADDED: Load and save project configuration files (.rpc), shared with [rpb]
 *                           ADDED: Multiple project templates to start projects, including assets
