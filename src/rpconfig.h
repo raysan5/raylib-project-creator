@@ -251,7 +251,7 @@ rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
 
                     // Update config.entries[i].toggleActive
                     int toggleOptionsCount = 0;
-                    const char **toggleOptions = TextSplit(config.entries[i].text, ';', &toggleOptionsCount);
+                    char **toggleOptions = TextSplit(config.entries[i].text, ';', &toggleOptionsCount);
                     for (int j = 0; j < toggleOptionsCount; j++)
                     {
                         if (toggleOptions[j][0] == '[') { config.entries[i].toggleActive = j; break; }
