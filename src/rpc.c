@@ -497,6 +497,7 @@ int main(int argc, char *argv[])
     //SetConfigFlags(FLAG_WINDOW_RESIZABLE); // Window configuration flags
     InitWindow(screenWidth, screenHeight, TextFormat("%s v%s | %s", toolName, toolVersion, toolDescription));
     //SetWindowMinSize(1280, 720);
+    EnableEventWaiting();
     SetExitKey(0);
 
     // Create a RenderTexture2D to be used for render to texture
@@ -2072,7 +2073,7 @@ static char **LoadSourceAssetPaths(const char *srcFilePath, int *assetCount)
                 if ((len > 0) && (len < RPC_ASSET_PATH_LENGTH))
                 {
                     char buffer[RPC_ASSET_PATH_LENGTH] = { 0 };
-                    strncpy(buffer, start, len);
+                    snprintf(buffer, RPC_ASSET_PATH_LENGTH, "%s", start);
                     buffer[len] = '\0';
 
                     // Check for known extensions
@@ -2904,7 +2905,7 @@ static char *LoadWebLocalStorage(const char *key)
 
     // Run the script and get the result as a string
     const char *loadedData = emscripten_run_script_string(TextFormat("localStorage.getItem('%s')", key));
-    strncpy(result, loadedData, sizeof(result) - 1);
+    snprintf(result, sizeof(result), "%s", loadedData);
     result[sizeof(result) - 1] = '\0';
 
     return result;
