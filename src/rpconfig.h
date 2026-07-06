@@ -158,7 +158,8 @@ RPCAPI int rpcSetPropertyEntry(rpcProjectConfig config, rpcPropertyEntry *entry)
 
 // NOTE: Requires rini.h being included before this header
 
-#include <string.h>     // Required for: strncpy()
+#include <stdio.h>      // Required for: snprintf()
+#include <string.h>     // Required for: memcpy()
 #include <stdlib.h>     // Required for: calloc(), free()
 
 // Load project config data from .rpc file
@@ -186,7 +187,7 @@ rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
             char category[32] = { 0 };
             int categoryLen = 0; //TextFindIndex(config.values[i].key, "_");
             for (int c = 0; c < 128; c++) { if (data.entries[i].key[c] != '_') categoryLen++; else break; }
-            strncpy(category, data.entries[i].key, categoryLen);
+            memcpy(category, data.entries[i].key, categoryLen);
             TextCopy(config.entries[i].name, TextReplace(data.entries[i].key + categoryLen + 1, "_", " "));
 
             if (TextIsEqual(category, "PROJECT")) config.entries[i].category = RPC_CAT_PROJECT;
@@ -245,7 +246,7 @@ rpcProjectConfig rpcLoadProjectConfig(const char *fileName)
 
                     // Update name, remove _TOGGLE_ text
                     char configName[64] = { 0 };
-                    strncpy(configName, config.entries[i].name, 63);
+                    snprintf(configName, 64, "%s", config.entries[i].name);
                     memset(config.entries[i].name, 0, 64);
                     TextCopy(config.entries[i].name, configName + 7);
 
@@ -494,7 +495,7 @@ int rpcSetText(rpcProjectConfig config, const char *key, const char *text)
             !TextIsEqual(config.entries[i].text, text))
         {
             memset(config.entries[i].text, 0, 256);
-            strncpy(config.entries[i].text, text, 255);
+            snprintf(config.entries[i].text, 256, "%s", text);
             result = i;
             break;
         }
@@ -527,7 +528,7 @@ int rpcSetValue(rpcProjectConfig config, const char *key, int value)
         if (TextIsEqual(config.entries[i].key, key))
         {
             config.entries[i].value = value;
-            strcpy(config.entries[i].text, TextFormat("%i", value));
+            snprintf(config.entries[i].text, 256, "%s", TextFormat("%i", value));
             result = i;
             break;
         }
