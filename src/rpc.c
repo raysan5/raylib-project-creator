@@ -37,7 +37,7 @@
 *                           REVIEWED: Status bar improvements
 *                           REVIEWED: w64devkit compiler paths
 *                           UPDATED: raygui 5.0 usage
-* 
+*
 *       2.0  (14-May-2026)  ADDED: Complete internal redesign to align with [rpb] builder tool
 *                           ADDED: Load and save project configuration files (.rpc), shared with [rpb]
 *                           ADDED: Multiple project templates to start projects, including assets
@@ -57,7 +57,7 @@
 *
 *   DEPENDENCIES:
 *       raylib 6.1-dev          - Windowing/input management and drawing
-*       raygui 5.0-dev          - Immediate-mode GUI controls with custom styling and icons
+*       raygui 5.0              - Immediate-mode GUI controls with custom styling and icons
 *       rini 3.0                - Configuration file load/save
 *       miniz 2.2.0             - Save .zip package file (required for multiple images export)
 *       tinyfiledialogs 3.20.0  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
@@ -1207,15 +1207,16 @@ static void UpdateDrawFrame(void)
     if (showIssueReportWindow)
     {
         Rectangle messageBox = { (float)screenWidth/2 - 300/2, (float)screenHeight/2 - 190/2 - 20, 300, 190 };
-        int result = GuiMessageBox(messageBox, "#220#Report Issue",
-            "Do you want to report any issue or\nfeature request for this program?\n\ngithub.com/raysan5/raylib-project-creator", "#186#Report on GitHub");
+        int btnActive = -1;
+        GuiMessageBox(messageBox, "#220#Report Issue",
+            "Do you want to report any issue or\nfeature request for this program?\n\ngithub.com/raysan5/raylib-project-creator", "#186#Report on GitHub", &btnActive);
 
-        if (result == 1)    // Report issue pressed
+        if (btnActive == 1) // Report issue pressed
         {
             OpenURL("https://github.com/raysan5/raylib-project-creator/issues");
             showIssueReportWindow = false;
         }
-        else if (result == 0) showIssueReportWindow = false;
+        else if (btnActive == 0) showIssueReportWindow = false;
     }
     //----------------------------------------------------------------------------------------
 
@@ -1283,10 +1284,12 @@ static void UpdateDrawFrame(void)
     //----------------------------------------------------------------------------------------
     if (windowExitActive)
     {
-        int result = GuiMessageBox((Rectangle){ (float)screenWidth/2 - 125, (float)screenHeight/2 - 50, 250, 100 }, "#159#Closing raylib project creator", "Do you really want to exit?", "Yes;No");
+        int btnActive = -1;
+        GuiMessageBox((Rectangle){ (float)screenWidth/2 - 125, (float)screenHeight/2 - 50, 250, 100 },
+            "#159#Closing raylib project creator", "Do you really want to exit?", "#112#Yes;#113#No", &btnActive);
 
-        if ((result == 0) || (result == 2)) windowExitActive = false;
-        else if (result == 1) closeWindow = true;
+        if ((btnActive == 0) || (btnActive == 2)) windowExitActive = false;
+        else if (btnActive == 1) closeWindow = true;
     }
     //----------------------------------------------------------------------------------------
 
