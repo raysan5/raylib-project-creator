@@ -1962,7 +1962,7 @@ void rpcUpdateProjectInput(rpcProjectInput *input, int selTemplate)
     // a full path; full paths are only used for user-provided files
     strcpy(templatePath, "template");
 
-    if (selTemplate == 0)       // Custom
+    if (selTemplate == 0) // Custom
     {
         // NOTE: Filled with user provided source files
         // TODO: Scan required assets and add to the list
