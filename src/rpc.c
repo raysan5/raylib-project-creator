@@ -2209,11 +2209,11 @@ static void GenerateProject(rpcProjectConfig project, rpcProjectInput input, con
 
     LOG("INFO: Output path: %s/%s\n\n", outPath, rpcGetText(project, "PROJECT_REPO_NAME"));
 
-    LOG("INFO: Output project source code path: %s/%s", rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_SOURCE_PATH"));
+    LOG("INFO: Output project source code path: %s/%s\n", rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_SOURCE_PATH"));
     LOG("INFO: Input source code files to be added [%i]:\n", input.srcFileCount);
     for (int i = 0; i < input.srcFileCount; i++) LOG("      [%i/%i] %s\n", i + 1, input.srcFileCount, input.srcFilePaths[i]);
     LOG("\n");
-    LOG("INFO: Output project assets path: %s/%s", rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_ASSETS_PATH"));
+    LOG("INFO: Output project assets path: %s/%s\n", rpcGetText(project, "PROJECT_REPO_NAME"), rpcGetText(project, "PROJECT_ASSETS_PATH"));
     LOG("INFO: Input asset files to be added [%i]:\n", input.assetFileCount);
     for (int i = 0; i < input.assetFileCount; i++) LOG("      [%i/%i] %s\n", i + 1, input.assetFileCount, input.assetFilePaths[i]);
     LOG("\n");
